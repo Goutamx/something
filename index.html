@@ -1,0 +1,4096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 11 Syllabus Tracker</title>
+
+    <!-- Fonts / Icons (matching YT-DLP) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* ===== YT-DLP Light Theme Tokens ===== */
+            --bg-main: #F0F4F8;
+            --bg-card: #FFFFFF;
+            --bg-input: #E1E8F0;
+            --bg-input-focus: #E1E8F0;
+            --bg-chip: #E1E8F0;
+            --bg-chip-success: #d9f6e5;
+            --bg-chip-error: #ffe1e1;
+
+            --primary: #1E3A8A;
+            --primary-dark: #1E3A8A;
+            --text-main: #1A202C;
+            --text-muted: #64748B;
+            --text-soft: #64748B;
+            --white-soft: #ffffff;
+
+            --success: #16A34A;
+            --error: #DC2626;
+
+            --icon-bg: #E2E8F0;
+            --icon-color: #475569;
+
+            --accent-primary-text: #FFFFFF;
+
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+            --shadow-medium: 0 10px 30px rgba(15, 23, 42, 0.12);
+            --shadow-heavy: 0 18px 40px rgba(15, 23, 42, 0.45);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --radius-pill: 9999px;
+
+            --toggle-bg: #E2E8F0;
+            --toggle-bg-active: var(--primary);
+            --toggle-knob: #FFFFFF;
+            --toggle-icon: #64748B;
+            --toggle-icon-active: #FFFFFF;
+
+            --accent-gold: #1E3A8A;
+
+            --snackbar-bg: #9D4A6C;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0F141E;
+            --bg-card: #171E2E;
+            --bg-input: #212A3E;
+            --bg-input-focus: #212A3E;
+            --bg-chip: #212A3E;
+            --bg-chip-success: #07331e;
+            --bg-chip-error: #3b1616;
+
+            --primary: #A8C7FA;
+            --primary-dark: #A8C7FA;
+
+            --text-main: #FFFFFF;
+            --text-muted: #94A3B8;
+            --text-soft: #94A3B8;
+
+            --success: #86EFAC;
+            --error: #FCA5A5;
+
+            --icon-bg: #212A3E;
+            --icon-color: #A8C7FA;
+
+            --accent-primary-text: #051B44;
+
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.55);
+            --shadow-medium: 0 10px 30px rgba(15, 23, 42, 0.40);
+            --shadow-heavy: 0 18px 40px rgba(15, 23, 42, 0.65);
+
+            --toggle-bg: #212A3E;
+            --toggle-bg-active: var(--primary);
+            --toggle-knob: #FFFFFF;
+            --toggle-icon: #94A3B8;
+            --toggle-icon-active: #051B44;
+
+            --accent-gold: #A8C7FA;
+
+            --snackbar-bg: #7B3450;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top left, #f5f7ff 0, var(--bg-main) 40%);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="dark"] body {
+            background: var(--bg-main);
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        #sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            border-right: 1px solid rgba(148, 163, 184, 0.12);
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 2px 0 20px rgba(15, 23, 42, 0.06);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 28px 16px 18px;
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        [data-theme="dark"] .sidebar-header {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+        }
+
+        .sidebar-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .sidebar-header h2 {
+            font-size: 1.3em;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .sidebar-header p {
+            font-size: 0.85em;
+            opacity: 0.9;
+            font-weight: 400;
+            margin-top: 6px;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        /* Nav buttons */
+        .nav-container { padding: 12px 16px 0; display: grid; gap: 8px; }
+
+        .home-btn, .focus-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.92rem;
+        }
+        .home-btn:hover, .focus-btn:hover {
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(148, 163, 184, 0.25);
+            background: var(--bg-input);
+            transform: translateY(-1px);
+        }
+        .home-btn.active, .focus-btn.active {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border-color: transparent;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .subjects-container { padding: 16px; }
+
+        .subject {
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-main);
+            padding: 16px 72px 16px 20px;
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+            user-select: none;
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.92rem;
+        }
+
+        .subject::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+            background: var(--primary);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.3s ease;
+        }
+
+        .subject::after {
+            content: '›';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: transform 0.25s ease, color 0.25s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .subject .subject-progress {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-chip);
+            color: var(--primary);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            pointer-events: none;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .subject:hover {
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(148, 163, 184, 0.25);
+            background: var(--bg-input);
+            transform: translateY(-1px);
+        }
+        .subject:hover::before { transform: scaleY(1); }
+
+        .subject.active {
+            background: var(--bg-card);
+            color: var(--primary);
+            border-color: rgba(148, 163, 184, 0.25);
+            box-shadow: var(--shadow-medium);
+            font-weight: 700;
+        }
+
+        .subject.active::before {
+            transform: scaleY(1);
+            background: var(--primary);
+            width: 5px;
+        }
+        .subject.active::after {
+            transform: translateY(-50%) rotate(90deg);
+            color: var(--primary);
+        }
+        .subject.active .subject-progress {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sub-subjects {
+            display: none;
+            margin: 14px -56px 0 0;
+            padding: 12px 0 4px 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .sub-subjects.show { display: block; animation: slideDown 0.28s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sub-subject {
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88em;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            position: relative;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .sub-subject:hover {
+            background: var(--bg-chip);
+            border-color: rgba(148, 163, 184, 0.25);
+            transform: translateX(4px);
+        }
+        .sub-subject.active {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.35);
+            font-weight: 700;
+        }
+        [data-theme="dark"] .sub-subject.active {
+            box-shadow: 0 8px 20px rgba(168, 199, 250, 0.25);
+        }
+
+        /* ==================== MAIN ==================== */
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            /* Whole main panel (header + content) scrolls as one, so the
+               top header scrolls away instead of staying pinned. */
+            overflow-y: auto;
+            min-height: 0;
+            background: radial-gradient(circle at top left, #f5f7ff 0, var(--bg-main) 40%);
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        [data-theme="dark"] #main {
+            background: var(--bg-main);
+        }
+
+        .main-header {
+            flex: 0 0 auto;
+            background: var(--bg-card);
+            padding: 28px 40px 22px;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(20px);
+            transition: background 0.3s ease;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+        .main-header h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .main-header .subject-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 16px;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .progress-section {}
+        .progress-container {
+            width: 100%;
+            background: var(--bg-input);
+            height: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.06);
+            position: relative;
+        }
+        [data-theme="dark"] .progress-container {
+            background: var(--bg-input);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 8px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .progress-text {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .progress-stats {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .header-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .content-area { flex: 0 0 auto; overflow: visible; padding: 32px 40px 40px; }
+
+        /* ==================== CHAPTER ROW ==================== */
+        .chapter-row {
+            background: var(--bg-card);
+            margin: 16px 0;
+            padding: 22px 22px 20px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .chapter-row::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--primary);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        .chapter-row:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+        .chapter-row:hover::before { transform: scaleY(1); }
+
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .chapter-title {
+            font-size: 1.05em;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.015em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .note-icon {
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 1.05em;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+            background: var(--icon-bg);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .note-icon:hover {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            font-size: 0.92rem;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .checkbox-item:hover {
+            background: var(--bg-chip);
+            border-color: rgba(148, 163, 184, 0.25);
+            transform: translateY(-1px);
+        }
+        .checkbox-item.checked {
+            background: var(--bg-chip-success);
+            color: var(--success);
+            box-shadow: inset 0 0 0 2px rgba(22, 163, 74, 0.25);
+            border-color: rgba(22, 163, 74, 0.25);
+        }
+        [data-theme="dark"] .checkbox-item.checked {
+            background: var(--bg-chip-success);
+            color: var(--success);
+            box-shadow: inset 0 0 0 2px rgba(134, 239, 172, 0.2);
+            border-color: rgba(134, 239, 172, 0.2);
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px; height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* ==================== MODAL ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        [data-theme="dark"] .modal { background: rgba(0, 0, 0, 0.45); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 22px 22px 20px;
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 600px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+        .modal-title {
+            font-size: 1.2em;
+            color: var(--text-main);
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .close-btn {
+            background: var(--icon-bg);
+            color: var(--text-main);
+            border: none;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.2s ease;
+            width: 40px; height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .close-btn:hover {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            transform: translateY(-1px);
+        }
+
+        .notes-textarea {
+            width: 100%;
+            height: 220px;
+            padding: 18px;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            resize: vertical;
+            transition: all 0.2s ease;
+            background: var(--bg-input);
+            color: var(--text-main);
+            line-height: 1.6;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+        }
+        .notes-textarea::placeholder {
+            color: var(--text-soft);
+        }
+        .notes-textarea:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            background: var(--bg-input-focus);
+            transform: translateY(-0.5px);
+        }
+
+        .save-notes-btn {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border: none;
+            padding: 13px 24px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-top: 16px;
+            transition: all 0.15s ease;
+            box-shadow: var(--shadow-heavy);
+            font-family: 'Outfit', system-ui, sans-serif;
+            letter-spacing: 0.02em;
+        }
+        .save-notes-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.50);
+        }
+        .save-notes-btn:active { transform: translateY(0); }
+
+        /* ==================== OVERVIEW GRID / CARDS ==================== */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .subject-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 22px 22px 20px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        .subject-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+        .subject-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .subject-card .title {
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .badge {
+            background: var(--bg-chip);
+            color: var(--primary);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .view-btn {
+            align-self: flex-start;
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border: none;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            box-shadow: var(--shadow-heavy);
+        }
+        .view-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.50);
+        }
+        .view-btn:active { transform: translateY(0); }
+
+        /* ==================== TO-DO BOARD ==================== */
+        .todo-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .todo-column {
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            padding: 22px 22px 20px;
+        }
+        .todo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .todo-title {
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .todo-stat {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--bg-chip);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .todo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .todo-input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: var(--radius-lg);
+            border: none;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+            transition: box-shadow 0.15s, background 0.15s, transform 0.15s;
+        }
+        .todo-input-row input::placeholder {
+            color: var(--text-soft);
+        }
+        .todo-input-row input:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            transform: translateY(-0.5px);
+        }
+        .todo-add-btn {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius-pill);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-heavy);
+        }
+        .todo-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.50);
+        }
+        .todo-add-btn:active { transform: translateY(0); }
+        .todo-list { display: flex; flex-direction: column; gap: 8px; }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--bg-input);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            transition: all 0.2s ease;
+        }
+        .todo-item:hover {
+            background: var(--bg-chip);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+        .todo-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            flex: 1;
+        }
+        .todo-text {
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .todo-item.done .todo-text { text-decoration: line-through; opacity: 0.5; }
+        .todo-actions { display: flex; gap: 6px; }
+
+        .icon-btn {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .icon-btn:hover {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            transform: translateY(-1px);
+        }
+        .icon-btn.danger { color: var(--error); border-color: rgba(220, 38, 38, 0.25); }
+        .icon-btn.danger:hover { background: var(--error); color: white; }
+
+        .todo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .todo-empty {
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px dashed rgba(148, 163, 184, 0.35);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+            font-size: 0.92rem;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        /* ==================== WELCOME ==================== */
+        .welcome-message {
+            text-align: center;
+            color: var(--text-main);
+            font-size: 1.05em;
+            margin-top: 80px;
+            padding: 22px 22px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+        .welcome-message h3 {
+            font-size: 1.35em;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .welcome-message p {
+            color: var(--text-muted);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        /* ==================== CIRCULAR PROGRESS ==================== */
+        .circle {
+            position: relative;
+            width: var(--size, 96px);
+            height: var(--size, 96px);
+            display: grid;
+            place-items: center;
+        }
+        .circle svg {
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+            overflow: visible;
+        }
+        .circle .bg { stroke: var(--bg-input); }
+        .circle .progress {
+            stroke: var(--primary);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .circle .label {
+            position: absolute;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .card-progress-row { display: flex; align-items: center; gap: 12px; }
+        .card-progress-row .circle { --size: 64px; }
+
+        .progress-meta { display: flex; flex-direction: column; gap: 4px; }
+        .progress-meta .small-label {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            opacity: 0.9;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .todo-right { display: flex; align-items: center; gap: 10px; }
+        .todo-column .circle { --size: 48px; }
+
+        /* ==================== FOCUS TAB ==================== */
+        .focus-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            padding: 22px 22px 20px;
+        }
+        .card-title {
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .timer-hero { display: grid; place-items: center; padding: 12px 0 16px; }
+        .timer-ring { --size: 180px; }
+        .timer-time {
+            font-size: 1.8em;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .timer-mode {
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 6px;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+
+        .timer-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        .btn {
+            background: var(--bg-chip);
+            color: var(--primary);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 10px 14px;
+            border-radius: var(--radius-pill);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+        }
+        .btn:hover {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-heavy);
+        }
+        .btn:active { transform: translateY(0); }
+        .btn.secondary { background: var(--bg-card); }
+        .btn.secondary:hover {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+        }
+        .btn.danger { color: var(--error); border-color: rgba(220, 38, 38, 0.25); }
+        .btn.danger:hover { background: var(--error); color: white; }
+
+        .timer-divider {
+            width: 1px;
+            height: 26px;
+            background: rgba(148, 163, 184, 0.25);
+            margin: 0 4px;
+        }
+        .icon-toggle {
+            padding: 6px 10px;
+            font-size: 1.1em;
+            min-width: auto;
+            line-height: 1;
+            opacity: 0.6;
+        }
+        .icon-toggle.active {
+            background: var(--primary);
+            color: var(--accent-primary-text);
+            border-color: transparent;
+            opacity: 1;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .preset-row, .target-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .preset { font-weight: 700; }
+        .target-selects { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+
+        select.input,
+        .target-selects select {
+            padding: 10px 36px 10px 14px;
+            border-radius: var(--radius-lg);
+            border: none;
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+            transition: box-shadow 0.15s, transform 0.15s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748B'><path d='M7 10l5 5 5-5H7z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            cursor: pointer;
+        }
+
+        [data-theme="dark"] select.input,
+        [data-theme="dark"] .target-selects select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394A3B8'><path d='M7 10l5 5 5-5H7z'/></svg>");
+        }
+
+        select.input:focus,
+        .target-selects select:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            transform: translateY(-0.5px);
+        }
+
+        .input {
+            padding: 10px 12px;
+            border-radius: var(--radius-lg);
+            border: none;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+            transition: box-shadow 0.15s, transform 0.15s;
+        }
+        .input::placeholder {
+            color: var(--text-soft);
+        }
+        .input:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            transform: translateY(-0.5px);
+        }
+
+        /* Tint native number spinner arrows to match theme */
+        input[type="number"].input {
+            accent-color: var(--primary);
+        }
+        [data-theme="dark"] input[type="number"].input {
+            color-scheme: dark;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .stat-box { display: grid; gap: 8px; }
+        .mini-bars { display: flex; align-items: flex-end; gap: 6px; height: 60px; margin-top: 8px; }
+        .mini-bar {
+            width: 14px;
+            background: var(--bg-chip);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            transition: height 0.3s ease;
+        }
+        .mini-bar.today {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ==================== HOME INSIGHTS ==================== */
+        .insights-card .rows { display: grid; gap: 10px; }
+        .insights-row {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 160px 1fr 80px;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .spark { display: flex; align-items: flex-end; gap: 4px; height: 32px; }
+        .spark .bar {
+            width: 10px;
+            background: var(--bg-chip);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 4px;
+        }
+        .spark .bar.today {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .insights-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .insights-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+        /* ==================== SHARED PILLS / LABELS ==================== */
+        .pill {
+            background: var(--bg-chip);
+            color: var(--primary);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .subtle {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-input);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            margin: 6px 0;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .settings-grid label {
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.92rem;
+        }
+        .action-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+
+        .exam-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .exam-list { display: grid; gap: 10px; }
+
+        /* ==================== SMART FOCUS TARGET COMBOBOX ==================== */
+        .focus-target-wrap {
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .focus-target-chip {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-chip);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 8px 12px;
+            border-radius: var(--radius-lg);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            max-width: 100%;
+        }
+        .focus-target-chip.show { display: inline-flex; align-self: flex-start; }
+        .focus-target-chip .chip-icon {
+            font-size: 1rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+        }
+        .focus-target-chip .chip-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 260px;
+        }
+        .focus-target-chip .chip-clear {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0 2px;
+            font-size: 1.1rem;
+            line-height: 1;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .focus-target-chip .chip-clear:hover {
+            background: var(--error);
+            color: #fff;
+        }
+
+        .focus-target-input-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .focus-target-input {
+            width: 100%;
+            padding: 10px 40px 10px 14px;
+            border-radius: var(--radius-lg);
+            border: none;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+            transition: box-shadow 0.15s, transform 0.15s;
+        }
+        .focus-target-input::placeholder { color: var(--text-soft); }
+        .focus-target-input:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            transform: translateY(-0.5px);
+        }
+        .focus-target-caret {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .focus-target-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-medium);
+            max-height: 340px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            padding: 6px;
+        }
+        .focus-target-menu.show { display: block; animation: fadeIn 0.15s ease; }
+
+        .focus-target-group-label {
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 10px 12px 6px;
+        }
+
+        .focus-target-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: background 0.12s ease;
+        }
+        .focus-target-option:hover,
+        .focus-target-option.highlight {
+            background: var(--bg-input);
+        }
+        .focus-target-option .opt-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+            width: 20px;
+            text-align: center;
+        }
+        .focus-target-option .opt-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .focus-target-option .opt-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-left: 6px;
+        }
+        .focus-target-option.custom {
+            color: var(--primary);
+            font-weight: 700;
+            border-top: 1px solid rgba(148, 163, 184, 0.18);
+            margin-top: 4px;
+        }
+        .focus-target-empty {
+            padding: 14px;
+            text-align: center;
+            color: var(--text-muted);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-size: 0.9rem;
+        }
+
+        /* ==================== LOADING SCREEN ==================== */
+        #app-loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            background: #0F141E;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #app-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .loader-logo {
+            width: 180px;
+            max-width: 70vw;
+            animation: logoPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes logoPulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        .loader-text {
+            margin-top: 6px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+            font-size: 0.9em;
+            opacity: 0.9;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .loader-text::after {
+            display: inline-block;
+            margin-left: 0.3em;
+            width: 1.5em;
+            text-align: left;
+            content: '';
+            animation: loadingDots 1.2s infinite;
+        }
+        @keyframes loadingDots {
+            0%, 20% { content: ''; }
+            40%     { content: '.'; }
+            60%     { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        .fade-in { animation: fadeInUp 0.6s ease forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        :root { --section-gap: 16px; }
+
+        .todo-board,
+        .overview-grid,
+        .card,
+        .welcome-message {
+            margin-bottom: var(--section-gap) !important;
+        }
+
+        .content-area > *:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        .focus-grid > div > .card:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        /* ==================== THEME TOGGLE ==================== */
+        #themeToggle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--icon-color);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        #themeToggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+        }
+        [data-theme="dark"] #themeToggle {
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.40);
+        }
+        [data-theme="dark"] #themeToggle:hover {
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.55);
+        }
+
+        /* ==================== SNACKBAR ==================== */
+        .snackbar {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--snackbar-bg);
+            color: #FFFFFF;
+            border-radius: 28px;
+            padding: 12px 24px;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.7);
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-weight: 600;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .snackbar.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .snackbar .snackbar-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        /* ==================== SCROLLBAR ==================== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.7);
+            border-radius: 999px;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1024px) {
+            .focus-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            }
+            .sidebar-header { padding: 20px 16px 16px; }
+            .subjects-container {
+                display: flex;
+                overflow-x: auto;
+                gap: 8px;
+                padding: 12px 16px 16px;
+            }
+            .subject {
+                white-space: nowrap;
+                min-width: 160px;
+                text-align: left;
+                margin-bottom: 0;
+                padding-right: 68px;
+            }
+            .sub-subjects { display: none !important; }
+            .main-header { padding: 20px 20px 16px; }
+            .main-header h1 { font-size: 2.2rem; }
+            .content-area { padding: 20px; }
+            .chapter-row { padding: 22px 22px 20px; }
+            .checkbox-group { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .checkbox-item { font-size: 0.85em; padding: 12px; }
+            .modal-content { padding: 22px 22px 20px; margin: 20px; }
+            .overview-grid { grid-template-columns: 1fr 1fr; }
+            .todo-board { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .main-header h1 { font-size: 1.9rem; }
+            .chapter-row,
+            .subject-card,
+            .todo-column,
+            .card,
+            .modal-content,
+            .welcome-message {
+                padding: 18px 16px 16px;
+            }
+            .input,
+            .todo-input-row input,
+            .notes-textarea,
+            .target-selects select {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="app-loader">
+    <div class="loader-center">
+        <img src="studyleague-logo.png" alt="StudyLeague logo" class="loader-logo">
+    </div>
+</div>
+
+<div id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-header-row">
+            <h2>Class 11 Syllabus Tracker 📘</h2>
+            <button id="themeToggle" title="Toggle dark mode"><span class="material-symbols-rounded" style="font-size:20px;">dark_mode</span></button>
+        </div>
+        <p>Track your academic progress</p>
+    </div>
+
+    <div class="nav-container">
+        <button id="homeBtn" class="home-btn"><span class="material-symbols-rounded" style="font-size:20px;">home</span> Home</button>
+        <button id="focusBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">timer</span> Focus</button>
+        <button id="examBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">edit_note</span> Exams</button>
+    </div>
+
+    <div class="subjects-container">
+        <div class="subject" data-subject="English"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">menu_book</span>English
+            <div class="sub-subjects" id="EnglishSubs">
+                <div class="sub-subject" data-sub="Flamingo">Flamingo</div>
+                <div class="sub-subject" data-sub="Vistas">Vistas</div>
+            </div>
+        </div>
+        <div class="subject" data-subject="History"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">account_balance</span>History
+            <div class="sub-subjects" id="HistorySubs">
+                <div class="sub-subject" data-sub="ThemesInIndianHistory">Themes in Indian History</div>
+            </div>
+        </div>
+        <div class="subject" data-subject="Geography"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">public</span>Geography
+            <div class="sub-subjects" id="GeographySubs">
+                <div class="sub-subject" data-sub="FundamentalsOfHumanGeography">Fundamentals of Human Geography</div>
+                <div class="sub-subject" data-sub="IndiaPeopleAndEconomy">India - People and Economy</div>
+            </div>
+        </div>
+        <div class="subject" data-subject="PoliticalScience"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">gavel</span>Political Science
+            <div class="sub-subjects" id="PoliticalScienceSubs">
+                <div class="sub-subject" data-sub="ContemporaryWorldPolitics">Contemporary World Politics</div>
+                <div class="sub-subject" data-sub="PoliticsInIndiaSinceIndependence">Politics in India since Independence</div>
+            </div>
+        </div>
+        <div class="subject" data-subject="Math"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">calculate</span>Mathematics
+            <div class="sub-subjects" id="MathSubs">
+                <div class="sub-subject" data-sub="All">All Chapters</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="main">
+    <div class="main-header">
+        <h1>Welcome to Your Academic Journey</h1>
+        <div class="subject-subtitle" id="subject-subtitle"></div>
+        <div class="progress-section">
+            <div class="progress-text">
+                <span id="progress-label">Select a subject to begin</span>
+                <span class="progress-stats" id="progress-stats">0 of 0 completed</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        <div class="header-actions" id="header-actions"></div>
+    </div>
+
+    <div class="content-area">
+        <div id="chapterList">
+            <div class="welcome-message fade-in">
+                <h3>Begin Your Learning Journey</h3>
+                <p>Choose a subject from the sidebar to start tracking your academic progress. Each chapter can be marked as completed across four different study methods.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notes Modal -->
+<div class="modal" id="notes-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">Chapter Notes</div>
+            <button class="close-btn" onclick="closeNotesModal()"><span class="material-symbols-rounded" style="font-size:20px;">close</span></button>
+        </div>
+        <textarea class="notes-textarea" id="notes-textarea" placeholder="Write your study notes, key concepts, and important points here..."></textarea>
+        <button class="save-notes-btn" onclick="saveNotes()">Save Notes</button>
+    </div>
+</div>
+
+<script>
+    // THEME
+    function updateThemeButton(theme) {
+      var btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      if (theme === 'dark') {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px;">light_mode</span>';
+        btn.title = 'Switch to light mode';
+      } else {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px;">dark_mode</span>';
+        btn.title = 'Switch to dark mode';
+      }
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeButton(theme);
+    }
+
+    (function initTheme() {
+      var saved = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var initial = saved || (prefersDark ? 'dark' : 'light');
+      applyTheme(initial);
+      localStorage.setItem('theme', initial);
+    })();
+
+    document.getElementById('themeToggle').addEventListener('click', function() {
+      var cur = document.documentElement.getAttribute('data-theme') || 'light';
+      var next = cur === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      localStorage.setItem('theme', next);
+    });
+
+    var subjects = document.querySelectorAll('.subject');
+    var subSubjects = document.querySelectorAll('.sub-subject');
+    var progressBarEl = document.getElementById('progressBar');
+    var progressLabelEl = document.getElementById('progress-label');
+    var progressStatsEl = document.getElementById('progress-stats');
+    var homeBtn = document.getElementById('homeBtn');
+    var focusBtn = document.getElementById('focusBtn');
+    var examBtn = document.getElementById('examBtn');
+
+    var currentSubject = null;
+    var currentSubSubject = null;
+    var currentNoteChapter = null;
+    var isHomeView = false;
+    var isFocusView = false;
+    var isExamsView = false;
+
+    var subjectDisplayNames = {
+        English: 'English',
+        History: 'History',
+        Geography: 'Geography',
+        PoliticalScience: 'Political Science',
+        Math: 'Mathematics'
+    };
+    window.subjectDisplayNames = subjectDisplayNames;
+
+    var syllabus = {
+    English: {
+        Flamingo: [
+            "1. The Last Lesson",
+            "2. Lost Spring",
+            "3. Deep Water",
+            "4. The Rat Trap",
+            "5. Indigo",
+            "6. Poets and Pancakes",
+            "7. The Interview",
+            "8. Going Places",
+            "Poem 1. My Mother at Sixty Six",
+            "Poem 2. Keeping Quiet",
+            "Poem 3. A Thing of Beauty",
+            "Poem 4. A Roadside Stand",
+            "Poem 5. Aunt Jennifer's Tigers"
+        ],
+        Vistas: [
+            "1. The Third Level",
+            "2. The Tiger King",
+            "3. Journey to the End of the Earth",
+            "4. The Enemy",
+            "5. On the Face of It",
+            "6. Memories of Childhood"
+        ]
+    },
+    Math: {
+        All: [
+            "1. Relations and Functions",
+            "2. Inverse Trigonometric Functions",
+            "3. Matrices",
+            "4. Determinants",
+            "5. Continuity and Differentiability",
+            "6. Application of Derivatives",
+            "7. Integrals",
+            "8. Application of Integrals",
+            "9. Differential Equations",
+            "10. Vector Algebra",
+            "11. Three Dimensional Geometry",
+            "12. Linear Programming",
+            "13. Probability"
+        ]
+    },
+    History: {
+        ThemesInIndianHistory: [
+            "1. Bricks, Beads and Bones",
+            "2. Kings, Farmers and Towns",
+            "3. Kinship, Caste and Class",
+            "4. Thinkers, Beliefs and Buildings",
+            "5. Through the Eyes of Travellers",
+            "6. Bhakti-Sufi Traditions",
+            "7. An Imperial Capital: Vijayanagara",
+            "8. Peasants, Zamindars and the State",
+            "9. Colonialism and the Countryside",
+            "10. Rebels and the Raj",
+            "11. Mahatma Gandhi and the Nationalist Movement",
+            "12. Framing the Constitution"
+        ]
+    },
+    Geography: {
+        FundamentalsOfHumanGeography: [
+            "1. Human Geography",
+            "2. The World Population",
+            "3. Human Development",
+            "4. Primary Activities",
+            "5. Secondary Activities",
+            "6. Tertiary and Quaternary Activities",
+            "7. Transport and Communication",
+            "8. International Trade"
+        ],
+        IndiaPeopleAndEconomy: [
+            "1. Population: Distribution, Density, Growth and Composition",
+            "2. Human Settlements",
+            "3. Land Resources and Agriculture",
+            "4. Water Resources",
+            "5. Mineral and Energy Resources",
+            "6. Planning and Sustainable Development in Indian Context",
+            "7. Transport and Communication",
+            "8. International Trade",
+            "9. Geographical Perspective on Selected Issues and Problems"
+        ]
+    },
+    PoliticalScience: {
+        ContemporaryWorldPolitics: [
+            "1. The End of Bipolarity",
+            "2. Contemporary Centres of Power",
+            "3. Contemporary South Asia",
+            "4. International Organisations",
+            "5. Security in the Contemporary World",
+            "6. Environment and Natural Resources",
+            "7. Globalisation"
+        ],
+        PoliticsInIndiaSinceIndependence: [
+            "1. Challenges of Nation Building",
+            "2. Era of One-Party Dominance",
+            "3. Politics of Planned Democracy",
+            "4. India's External Relations",
+            "5. Challenges to and Restoration of the Congress System",
+            "6. The Crisis of Democratic Order",
+            "7. Regional Aspirations",
+            "8. Recent Developments in Indian Politics"
+          ]
+        }
+    };
+
+    var savedProgress = {};
+    try {
+        savedProgress = JSON.parse(localStorage.getItem('syllabusProgress')) || {};
+    } catch (e) {
+        savedProgress = {};
+    }
+
+    var todoData = { today: [], week: [] };
+    try {
+        var td = JSON.parse(localStorage.getItem('todoData'));
+        if (td && typeof td === 'object' && Array.isArray(td.today) && Array.isArray(td.week)) {
+            todoData = td;
+        }
+    } catch (e) { }
+
+    var uid = function() { return Math.random().toString(36).slice(2) + Date.now().toString(36); };
+    var saveTodos = function() { localStorage.setItem('todoData', JSON.stringify(todoData)); };
+
+    function addTodo(list, text) {
+        var t = (text || '').trim();
+        if (!t) return;
+        todoData[list].push({ id: uid(), text: t, done: false });
+        saveTodos();
+    }
+    function toggleTodo(list, id) {
+        var i = todoData[list].findIndex(function(x) { return x.id === id; });
+        if (i > -1) { todoData[list][i].done = !todoData[list][i].done; saveTodos(); }
+    }
+    function deleteTodo(list, id) {
+        todoData[list] = todoData[list].filter(function(x) { return x.id !== id; });
+        saveTodos();
+    }
+    function moveTodo(from, id) {
+        var idx = todoData[from].findIndex(function(x) { return x.id === id; });
+        if (idx > -1) {
+            var item = todoData[from].splice(idx, 1)[0];
+            var to = from === 'today' ? 'week' : 'today';
+            todoData[to].push(item);
+            saveTodos();
+        }
+    }
+    function clearCompleted(list) {
+        todoData[list] = todoData[list].filter(function(x) { return !x.done; });
+        saveTodos();
+    }
+
+    function ensurePath(subject, subSubject, chapter) {
+        if (!savedProgress[subject]) savedProgress[subject] = {};
+        if (!savedProgress[subject][subSubject]) savedProgress[subject][subSubject] = {};
+        if (!savedProgress[subject][subSubject][chapter]) savedProgress[subject][subSubject][chapter] = {};
+    }
+    function saveProgress() {
+        localStorage.setItem('syllabusProgress', JSON.stringify(savedProgress));
+    }
+
+    function escapeHtml(str) {
+        return (str || '').replace(/[&<>"']/g, function(s) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];
+        });
+    }
+
+    // Scroll main panel back to top on view change (#main is the scroller now,
+    // so the header is brought back into view on every view change)
+    function scrollToTop(smooth) {
+        var main = document.getElementById('main');
+        if (main) {
+            main.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+        }
+        window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    }
+
+    function computeSubjectProgress(subjectKey) {
+        var groups = syllabus[subjectKey] || {};
+        var total = 0;
+        var completed = 0;
+
+        Object.keys(groups).forEach(function(subKey) {
+            var chapters = groups[subKey] || [];
+            total += chapters.length * 4;
+            chapters.forEach(function(ch) {
+                var rec = (savedProgress[subjectKey] && savedProgress[subjectKey][subKey] && savedProgress[subjectKey][subKey][ch]) || {};
+                if (rec.Done) completed++;
+                if (rec.Note) completed++;
+                if (rec.OneShot) completed++;
+                if (rec.OneShotNotes) completed++;
+            });
+        });
+
+        var percent = total ? Math.round((completed / total) * 100) : 0;
+        return { total: total, completed: completed, percent: percent };
+    }
+
+    function computeOverallProgress() {
+        var subjectKeys = Object.keys(syllabus);
+        var total = 0, completed = 0;
+        subjectKeys.forEach(function(key) {
+            var p = computeSubjectProgress(key);
+            total += p.total;
+            completed += p.completed;
+        });
+        var percent = total ? Math.round((completed / total) * 100) : 0;
+        return { total: total, completed: completed, percent: percent };
+    }
+
+    function renderSubjectProgress() {
+        document.querySelectorAll('.subject').forEach(function(sub) {
+            var key = sub.dataset.subject;
+            var p = computeSubjectProgress(key);
+            var chip = sub.querySelector('.subject-progress');
+            if (!chip) {
+                chip = document.createElement('span');
+                chip.className = 'subject-progress';
+                chip.setAttribute('aria-hidden', 'true');
+                sub.appendChild(chip);
+            }
+            chip.textContent = p.percent + '%';
+        });
+    }
+
+    function circleSVG(percent, opts) {
+      opts = opts || {};
+      var size = opts.size || 96;
+      var stroke = opts.stroke || 10;
+      var color = opts.color || 'var(--primary)';
+      var track = opts.track || 'var(--bg-input)';
+      var textColor = opts.textColor || 'var(--text-main)';
+      var showText = 'showText' in opts ? opts.showText : true;
+
+      var clamped = Math.max(0, Math.min(100, percent));
+      var r = (size - stroke) / 2;
+      var c = 2 * Math.PI * r;
+      var offset = c * (1 - clamped / 100);
+
+      return '<div class="circle" style="--size:' + size + 'px">' +
+          '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" aria-hidden="true">' +
+            '<circle class="bg" cx="' + (size/2) + '" cy="' + (size/2) + '" r="' + r + '" stroke-width="' + stroke + '" fill="none" style="stroke:' + track + '"></circle>' +
+            '<circle class="progress" cx="' + (size/2) + '" cy="' + (size/2) + '" r="' + r + '" stroke-width="' + stroke + '" fill="none" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '" style="stroke:' + color + '"></circle>' +
+          '</svg>' +
+          (showText ? '<div class="label" style="color:' + textColor + '">' + clamped + '%</div>' : '') +
+        '</div>';
+    }
+
+    function createCircle(percent, opts) {
+      var div = document.createElement('div');
+      div.innerHTML = circleSVG(percent, opts);
+      return div.firstElementChild;
+    }
+
+    // ========= Time helpers =========
+    var DAY_START_HOUR = 9;
+
+    function startOfDay(d) {
+      var x = new Date(d);
+      if (x.getHours() < DAY_START_HOUR) {
+        x.setDate(x.getDate() - 1);
+      }
+      x.setHours(DAY_START_HOUR, 0, 0, 0);
+      return x;
+    }
+    function endOfDay(d) {
+      var start = startOfDay(d);
+      var end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      end.setMilliseconds(end.getMilliseconds() - 1);
+      return end;
+    }
+    function getLastNDates(n) {
+      var arr = [];
+      var today = startOfDay(new Date());
+      for (var i = n-1; i >= 0; i--) {
+        var d = new Date(today); d.setDate(today.getDate() - i); arr.push(d);
+      }
+      return arr;
+    }
+    function overlapMs(aStart, aEnd, bStart, bEnd) {
+      var s = Math.max(aStart, bStart);
+      var e = Math.min(aEnd, bEnd);
+      return Math.max(0, e - s);
+    }
+
+    // ==========================
+    // Focus Tab Data & Functions
+    // ==========================
+    var defaultFocusSettings = {
+      dailyGoalMinutes: 120,
+      focusMinutes: 25,
+      shortBreakMinutes: 5,
+      longBreakMinutes: 15,
+      cyclesPerLongBreak: 4,
+      autoStartNext: false,
+      playSound: true,
+      showNotification: false
+    };
+
+    function loadFocusSettings() {
+      try {
+        var s = JSON.parse(localStorage.getItem('focusSettings')) || {};
+        return Object.assign({}, defaultFocusSettings, s);
+      } catch(e) {
+        return Object.assign({}, defaultFocusSettings);
+      }
+    }
+    function saveFocusSettings() {
+      localStorage.setItem('focusSettings', JSON.stringify(focusSettings));
+    }
+
+    function loadFocusSessions() {
+      try {
+        return JSON.parse(localStorage.getItem('focusSessions')) || [];
+      } catch(e) { return []; }
+    }
+    function saveFocusSessions() {
+      localStorage.setItem('focusSessions', JSON.stringify(focusSessions));
+    }
+
+    function defaultTimerState() {
+      return {
+        running: false,
+        mode: 'focus',
+        isLongBreak: false,
+        startTime: null,
+        endTime: null,
+        remainingMs: null,
+        accumulatedMs: 0,
+        cyclesCompleted: 0,
+        interruptions: 0,
+        distracted: false,
+        target: { kind: '', subjectKey: '', subSubjectKey: '', chapter: '', todoList: '', todoId: '', customText: '', display: '' }
+      };
+    }
+
+    function loadTimerState() {
+      try {
+        return Object.assign(defaultTimerState(), JSON.parse(localStorage.getItem('focusTimerState')) || {});
+      } catch(e) { return defaultTimerState(); }
+    }
+    function saveTimerState() {
+      localStorage.setItem('focusTimerState', JSON.stringify(timerState));
+    }
+
+    var focusSettings = loadFocusSettings();
+    var focusSessions = loadFocusSessions();
+    var timerState = loadTimerState();
+    var timerInterval = null;
+
+    function msForCurrentMode() {
+      if (timerState.mode === 'focus') return (focusSettings.focusMinutes || 25) * 60 * 1000;
+      return (timerState.isLongBreak ? focusSettings.longBreakMinutes : focusSettings.shortBreakMinutes) * 60 * 1000;
+    }
+
+    function formatMMSS(ms) {
+      var s = Math.max(0, Math.round(ms / 1000));
+      var mm = Math.floor(s / 60);
+      var ss = s % 60;
+      return String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    }
+
+    function getTotalMinutesForDay(dayDate) {
+      var dayStart = startOfDay(dayDate).getTime();
+      var dayEnd = endOfDay(dayDate).getTime();
+      var totalMs = 0;
+      focusSessions.forEach(function(s) {
+        if (s.type !== 'focus') return;
+        var sStart = new Date(s.start).getTime();
+        var sEnd = new Date(s.end).getTime();
+        totalMs += overlapMs(sStart, sEnd, dayStart, dayEnd);
+      });
+      return Math.round(totalMs / 60000);
+    }
+
+    function getWeeklyMinutes() {
+      var days = getLastNDates(7);
+      return days.map(function(d) { return getTotalMinutesForDay(d); });
+    }
+
+    function computeStreak(todayDate) {
+      todayDate = todayDate || new Date();
+      var goal = focusSettings.dailyGoalMinutes || 120;
+      var streak = 0;
+      var cur = startOfDay(todayDate);
+      while (true) {
+        var min = getTotalMinutesForDay(cur);
+        if (min >= goal) {
+          streak += 1;
+          cur.setDate(cur.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    function startTimer(forceMode) {
+      if (typeof forceMode === 'string') timerState.mode = forceMode;
+      if (timerState.running) return;
+      timerState.distracted = false;
+      var full = msForCurrentMode();
+      var remaining = timerState.remainingMs != null ? timerState.remainingMs : full;
+      timerState.startTime = Date.now();
+      timerState.endTime = timerState.startTime + remaining;
+      timerState.running = true;
+      timerState.remainingMs = null;
+      saveTimerState();
+      runTick();
+      if (!timerInterval) timerInterval = setInterval(runTick, 250);
+      updateFocusUI();
+    }
+
+    function pauseTimer() {
+      if (!timerState.running) return;
+      var now = Date.now();
+      var seg = Math.max(0, now - (timerState.startTime || now));
+      timerState.accumulatedMs += seg;
+      timerState.remainingMs = Math.max(0, (timerState.endTime || now) - now);
+      timerState.running = false;
+      timerState.startTime = null;
+      timerState.endTime = null;
+      saveTimerState();
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      updateFocusUI();
+    }
+
+    function resetTimer() {
+      timerState.running = false;
+      timerState.startTime = null;
+      timerState.endTime = null;
+      timerState.remainingMs = null;
+      timerState.accumulatedMs = 0;
+      timerState.interruptions = 0;
+      timerState.distracted = false;
+      saveTimerState();
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      updateFocusUI();
+    }
+
+    function skipTimer() {
+      completeTimer(true);
+    }
+
+    var audioCtx = null;
+
+    function playEndSound() {
+      if (!focusSettings.playSound) return;
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!audioCtx) audioCtx = new AudioCtx();
+      var ctx = audioCtx;
+      var now = ctx.currentTime;
+      function beep(freq, start, duration, volume) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.value = volume;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + start);
+        osc.stop(now + start + duration);
+      }
+      beep(880, 0, 0.12, 0.25);
+      beep(660, 0.18, 0.15, 0.25);
+    }
+
+    function showSessionNotification(mode, wasLongBreak, elapsedMs) {
+      if (!focusSettings.showNotification) return;
+      if (typeof Notification === 'undefined') return;
+      if (Notification.permission !== 'granted') return;
+      var title, body;
+      if (mode === 'focus') {
+        var mins = Math.max(1, Math.round(elapsedMs / 60000));
+        title = 'Focus session complete';
+        body = 'Nice work — ' + mins + ' minute' + (mins === 1 ? '' : 's') + ' of focus! Time for a ' + (wasLongBreak ? 'long ' : '') + 'break.';
+      } else {
+        title = wasLongBreak ? 'Long break finished' : 'Break finished';
+        body = 'Ready for the next focus session?';
+      }
+      try {
+        new Notification(title, { body: body, icon: 'studyleague-logo.png' });
+      } catch (e) {}
+    }
+
+    function handleSessionEndAlerts(mode, wasLongBreak, elapsedMs, skipped) {
+      if (skipped) return;
+      playEndSound();
+      showSessionNotification(mode, wasLongBreak, elapsedMs);
+    }
+
+    function completeTimer(skipped) {
+      skipped = skipped || false;
+      var now = Date.now();
+      var elapsed = timerState.accumulatedMs;
+      if (timerState.running && timerState.startTime) {
+        elapsed += Math.max(0, now - timerState.startTime);
+      }
+      var targetDuration = msForCurrentMode();
+      elapsed = Math.min(elapsed, targetDuration);
+      var minLogMs = 2 * 60 * 1000;
+
+      var finishedMode = timerState.mode;
+      var wasLongBreak = timerState.isLongBreak;
+
+      var session = {
+        id: uid(),
+        start: new Date(now - elapsed).toISOString(),
+        end: new Date(now).toISOString(),
+        type: timerState.mode,
+        durationMs: elapsed,
+        // Legacy fields (kept for backward-compatible insights)
+        subjectKey: (timerState.target && timerState.target.subjectKey) || '',
+        subSubjectKey: (timerState.target && timerState.target.subSubjectKey) || '',
+        chapter: (timerState.target && timerState.target.chapter) || '',
+        // New Smart-Target fields
+        targetKind: (timerState.target && timerState.target.kind) || '',
+        targetDisplay: (timerState.target && timerState.target.display) || '',
+        todoList: (timerState.target && timerState.target.todoList) || '',
+        todoId: (timerState.target && timerState.target.todoId) || '',
+        customText: (timerState.target && timerState.target.customText) || '',
+        interruptions: timerState.interruptions || 0,
+        note: ''
+      };
+      if (elapsed >= minLogMs) {
+        focusSessions.push(session);
+        saveFocusSessions();
+      }
+
+      handleSessionEndAlerts(finishedMode, wasLongBreak, elapsed, skipped);
+
+      if (timerState.mode === 'focus') {
+        timerState.cyclesCompleted += 1;
+        timerState.mode = 'break';
+        var cpl = focusSettings.cyclesPerLongBreak || 4;
+        timerState.isLongBreak = (timerState.cyclesCompleted % cpl === 0);
+      } else {
+        timerState.mode = 'focus';
+      }
+
+      timerState.running = false;
+      timerState.startTime = null;
+      timerState.endTime = null;
+      timerState.remainingMs = null;
+      timerState.accumulatedMs = 0;
+      timerState.interruptions = 0;
+      timerState.distracted = false;
+
+      saveTimerState();
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+
+      if (focusSettings.autoStartNext) {
+        startTimer();
+      } else {
+        updateFocusUI();
+      }
+      if (isFocusView) updateProgress();
+    }
+
+    function runTick() {
+      if (!timerState.running) return;
+      var now = Date.now();
+      var remaining = Math.max(0, (timerState.endTime || now) - now);
+      if (remaining <= 0) {
+        completeTimer(false);
+      } else {
+        updateFocusUI();
+      }
+    }
+
+    function toggleDistracted() {
+      if (timerState.running) {
+        timerState.interruptions = (timerState.interruptions || 0) + 1;
+        timerState.distracted = true;
+        pauseTimer();
+      } else if (timerState.distracted) {
+        timerState.distracted = false;
+        startTimer();
+      } else {
+        timerState.interruptions = (timerState.interruptions || 0) + 1;
+        timerState.distracted = true;
+        saveTimerState();
+        updateFocusUI();
+      }
+    }
+
+    // ====== Insights aggregations ======
+    // ====== Auto subject detection from free text ======
+    // Maps a to-do/custom session's text to one or more syllabus subject keys
+    // based on keyword matching. Uses strict word-boundary matching to avoid
+    // false positives (e.g., "aftermath" won't match "math").
+    var subjectKeywords = {
+      English: ['english', 'flamingo', 'vistas', 'poem', 'poetry', 'essay', 'comprehension', 'grammar', 'literature'],
+      Math: ['math', 'maths', 'mathematics', 'algebra', 'calculus', 'trigonometry', 'geometry', 'integral', 'integrals', 'derivative', 'derivatives', 'matrix', 'matrices', 'probability', 'vector', 'vectors', 'determinant', 'determinants', 'function', 'functions'],
+      History: ['history', 'historical', 'mughal', 'colonial', 'harappa', 'harappan', 'gandhi', 'indus', 'vijayanagara', 'bhakti', 'sufi'],
+      Geography: ['geography', 'geo', 'population', 'climate', 'agriculture', 'mineral', 'minerals', 'resource', 'resources', 'settlement', 'settlements', 'trade', 'transport'],
+      PoliticalScience: ['political', 'politics', 'polity', 'constitution', 'democracy', 'government', 'globalisation', 'globalization', 'bipolarity', 'sovereignty', 'nation']
+    };
+
+    // Returns an array of subject keys that match the given text, or [] if none.
+    function detectSubjectsFromText(text) {
+      if (!text) return [];
+      var lower = String(text).toLowerCase();
+      var matches = [];
+      Object.keys(subjectKeywords).forEach(function(subjectKey) {
+        var kws = subjectKeywords[subjectKey];
+        for (var i = 0; i < kws.length; i++) {
+          // \b = word boundary; matches whole words only
+          var re = new RegExp('\\b' + kws[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+          if (re.test(lower)) {
+            matches.push(subjectKey);
+            break; // one match per subject is enough
+          }
+        }
+      });
+      return matches;
+    }
+
+    function aggregateWeeklyBySubject() {
+      var days = getLastNDates(7);
+      var bySubject = {};
+
+      // Helper to add minutes into one or more buckets for a given session
+      function addToBucket(bucketKeys, sStart, sEnd, weight) {
+        weight = weight || 1;
+        bucketKeys.forEach(function(bucketKey) {
+          if (!bySubject[bucketKey]) bySubject[bucketKey] = new Array(7).fill(0);
+          days.forEach(function(day, idx) {
+            var ms = overlapMs(sStart, sEnd, startOfDay(day).getTime(), endOfDay(day).getTime());
+            bySubject[bucketKey][idx] += Math.round((ms / 60000) * weight);
+          });
+        });
+      }
+
+      focusSessions.forEach(function(s) {
+        if (s.type !== 'focus') return;
+
+        var sStart = new Date(s.start).getTime();
+        var sEnd = new Date(s.end).getTime();
+
+        // Direct syllabus-linked session → always count under its subject
+        if (s.targetKind === 'syllabus' || (s.subjectKey && s.chapter)) {
+          if (s.subjectKey) addToBucket([s.subjectKey], sStart, sEnd, 1);
+          return;
+        }
+
+        // Exam session → count directly under its subject (e.g., English Exam → English)
+        if (s.targetKind === 'exam' && s.subjectKey) {
+          addToBucket([s.subjectKey], sStart, sEnd, 1);
+          return;
+        }
+
+        // To-Do session → try to auto-detect subject from the todo text
+        if (s.targetKind === 'todo') {
+          var todoText = s.targetDisplay || '';
+          // Strip the "To-Do: " prefix before scanning
+          todoText = todoText.replace(/^to-do:\s*/i, '');
+          var matches = detectSubjectsFromText(todoText);
+          if (matches.length > 0) {
+            // Split time equally across matched subjects
+            addToBucket(matches, sStart, sEnd, 1 / matches.length);
+          } else {
+            // No keyword match → keep under generic To-Dos bucket
+            addToBucket(['__TODO__'], sStart, sEnd, 1);
+          }
+          return;
+        }
+
+        // Custom text session → same auto-detect logic
+        if (s.targetKind === 'custom') {
+          var customText = s.targetDisplay || s.customText || '';
+          var matches2 = detectSubjectsFromText(customText);
+          if (matches2.length > 0) {
+            addToBucket(matches2, sStart, sEnd, 1 / matches2.length);
+          } else {
+            addToBucket(['__CUSTOM__'], sStart, sEnd, 1);
+          }
+          return;
+        }
+
+        // Legacy sessions with no targetKind but a subjectKey
+        if (s.subjectKey) {
+          addToBucket([s.subjectKey], sStart, sEnd, 1);
+        }
+      });
+
+      return { days: days, bySubject: bySubject };
+    }
+
+    function aggregateWeeklyBySection(subjectKey) {
+      var days = getLastNDates(7);
+      var bySection = {};
+      focusSessions.forEach(function(s) {
+        if (s.type !== 'focus' || s.subjectKey !== subjectKey || !s.subSubjectKey) return;
+        var sStart = new Date(s.start).getTime();
+        var sEnd = new Date(s.end).getTime();
+        var key = s.subSubjectKey;
+        if (!bySection[key]) bySection[key] = new Array(7).fill(0);
+        days.forEach(function(day, idx) {
+          var ms = overlapMs(sStart, sEnd, startOfDay(day).getTime(), endOfDay(day).getTime());
+          bySection[key][idx] += Math.round(ms / 60000);
+        });
+      });
+      return { days: days, bySection: bySection };
+    }
+
+    function updateProgress() {
+        if (isHomeView) {
+            var op = computeOverallProgress();
+            progressLabelEl.textContent = 'Overall progress — ' + op.percent + '% complete';
+            progressStatsEl.textContent = op.completed + ' of ' + op.total + ' completed';
+            progressBarEl.style.width = op.percent + '%';
+            renderSubjectProgress();
+            return;
+        }
+
+        if (isFocusView) {
+            var todayMin = getTotalMinutesForDay(new Date());
+            var goal = focusSettings.dailyGoalMinutes || 120;
+            var pct = Math.min(100, Math.round((todayMin / goal) * 100));
+            progressLabelEl.textContent = "Today's focus — " + pct + '% of ' + goal + ' min';
+            progressStatsEl.textContent = todayMin + ' / ' + goal + ' min';
+            progressBarEl.style.width = pct + '%';
+            return;
+        }
+
+        if (!currentSubject || !currentSubSubject) {
+            progressLabelEl.textContent = currentSubject ? 'Choose a section to begin' : 'Select a subject to begin';
+            progressStatsEl.textContent = '0 of 0 completed';
+            progressBarEl.style.width = '0%';
+            renderSubjectProgress();
+            return;
+        }
+
+        var chapters = (syllabus[currentSubject] && syllabus[currentSubject][currentSubSubject]) || [];
+        var totalItems = chapters.length * 4;
+        var completedItems = 0;
+
+        chapters.forEach(function(ch) {
+            var rec = (savedProgress[currentSubject] && savedProgress[currentSubject][currentSubSubject] && savedProgress[currentSubject][currentSubSubject][ch]) || {};
+            if (rec.Done) completedItems++;
+            if (rec.Note) completedItems++;
+            if (rec.OneShot) completedItems++;
+            if (rec.OneShotNotes) completedItems++;
+        });
+
+        var percent = totalItems ? Math.round((completedItems / totalItems) * 100) : 0;
+        progressLabelEl.textContent = currentSubject + ' • ' + currentSubSubject + ' — ' + percent + '% complete';
+        progressStatsEl.textContent = completedItems + ' of ' + totalItems + ' completed';
+        progressBarEl.style.width = percent + '%';
+
+        renderSubjectProgress();
+    }
+    // Build To-Do board HTML
+    function buildTodoBoardHTML() {
+        function colHTML(list, title) {
+            var items = todoData[list].slice();
+            items.sort(function(a,b) { return Number(a.done) - Number(b.done); });
+            var total = items.length;
+            var completed = items.filter(function(x) { return x.done; }).length;
+            var percent = total ? Math.round((completed / total) * 100) : 0;
+
+            var itemsHTML = items.map(function(it) {
+                return '<div class="todo-item ' + (it.done ? 'done' : '') + '" data-id="' + it.id + '" data-list="' + list + '">' +
+                    '<label class="todo-label">' +
+                        '<input type="checkbox" class="todo-checkbox" data-list="' + list + '" data-id="' + it.id + '" ' + (it.done ? 'checked' : '') + ' />' +
+                        '<span class="todo-text">' + escapeHtml(it.text) + '</span>' +
+                    '</label>' +
+                    '<div class="todo-actions">' +
+                        '<button class="icon-btn" data-action="move" data-list="' + list + '" data-id="' + it.id + '">' + (list === 'today' ? '⇢ Week' : '⇢ Today') + '</button>' +
+                        '<button class="icon-btn danger" data-action="delete" data-list="' + list + '" data-id="' + it.id + '"><span class="material-symbols-rounded" style="font-size:16px;">delete</span></button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            return '<div class="todo-column">' +
+                    '<div class="todo-header">' +
+                        '<div class="todo-title">' + title + '</div>' +
+                        '<div class="todo-right">' +
+                            circleSVG(percent, { size: 48, stroke: 6, track: 'var(--bg-input)' }) +
+                            '<div class="todo-stat">' + completed + ' / ' + total + ' done</div>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<form class="todo-input-row" data-list="' + list + '">' +
+                        '<input type="text" placeholder="Add a task..." />' +
+                        '<button class="todo-add-btn" type="submit">Add</button>' +
+                    '</form>' +
+
+                    (total === 0 ? '<div class="todo-empty">No tasks yet — add your first one!</div>' :
+                        '<div class="todo-list">' + itemsHTML + '</div>' +
+                        '<div class="todo-footer">' +
+                            '<span>' + percent + '% complete</span>' +
+                            '<button class="icon-btn" data-action="clear" data-list="' + list + '">Clear completed</button>' +
+                        '</div>'
+                    ) +
+                '</div>';
+        }
+
+        return '<div class="todo-board">' +
+                colHTML('today', "Today's To-Dos") +
+                colHTML('week', 'This Week') +
+            '</div>';
+    }
+
+    function renderTodoBoard() {
+        var container = document.createElement('div');
+        container.id = 'todoBoard';
+        container.className = 'fade-in';
+        container.innerHTML = buildTodoBoardHTML();
+
+        container.addEventListener('submit', function(e) {
+            var form = e.target.closest('form.todo-input-row');
+            if (!form) return;
+            e.preventDefault();
+            var list = form.dataset.list;
+            var input = form.querySelector('input');
+            addTodo(list, input.value);
+            input.value = '';
+            updateBoard();
+        });
+
+        container.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            var action = btn.dataset.action;
+            var list = btn.dataset.list;
+            var id = btn.dataset.id;
+            if (action === 'delete' && id) deleteTodo(list, id);
+            if (action === 'move' && id) moveTodo(list, id);
+            if (action === 'clear') clearCompleted(list);
+            updateBoard();
+        });
+
+        container.addEventListener('change', function(e) {
+            if (e.target.classList.contains('todo-checkbox')) {
+                var list = e.target.dataset.list;
+                var id = e.target.dataset.id;
+                toggleTodo(list, id);
+                updateBoard();
+            }
+        });
+
+        function updateBoard() {
+            container.innerHTML = buildTodoBoardHTML();
+        }
+        return container;
+    }
+
+    // ====== Home Insights card ======
+    function buildInsightsCard() {
+      var wrap = document.createElement('div');
+      wrap.className = 'card insights-card fade-in';
+      var header = document.createElement('div');
+      header.className = 'insights-header';
+      var title = document.createElement('div');
+      title.className = 'card-title';
+      title.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">insights</span> Time Insights (last 7 days)';
+      var controls = document.createElement('div');
+      controls.className = 'insights-controls';
+
+      var subjectSelect = document.createElement('select');
+      subjectSelect.className = 'input';
+      var subjectKeys = Object.keys(syllabus);
+      subjectSelect.innerHTML = '<option value="">Select subject for section breakdown…</option>' +
+        subjectKeys.map(function(k) { return '<option value="' + k + '">' + (subjectDisplayNames[k] || k) + '</option>'; }).join('');
+      controls.appendChild(subjectSelect);
+
+      header.appendChild(title);
+      header.appendChild(controls);
+
+      var rowsWrap = document.createElement('div');
+      rowsWrap.className = 'rows';
+
+      function renderSubjects() {
+        rowsWrap.innerHTML = '';
+        var agg = aggregateWeeklyBySubject();
+        var days = agg.days;
+        var bySubject = agg.bySubject;
+        var labels = days.map(function(d) { return d.toLocaleDateString(undefined, { weekday: 'short' }); });
+        var subjectsKeys = Object.keys(bySubject);
+        if (subjectsKeys.length === 0) {
+          rowsWrap.innerHTML = '<div class="todo-empty">Focus some time to see insights here. Link sessions to subjects/todos/custom to populate this section.</div>';
+          return;
+        }
+        subjectsKeys.forEach(function(sk) {
+          var arr = bySubject[sk];
+          var total = arr.reduce(function(a,b){ return a+b; },0);
+          var maxVal = Math.max.apply(null, [1].concat(arr));
+          var row = document.createElement('div');
+          row.className = 'insights-row';
+          var name = document.createElement('div');
+          if (sk === '__TODO__') {
+            name.textContent = '✅ To-Dos';
+          } else if (sk === '__CUSTOM__') {
+            name.textContent = '✍️ Custom / Other';
+          } else {
+            name.textContent = subjectDisplayNames[sk] || sk;
+          }
+
+          var spark = document.createElement('div');
+          spark.className = 'spark';
+          arr.forEach(function(v, idx) {
+            var b = document.createElement('div');
+            b.className = 'bar' + (idx === arr.length - 1 ? ' today' : '');
+            b.style.height = Math.max(4, Math.round((v / maxVal) * 32)) + 'px';
+            b.title = labels[idx] + ' — ' + v + ' min';
+            spark.appendChild(b);
+          });
+
+          var totalBox = document.createElement('div');
+          totalBox.className = 'pill';
+          totalBox.textContent = total + ' min';
+
+          row.appendChild(name);
+          row.appendChild(spark);
+          row.appendChild(totalBox);
+          rowsWrap.appendChild(row);
+        });
+      }
+
+      function renderSections(forSubject) {
+        var secWrap = document.createElement('div');
+        secWrap.style.marginTop = '8px';
+        var agg = aggregateWeeklyBySection(forSubject);
+        var days = agg.days;
+        var bySection = agg.bySection;
+        var labels = days.map(function(d) { return d.toLocaleDateString(undefined, { weekday: 'short' }); });
+        var keys = Object.keys(bySection);
+        if (!keys.length) {
+          secWrap.innerHTML = '<div class="todo-empty">No section-linked sessions for ' + (subjectDisplayNames[forSubject] || forSubject) + ' yet.</div>';
+        } else {
+          keys.forEach(function(k) {
+            var arr = bySection[k];
+            var total = arr.reduce(function(a,b){ return a+b; },0);
+            var maxVal = Math.max.apply(null, [1].concat(arr));
+            var row = document.createElement('div');
+            row.className = 'insights-row';
+            var name = document.createElement('div');
+            name.textContent = (subjectDisplayNames[forSubject] || forSubject) + ' • ' + k;
+            var spark = document.createElement('div');
+            spark.className = 'spark';
+            arr.forEach(function(v, idx) {
+              var b = document.createElement('div');
+              b.className = 'bar' + (idx === arr.length - 1 ? ' today' : '');
+              b.style.height = Math.max(4, Math.round((v / maxVal) * 32)) + 'px';
+              b.title = labels[idx] + ' — ' + v + ' min';
+              spark.appendChild(b);
+            });
+            var totalBox = document.createElement('div');
+            totalBox.className = 'pill';
+            totalBox.textContent = total + ' min';
+            row.appendChild(name);
+            row.appendChild(spark);
+            row.appendChild(totalBox);
+            secWrap.appendChild(row);
+          });
+        }
+        rowsWrap.appendChild(secWrap);
+      }
+
+      subjectSelect.addEventListener('change', function() {
+        renderSubjects();
+        var val = subjectSelect.value;
+        if (val) renderSections(val);
+      });
+
+      wrap.appendChild(header);
+      wrap.appendChild(rowsWrap);
+
+      renderSubjects();
+      return wrap;
+    }
+
+    // Render Home dashboard
+    function renderHome() {
+        scrollToTop();
+        isHomeView = true;
+        isFocusView = false;
+        isExamsView = false;
+        homeBtn.classList.add('active');
+        focusBtn.classList.remove('active');
+        examBtn.classList.remove('active');
+
+        document.querySelectorAll('.subject').forEach(function(s) {
+            s.classList.remove('active');
+            var id = s.dataset.subject + 'Subs';
+            var el = document.getElementById(id);
+            if (el) el.classList.remove('show');
+        });
+        subSubjects.forEach(function(s) { s.classList.remove('active'); });
+        currentSubject = null;
+        currentSubSubject = null;
+
+        document.querySelector('#main h1').textContent = 'All Subjects Overview';
+        document.getElementById('subject-subtitle').textContent = 'See progress, manage tasks, and review time insights';
+
+        var op = computeOverallProgress();
+        progressLabelEl.textContent = 'Overall progress — ' + op.percent + '% complete';
+        progressStatsEl.textContent = op.completed + ' of ' + op.total + ' completed';
+        progressBarEl.style.width = op.percent + '%';
+
+        var actions = document.getElementById('header-actions');
+        actions.innerHTML = '';
+        var resetBtn = document.createElement('button');
+        resetBtn.id = 'resetAllBtn';
+        resetBtn.className = 'btn secondary';
+        resetBtn.title = 'Erase all saved data (progress, notes, tasks, focus settings & sessions)';
+        resetBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;margin-right:4px;">restart_alt</span> Reset Everything';
+        resetBtn.addEventListener('click', resetAll);
+        actions.appendChild(resetBtn);
+
+        var chapterList = document.getElementById('chapterList');
+        chapterList.innerHTML = '';
+
+        var todoBoard = renderTodoBoard();
+        chapterList.appendChild(todoBoard);
+
+        var grid = document.createElement('div');
+        grid.className = 'overview-grid fade-in';
+
+        Object.keys(syllabus).forEach(function(subjectKey) {
+            var p = computeSubjectProgress(subjectKey);
+
+            var card = document.createElement('div');
+            card.className = 'subject-card';
+
+            var header = document.createElement('div');
+            header.className = 'card-header';
+
+            var title = document.createElement('div');
+            title.className = 'title';
+            title.textContent = subjectDisplayNames[subjectKey] || subjectKey;
+
+            var badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = p.percent + '%';
+
+            header.appendChild(title);
+            header.appendChild(badge);
+
+            var row = document.createElement('div');
+            row.className = 'card-progress-row';
+            row.appendChild(createCircle(p.percent, { size: 64, stroke: 8, track: 'var(--bg-input)' }));
+
+            var meta = document.createElement('div');
+            meta.className = 'progress-meta';
+            var smallLabel = document.createElement('div');
+            smallLabel.className = 'small-label';
+            smallLabel.textContent = 'Completion';
+            var stat = document.createElement('div');
+            stat.className = 'progress-stats';
+            stat.textContent = p.completed + ' of ' + p.total + ' completed';
+            meta.appendChild(smallLabel);
+            meta.appendChild(stat);
+            row.appendChild(meta);
+
+            var btn = document.createElement('button');
+            btn.className = 'view-btn';
+            btn.textContent = 'Open';
+            btn.onclick = (function(sk) {
+                return function() {
+                    isHomeView = false;
+                    isFocusView = false;
+                    isExamsView = false;
+                    homeBtn.classList.remove('active');
+                    examBtn.classList.remove('active');
+                    var subEl = document.querySelector('.subject[data-subject="' + sk + '"]');
+                    if (subEl) {
+                        subEl.click();
+                        subEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        currentSubject = sk;
+                        document.querySelector('#main h1').textContent = subjectDisplayNames[sk] || sk;
+                        document.getElementById('subject-subtitle').textContent = 'Choose a section to begin';
+                        document.getElementById('chapterList').innerHTML =
+                            '<div class="welcome-message fade-in">' +
+                                '<h3>Select a Section</h3>' +
+                                '<p>Choose a section from the sidebar to view chapters and start tracking your progress.</p>' +
+                            '</div>';
+                        updateProgress();
+                    }
+                };
+            })(subjectKey);
+
+            card.appendChild(header);
+            card.appendChild(row);
+            card.appendChild(btn);
+            grid.appendChild(card);
+        });
+
+        chapterList.appendChild(grid);
+
+        var insightsCard = buildInsightsCard();
+        chapterList.appendChild(insightsCard);
+
+        renderSubjectProgress();
+    }
+
+    function displayChapters(subject, subSubject) {
+        scrollToTop();
+        var chapterList = document.getElementById('chapterList');
+        chapterList.innerHTML = '';
+
+        document.getElementById('header-actions').innerHTML = '';
+
+        var chapters = (syllabus[subject] && syllabus[subject][subSubject]) || [];
+        if (!chapters.length) {
+            chapterList.innerHTML =
+                '<div class="welcome-message fade-in">' +
+                    '<h3>No chapters found</h3>' +
+                    '<p>Please choose another section.</p>' +
+                '</div>';
+            updateProgress();
+            return;
+        }
+
+        chapters.forEach(function(chapter, index) {
+            var row = document.createElement('div');
+            row.classList.add('chapter-row', 'fade-in');
+            row.style.animationDelay = (index * 0.05) + 's';
+
+            var header = document.createElement('div');
+            header.classList.add('chapter-header');
+
+            var titleDiv = document.createElement('div');
+            titleDiv.classList.add('chapter-title');
+            titleDiv.textContent = chapter;
+
+            var noteIcon = document.createElement('span');
+            noteIcon.className = 'note-icon';
+            noteIcon.title = 'Open notes';
+            noteIcon.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px;">edit_note</span>';
+            noteIcon.onclick = (function(s, ss, i, c) {
+                return function() { openNotesModal(s, ss, i, c); };
+            })(subject, subSubject, index, chapter);
+
+            header.appendChild(titleDiv);
+            header.appendChild(noteIcon);
+
+            var checkboxGroup = document.createElement('div');
+            checkboxGroup.classList.add('checkbox-group');
+
+            var checkboxTypes = [
+                { key: 'Done', label: 'Done in School', icon: 'check_circle' },
+                { key: 'Note', label: 'Notes Made', icon: 'edit_note' },
+                { key: 'OneShot', label: 'One Shot Video', icon: 'play_circle' },
+                { key: 'OneShotNotes', label: 'One Shot Notes', icon: 'auto_stories' }
+            ];
+
+            checkboxTypes.forEach(function(type) {
+                var checkboxItem = document.createElement('div');
+                checkboxItem.classList.add('checkbox-item');
+
+                var input = document.createElement('input');
+                input.type = 'checkbox';
+                input.dataset.type = type.key;
+                input.dataset.index = index;
+                input.id = subject + '-' + subSubject + '-' + index + '-' + type.key;
+
+                var label = document.createElement('label');
+                label.setAttribute('for', input.id);
+                label.innerHTML = '<span class="material-symbols-rounded" style="font-size:18px;vertical-align:middle;margin-right:4px;">' + type.icon + '</span> ' + type.label;
+
+                var isChecked = !!(savedProgress[subject] && savedProgress[subject][subSubject] && savedProgress[subject][subSubject][chapter] && savedProgress[subject][subSubject][chapter][type.key]);
+                input.checked = isChecked;
+                if (isChecked) checkboxItem.classList.add('checked');
+
+                input.addEventListener('change', function() {
+                    ensurePath(subject, subSubject, chapter);
+                    savedProgress[subject][subSubject][chapter][type.key] = input.checked;
+                    saveProgress();
+                    checkboxItem.classList.toggle('checked', input.checked);
+                    updateProgress();
+                });
+
+                checkboxItem.addEventListener('click', function(evt) {
+                    var tag = evt.target.tagName.toLowerCase();
+                    if (tag !== 'input' && tag !== 'label') {
+                        input.checked = !input.checked;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                });
+
+                checkboxItem.appendChild(input);
+                checkboxItem.appendChild(label);
+                checkboxGroup.appendChild(checkboxItem);
+            });
+
+            row.appendChild(header);
+            row.appendChild(checkboxGroup);
+            chapterList.appendChild(row);
+
+            var existingNotes = (savedProgress[subject] && savedProgress[subject][subSubject] && savedProgress[subject][subSubject][chapter] && savedProgress[subject][subSubject][chapter].notes) || '';
+            if (existingNotes.trim().length) {
+                noteIcon.style.background = 'var(--primary)';
+                noteIcon.style.color = 'var(--accent-primary-text)';
+            }
+        });
+
+        updateProgress();
+    }
+
+    // Subject click handlers
+    subjects.forEach(function(sub) {
+        sub.addEventListener('click', function() {
+            isHomeView = false;
+            isFocusView = false;
+            isExamsView = false;
+            homeBtn.classList.remove('active');
+            focusBtn.classList.remove('active');
+            examBtn.classList.remove('active');
+
+            document.getElementById('header-actions').innerHTML = '';
+
+            var clicked = sub.dataset.subject;
+            var listEl = document.getElementById(clicked + 'Subs');
+            var wasActive = sub.classList.contains('active');
+            var listWasShown = listEl && listEl.classList.contains('show');
+
+            subjects.forEach(function(s) {
+                if (s !== sub) {
+                    s.classList.remove('active');
+                    var id = s.dataset.subject + 'Subs';
+                    var el = document.getElementById(id);
+                    if (el) el.classList.remove('show');
+                }
+            });
+
+            if (wasActive && listEl) {
+                listEl.classList.toggle('show');
+            } else {
+                sub.classList.add('active');
+                if (listEl) listEl.classList.add('show');
+            }
+
+            currentSubject = clicked;
+
+            if (!wasActive || !listWasShown) {
+                scrollToTop();
+                document.querySelectorAll('.sub-subject').forEach(function(s) { s.classList.remove('active'); });
+                currentSubSubject = null;
+
+                var heading = subjectDisplayNames[clicked] || clicked;
+                document.querySelector('#main h1').textContent = heading;
+                document.getElementById('subject-subtitle').textContent = 'Choose a section to begin';
+                document.getElementById('chapterList').innerHTML =
+                    '<div class="welcome-message fade-in">' +
+                        '<h3>Select a Section</h3>' +
+                        '<p>Choose a section from the sidebar to view chapters and start tracking your progress.</p>' +
+                    '</div>';
+            }
+
+            updateProgress();
+        });
+    });
+
+    // Sub-subject click handlers
+    subSubjects.forEach(function(sub) {
+        sub.addEventListener('click', function(e) {
+            isHomeView = false;
+            isFocusView = false;
+            isExamsView = false;
+            homeBtn.classList.remove('active');
+            focusBtn.classList.remove('active');
+            examBtn.classList.remove('active');
+
+            document.getElementById('header-actions').innerHTML = '';
+
+            e.stopPropagation();
+            subSubjects.forEach(function(s) { s.classList.remove('active'); });
+            sub.classList.add('active');
+
+            var parentSubjectEl = sub.closest('.subject');
+            if (parentSubjectEl) {
+                subjects.forEach(function(s) { s.classList.remove('active'); });
+                parentSubjectEl.classList.add('active');
+                currentSubject = parentSubjectEl.dataset.subject;
+
+                var listEl = document.getElementById(currentSubject + 'Subs');
+                if (listEl) listEl.classList.add('show');
+            }
+
+            currentSubSubject = sub.dataset.sub;
+
+            displayChapters(currentSubject, currentSubSubject);
+
+            document.getElementById('subject-subtitle').textContent = sub.textContent;
+        });
+    });
+
+    // Notes modal
+    function openNotesModal(subject, subSubject, index, chapter) {
+        currentNoteChapter = { subject: subject, subSubject: subSubject, chapter: chapter, index: index };
+        var modal = document.getElementById('notes-modal');
+        var modalTitle = document.getElementById('modal-title');
+        var textarea = document.getElementById('notes-textarea');
+
+        modalTitle.textContent = 'Notes — ' + chapter;
+        var existing = (savedProgress[subject] && savedProgress[subject][subSubject] && savedProgress[subject][subSubject][chapter] && savedProgress[subject][subSubject][chapter].notes) || '';
+        textarea.value = existing;
+        modal.style.display = 'flex';
+        setTimeout(function() { textarea.focus(); }, 50);
+    }
+    function closeNotesModal() {
+        var modal = document.getElementById('notes-modal');
+        modal.style.display = 'none';
+        currentNoteChapter = null;
+    }
+    function saveNotes() {
+        var textarea = document.getElementById('notes-textarea');
+        if (!currentNoteChapter) { closeNotesModal(); return; }
+        var s = currentNoteChapter.subject;
+        var ss = currentNoteChapter.subSubject;
+        var ch = currentNoteChapter.chapter;
+        ensurePath(s, ss, ch);
+        savedProgress[s][ss][ch].notes = textarea.value || '';
+        saveProgress();
+        closeNotesModal();
+
+        if (currentSubject && currentSubSubject) {
+            displayChapters(currentSubject, currentSubSubject);
+        }
+    }
+
+    document.getElementById('notes-modal').addEventListener('click', function(e) {
+        if (e.target.id === 'notes-modal') closeNotesModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeNotesModal();
+    });
+
+    window.closeNotesModal = closeNotesModal;
+    window.saveNotes = saveNotes;
+
+    homeBtn.addEventListener('click', function() { renderHome(); });
+
+    // =====================
+    // Focus Tab UI Renderer
+    // =====================
+    function renderFocus() {
+      scrollToTop();
+      isHomeView = false;
+      isFocusView = true;
+      isExamsView = false;
+      focusBtn.classList.add('active');
+      homeBtn.classList.remove('active');
+      examBtn.classList.remove('active');
+
+      document.getElementById('header-actions').innerHTML = '';
+
+      document.querySelectorAll('.subject').forEach(function(s) {
+          s.classList.remove('active');
+          var id = s.dataset.subject + 'Subs';
+          var el = document.getElementById(id);
+          if (el) el.classList.remove('show');
+      });
+      subSubjects.forEach(function(s) { s.classList.remove('active'); });
+      currentSubject = null;
+      currentSubSubject = null;
+
+      document.querySelector('#main h1').textContent = 'Focus & Time';
+      document.getElementById('subject-subtitle').textContent = 'Pomodoro timer, breaks, daily progress and streak';
+
+      updateProgress();
+
+      var chapterList = document.getElementById('chapterList');
+      chapterList.innerHTML = '';
+
+      var grid = document.createElement('div');
+      grid.className = 'focus-grid fade-in';
+
+      var timerCard = document.createElement('div');
+      timerCard.className = 'card';
+
+      timerCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">timer</span> Timer</div>' +
+        '<div class="timer-hero">' +
+          '<div id="timerRing" class="timer-ring"></div>' +
+          '<div class="timer-time" id="timerDisplay">00:00</div>' +
+          '<div class="timer-mode" id="timerModeLabel">Focus</div>' +
+        '</div>' +
+        '<div class="timer-controls">' +
+          '<button id="startPauseBtn" class="btn">Start</button>' +
+          '<button id="resetBtn" class="btn">Reset</button>' +
+          '<button id="skipBtn" class="btn danger">Skip</button>' +
+          '<button id="distractBtn" class="btn">Distracted</button>' +
+          '<span class="timer-divider"></span>' +
+          '<button id="soundToggleBtn" class="btn secondary icon-toggle ' + (focusSettings.playSound ? 'active' : '') + '" title="Sound: ' + (focusSettings.playSound ? 'on' : 'off') + '" type="button"><span class="material-symbols-rounded" style="font-size:20px;">volume_up</span></button>' +
+          '<button id="notifyToggleBtn" class="btn secondary icon-toggle ' + (focusSettings.showNotification ? 'active' : '') + '" title="Desktop notifications: ' + (focusSettings.showNotification ? 'on' : 'off') + '" type="button"><span class="material-symbols-rounded" style="font-size:20px;">notifications</span></button>' +
+        '</div>' +
+        '<div class="preset-row">' +
+          '<span class="subtle">Presets:</span>' +
+          '<button class="btn preset" data-preset="25-5-15-4">25/5 • 15 long • x4</button>' +
+          '<button class="btn preset" data-preset="50-10-15-3">50/10 • 15 long • x3</button>' +
+          '<button class="btn preset" data-preset="45-15-20-3">45/15 • 20 long • x3</button>' +
+        '</div>' +
+        '<div class="target-row" style="margin-top:12px;">' +
+          '<div class="subtle" style="margin-bottom:4px;">Link session to:</div>' +
+          '<div class="focus-target-wrap">' +
+            '<div class="focus-target-chip" id="focusTargetChip">' +
+              '<span class="chip-icon" id="focusTargetChipIcon">📚</span>' +
+              '<span class="chip-text" id="focusTargetChipText"></span>' +
+              '<button type="button" class="chip-clear" id="focusTargetChipClear" title="Clear">✕</button>' +
+            '</div>' +
+            '<div class="focus-target-input-wrap">' +
+              '<input type="text" id="focusTargetInput" class="focus-target-input" placeholder="Type or pick a chapter, to-do, or anything…" autocomplete="off">' +
+              '<span class="focus-target-caret">▾</span>' +
+              '<div class="focus-target-menu" id="focusTargetMenu"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      var statsCard = document.createElement('div');
+      statsCard.className = 'card';
+      statsCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">trending_up</span> Today & Streak</div>' +
+        '<div class="stat-box">' +
+          '<div id="todayProgressText" class="progress-text" style="margin:0;">' +
+            '<span>Today\'s focus</span>' +
+            '<span class="progress-stats" id="todayStats">0 / ' + focusSettings.dailyGoalMinutes + ' min</span>' +
+          '</div>' +
+          '<div class="progress-container">' +
+            '<div class="progress-bar" id="todayProgressBar" style="width:0%"></div>' +
+          '</div>' +
+          '<div style="display:flex; gap:10px; align-items:center; margin-top:6px;">' +
+            '<span class="pill" id="streakPill"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">local_fire_department</span> 0-day streak</span>' +
+            '<span class="subtle" id="cycleInfo">0 cycles • next long in ' + focusSettings.cyclesPerLongBreak + ' focuses</span>' +
+          '</div>' +
+          '<div style="margin-top:10px;">' +
+            '<div class="subtle">This week</div>' +
+            '<div class="mini-bars" id="weekBars"></div>' +
+          '</div>' +
+        '</div>';
+
+      var historyCard = document.createElement('div');
+      historyCard.className = 'card';
+      historyCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">history</span> Session History</div>' +
+        '<div class="history-list" id="historyList"></div>';
+
+      var settingsCard = document.createElement('div');
+      settingsCard.className = 'card';
+      settingsCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">settings</span> Settings</div>' +
+        '<div class="settings-grid">' +
+          '<div class="settings-row">' +
+            '<label>Daily goal (min)</label>' +
+            '<input id="setGoal" type="number" min="10" max="600" class="input" value="' + focusSettings.dailyGoalMinutes + '">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label>Focus length (min)</label>' +
+            '<input id="setFocus" type="number" min="5" max="180" class="input" value="' + focusSettings.focusMinutes + '">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label>Short break (min)</label>' +
+            '<input id="setShort" type="number" min="1" max="60" class="input" value="' + focusSettings.shortBreakMinutes + '">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label>Long break (min)</label>' +
+            '<input id="setLong" type="number" min="5" max="90" class="input" value="' + focusSettings.longBreakMinutes + '">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label>Cycles per long break</label>' +
+            '<input id="setCycles" type="number" min="2" max="10" class="input" value="' + focusSettings.cyclesPerLongBreak + '">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label class="toggle-row">' +
+              '<input id="setAuto" type="checkbox" ' + (focusSettings.autoStartNext ? 'checked' : '') + '>' +
+              'Auto-start next' +
+            '</label>' +
+          '</div>' +
+        '</div>';
+
+      var leftWrap = document.createElement('div');
+      leftWrap.appendChild(timerCard);
+      leftWrap.appendChild(historyCard);
+
+      var rightWrap = document.createElement('div');
+      rightWrap.appendChild(statsCard);
+      rightWrap.appendChild(settingsCard);
+
+      grid.appendChild(leftWrap);
+      grid.appendChild(rightWrap);
+
+      chapterList.appendChild(grid);
+
+      document.getElementById('startPauseBtn').addEventListener('click', function() {
+        if (timerState.running) pauseTimer(); else startTimer();
+      });
+      document.getElementById('resetBtn').addEventListener('click', resetTimer);
+      document.getElementById('skipBtn').addEventListener('click', skipTimer);
+      document.getElementById('distractBtn').addEventListener('click', toggleDistracted);
+
+      var soundBtn = document.getElementById('soundToggleBtn');
+      var notifyBtn = document.getElementById('notifyToggleBtn');
+
+      function refreshAlertButtons() {
+        if (soundBtn) {
+          soundBtn.classList.toggle('active', !!focusSettings.playSound);
+          soundBtn.title = focusSettings.playSound ? 'Sound: on' : 'Sound: off';
+        }
+        if (notifyBtn) {
+          notifyBtn.classList.toggle('active', !!focusSettings.showNotification);
+          notifyBtn.title = focusSettings.showNotification ? 'Desktop notifications: on' : 'Desktop notifications: off';
+        }
+      }
+
+      if (soundBtn) {
+        soundBtn.addEventListener('click', function() {
+          focusSettings.playSound = !focusSettings.playSound;
+          saveFocusSettings();
+          refreshAlertButtons();
+        });
+      }
+
+      if (notifyBtn) {
+        notifyBtn.addEventListener('click', function() {
+          var newVal = !focusSettings.showNotification;
+          focusSettings.showNotification = newVal;
+          saveFocusSettings();
+          refreshAlertButtons();
+
+          if (newVal && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            try { Notification.requestPermission(); } catch (e) {}
+          }
+        });
+      }
+      refreshAlertButtons();
+
+      timerCard.querySelectorAll('.preset').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var parts = btn.dataset.preset.split('-').map(Number);
+          focusSettings.focusMinutes = parts[0];
+          focusSettings.shortBreakMinutes = parts[1];
+          focusSettings.longBreakMinutes = parts[2];
+          focusSettings.cyclesPerLongBreak = parts[3];
+          saveFocusSettings();
+          timerState.cyclesCompleted = 0;
+          timerState.isLongBreak = false;
+          timerState.mode = 'focus';
+          resetTimer();
+          updateFocusUI();
+        });
+      });
+
+      // ============ SMART COMBOBOX (syllabus + todos + custom) ============
+      var targetInput = document.getElementById('focusTargetInput');
+      var targetMenu = document.getElementById('focusTargetMenu');
+      var targetChip = document.getElementById('focusTargetChip');
+      var targetChipIcon = document.getElementById('focusTargetChipIcon');
+      var targetChipText = document.getElementById('focusTargetChipText');
+      var targetChipClear = document.getElementById('focusTargetChipClear');
+
+      function buildTargetOptions() {
+          var opts = [];
+          Object.keys(syllabus).forEach(function(subjectKey) {
+              Object.keys(syllabus[subjectKey]).forEach(function(sectionKey) {
+                  (syllabus[subjectKey][sectionKey] || []).forEach(function(chapter) {
+                      opts.push({
+                          type: 'syllabus',
+                          icon: '📚',
+                          label: chapter,
+                          sub: (subjectDisplayNames[subjectKey] || subjectKey) + ' • ' + sectionKey,
+                          searchText: (chapter + ' ' + (subjectDisplayNames[subjectKey] || subjectKey) + ' ' + sectionKey).toLowerCase(),
+                          payload: {
+                              kind: 'syllabus',
+                              subjectKey: subjectKey,
+                              subSubjectKey: sectionKey,
+                              chapter: chapter,
+                              display: (subjectDisplayNames[subjectKey] || subjectKey) + ' → ' + sectionKey + ' → ' + chapter
+                          }
+                      });
+                  });
+              });
+          });
+
+          ['today', 'week'].forEach(function(listKey) {
+              (todoData[listKey] || []).forEach(function(item) {
+                  opts.push({
+                      type: 'todo',
+                      icon: '✅',
+                      label: item.text,
+                      sub: listKey === 'today' ? "Today's To-Dos" : 'This Week',
+                      searchText: (item.text + ' to-do ' + listKey).toLowerCase(),
+                      payload: {
+                          kind: 'todo',
+                          todoList: listKey,
+                          todoId: item.id,
+                          display: 'To-Do: ' + item.text
+                      }
+                  });
+              });
+          });
+
+          // Exam options — one per subject, always at the bottom of the picker
+          Object.keys(syllabus).forEach(function(subjectKey) {
+              var displayName = subjectDisplayNames[subjectKey] || subjectKey;
+              opts.push({
+                  type: 'exam',
+                  icon: '📝',
+                  label: displayName + ' Exam',
+                  sub: 'Exam prep',
+                  searchText: (displayName + ' exam').toLowerCase(),
+                  payload: {
+                      kind: 'exam',
+                      subjectKey: subjectKey,
+                      display: displayName + ' Exam'
+                  }
+              });
+          });
+
+          return opts;
+      }
+
+      function setTargetSelection(payload) {
+          timerState.target = {
+              kind: payload.kind || 'custom',
+              subjectKey: payload.subjectKey || '',
+              subSubjectKey: payload.subSubjectKey || '',
+              chapter: payload.chapter || '',
+              todoList: payload.todoList || '',
+              todoId: payload.todoId || '',
+              customText: payload.customText || '',
+              display: payload.display || ''
+          };
+          saveTimerState();
+
+          targetChipText.textContent = payload.display || '';
+          targetChipIcon.textContent =
+              payload.kind === 'syllabus' ? '📚' :
+              payload.kind === 'todo' ? '✅' :
+              payload.kind === 'exam' ? '📝' : '✍️';
+          targetChip.classList.add('show');
+          targetInput.value = '';
+          targetInput.placeholder = 'Change target — type or pick again…';
+          hideMenu();
+      }
+
+      function clearTargetSelection() {
+          timerState.target = {
+              kind: '', subjectKey: '', subSubjectKey: '', chapter: '',
+              todoList: '', todoId: '', customText: '', display: ''
+          };
+          saveTimerState();
+          targetChip.classList.remove('show');
+          targetInput.value = '';
+          targetInput.placeholder = 'Type or pick a chapter, to-do, or anything…';
+          hideMenu();
+      }
+
+      function optionHTML(o, id) {
+          return '<div class="focus-target-option" data-opt-id="' + id + '">' +
+              '<span class="opt-icon">' + o.icon + '</span>' +
+              '<span class="opt-text">' + escapeHtml(o.label) + '</span>' +
+              '<span class="opt-sub">' + escapeHtml(o.sub) + '</span>' +
+          '</div>';
+      }
+
+      function renderMenu(filterText) {
+          var q = (filterText || '').trim().toLowerCase();
+          var all = buildTargetOptions();
+          var filtered = q ? all.filter(function(o) { return o.searchText.indexOf(q) !== -1; }) : all;
+
+          var syllabusOpts = filtered.filter(function(o) { return o.type === 'syllabus'; });
+          var todoOpts = filtered.filter(function(o) { return o.type === 'todo'; });
+          var examOpts = filtered.filter(function(o) { return o.type === 'exam'; });
+
+          var html = '';
+
+          if (todoOpts.length) {
+              html += '<div class="focus-target-group-label">✅ To-Dos</div>';
+              todoOpts.forEach(function(o, idx) {
+                  html += optionHTML(o, 'todo-' + idx);
+              });
+          }
+
+          if (syllabusOpts.length) {
+              html += '<div class="focus-target-group-label">📚 Syllabus Chapters</div>';
+              syllabusOpts.slice(0, 40).forEach(function(o, idx) {
+                  html += optionHTML(o, 'syl-' + idx);
+              });
+              if (syllabusOpts.length > 40) {
+                  html += '<div class="focus-target-empty">…and ' + (syllabusOpts.length - 40) + ' more — keep typing to narrow.</div>';
+              }
+          }
+
+          if (examOpts.length) {
+              html += '<div class="focus-target-group-label">📝 Exams</div>';
+              examOpts.forEach(function(o, idx) {
+                  html += optionHTML(o, 'exam-' + idx);
+              });
+          }
+
+          if (!filtered.length && !q) {
+              html += '<div class="focus-target-empty">No options available yet.</div>';
+          }
+
+          if (q) {
+              html += '<div class="focus-target-option custom" data-custom="1">' +
+                  '<span class="opt-icon">✍️</span>' +
+                  '<span class="opt-text">Use custom: "' + escapeHtml(filterText.trim()) + '"</span>' +
+              '</div>';
+          }
+
+          if (!html) {
+              html = '<div class="focus-target-empty">Nothing matches. Type more and press Enter to use it.</div>';
+          }
+
+          targetMenu.innerHTML = html;
+          targetMenu.classList.add('show');
+      }
+
+      function hideMenu() {
+          targetMenu.classList.remove('show');
+      }
+
+      targetInput.addEventListener('focus', function() {
+          renderMenu(targetInput.value);
+      });
+      targetInput.addEventListener('input', function() {
+          renderMenu(targetInput.value);
+      });
+      targetInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+              e.preventDefault();
+              var v = targetInput.value.trim();
+              if (v) {
+                  setTargetSelection({
+                      kind: 'custom',
+                      customText: v,
+                      display: v
+                  });
+              }
+          } else if (e.key === 'Escape') {
+              hideMenu();
+              targetInput.blur();
+          }
+      });
+
+      targetMenu.addEventListener('click', function(e) {
+          var custom = e.target.closest('[data-custom]');
+          if (custom) {
+              var v = targetInput.value.trim();
+              if (v) {
+                  setTargetSelection({ kind: 'custom', customText: v, display: v });
+              }
+              return;
+          }
+          var opt = e.target.closest('.focus-target-option');
+          if (!opt) return;
+          var id = opt.dataset.optId || '';
+          var q = targetInput.value.trim().toLowerCase();
+          var all = q ? buildTargetOptions().filter(function(o) { return o.searchText.indexOf(q) !== -1; }) : buildTargetOptions();
+          var syllabusOpts = all.filter(function(o) { return o.type === 'syllabus'; });
+          var todoOpts = all.filter(function(o) { return o.type === 'todo'; });
+          var examOpts = all.filter(function(o) { return o.type === 'exam'; });
+          var picked = null;
+          if (id.indexOf('todo-') === 0) {
+              picked = todoOpts[parseInt(id.split('-')[1], 10)];
+          } else if (id.indexOf('syl-') === 0) {
+              picked = syllabusOpts[parseInt(id.split('-')[1], 10)];
+          } else if (id.indexOf('exam-') === 0) {
+              picked = examOpts[parseInt(id.split('-')[1], 10)];
+          }
+          if (picked) setTargetSelection(picked.payload);
+      });
+
+      document.addEventListener('click', function(e) {
+          if (!e.target.closest('.focus-target-input-wrap') &&
+              !e.target.closest('.focus-target-chip')) {
+              hideMenu();
+          }
+      });
+
+      targetChipClear.addEventListener('click', clearTargetSelection);
+
+      // Restore existing selection on render
+      (function restoreTargetOnRender() {
+          var t = timerState.target || {};
+          if (t.display) {
+              targetChipText.textContent = t.display;
+              targetChipIcon.textContent =
+                  t.kind === 'syllabus' ? '📚' :
+                  t.kind === 'todo' ? '✅' :
+                  t.kind === 'exam' ? '📝' : '✍️';
+              targetChip.classList.add('show');
+              targetInput.placeholder = 'Change target — type or pick again…';
+          } else if (t.subjectKey || t.chapter) {
+              var legacyDisplay = [
+                  subjectDisplayNames[t.subjectKey] || t.subjectKey,
+                  t.subSubjectKey,
+                  t.chapter
+              ].filter(Boolean).join(' → ');
+              if (legacyDisplay) {
+                  timerState.target = {
+                      kind: 'syllabus',
+                      subjectKey: t.subjectKey || '',
+                      subSubjectKey: t.subSubjectKey || '',
+                      chapter: t.chapter || '',
+                      todoList: '', todoId: '', customText: '',
+                      display: legacyDisplay
+                  };
+                  saveTimerState();
+                  targetChipText.textContent = legacyDisplay;
+                  targetChipIcon.textContent = '📚';
+                  targetChip.classList.add('show');
+                  targetInput.placeholder = 'Change target — type or pick again…';
+              }
+          }
+      })();
+
+      // Settings change handlers
+      document.getElementById('setGoal').addEventListener('change', function(e) {
+        focusSettings.dailyGoalMinutes = Math.max(10, Math.min(600, Number(e.target.value)||120));
+        e.target.value = focusSettings.dailyGoalMinutes;
+        saveFocusSettings();
+        updateFocusUI();
+        updateProgress();
+      });
+      document.getElementById('setFocus').addEventListener('change', function(e) {
+        focusSettings.focusMinutes = Math.max(5, Math.min(180, Number(e.target.value)||25));
+        e.target.value = focusSettings.focusMinutes;
+        saveFocusSettings();
+        resetTimer();
+      });
+      document.getElementById('setShort').addEventListener('change', function(e) {
+        focusSettings.shortBreakMinutes = Math.max(1, Math.min(60, Number(e.target.value)||5));
+        e.target.value = focusSettings.shortBreakMinutes;
+        saveFocusSettings();
+        resetTimer();
+      });
+      document.getElementById('setLong').addEventListener('change', function(e) {
+        focusSettings.longBreakMinutes = Math.max(5, Math.min(90, Number(e.target.value)||15));
+        e.target.value = focusSettings.longBreakMinutes;
+        saveFocusSettings();
+        resetTimer();
+      });
+      document.getElementById('setCycles').addEventListener('change', function(e) {
+        focusSettings.cyclesPerLongBreak = Math.max(2, Math.min(10, Number(e.target.value)||4));
+        e.target.value = focusSettings.cyclesPerLongBreak;
+        saveFocusSettings();
+        updateFocusUI();
+      });
+      document.getElementById('setAuto').addEventListener('change', function(e) {
+        focusSettings.autoStartNext = !!e.target.checked;
+        saveFocusSettings();
+      });
+
+      var weekBars = document.getElementById('weekBars');
+      if (weekBars) {
+        var arr = getWeeklyMinutes();
+        var maxV = Math.max.apply(null, [1].concat(arr));
+        weekBars.innerHTML = arr.map(function(v, i) {
+          var h = Math.max(4, Math.round((v / maxV) * 60));
+          var today = i === arr.length - 1 ? ' today' : '';
+          return '<div class="mini-bar' + today + '" style="height:' + h + 'px" title="' + v + ' min"></div>';
+        }).join('');
+      }
+
+      updateFocusUI();
+
+      if (timerState.running && !timerInterval) {
+        timerInterval = setInterval(runTick, 250);
+      }
+    }
+
+    function updateFocusUI() {
+      var ringEl = document.getElementById('timerRing');
+      var dispEl = document.getElementById('timerDisplay');
+      var modeEl = document.getElementById('timerModeLabel');
+      var startBtn = document.getElementById('startPauseBtn');
+      var distractBtn = document.getElementById('distractBtn');
+
+      if (ringEl) {
+        var total = msForCurrentMode();
+        var rem;
+        if (timerState.running) rem = Math.max(0, (timerState.endTime || Date.now()) - Date.now());
+        else if (timerState.remainingMs != null) rem = timerState.remainingMs;
+        else rem = total;
+
+        var pct = Math.round(((total - rem) / total) * 100);
+        ringEl.innerHTML = circleSVG(pct, {
+          size: 180,
+          stroke: 12,
+          showText: false,
+          track: 'var(--bg-input)'
+        });
+        if (dispEl) dispEl.textContent = formatMMSS(rem);
+        if (modeEl) {
+          if (timerState.distracted && !timerState.running) {
+            modeEl.textContent = 'Distracted — Paused';
+          } else {
+            modeEl.textContent = timerState.mode === 'focus'
+              ? 'Focus'
+              : (timerState.isLongBreak ? 'Long Break' : 'Break');
+          }
+        }
+        if (startBtn) startBtn.textContent = timerState.running
+          ? 'Pause'
+          : (timerState.distracted ? 'Resume' : 'Start');
+        if (distractBtn) distractBtn.textContent = timerState.distracted ? "I'm back" : 'Distracted';
+      }
+
+      var todayMin = getTotalMinutesForDay(new Date());
+      var goal = focusSettings.dailyGoalMinutes || 120;
+      var pctToday = Math.min(100, Math.round((todayMin / goal) * 100));
+      var todayBar = document.getElementById('todayProgressBar');
+      var todayStats = document.getElementById('todayStats');
+      var streakPill = document.getElementById('streakPill');
+      var cycleInfo = document.getElementById('cycleInfo');
+
+      if (todayBar) todayBar.style.width = pctToday + '%';
+      if (todayStats) todayStats.textContent = todayMin + ' / ' + goal + ' min';
+      if (streakPill) streakPill.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">local_fire_department</span> ' + computeStreak() + '-day streak';
+      if (cycleInfo) {
+        var cpl = focusSettings.cyclesPerLongBreak || 4;
+        var toLong = cpl - (timerState.cyclesCompleted % cpl);
+        cycleInfo.textContent = timerState.cyclesCompleted + ' cycles • next long in ' + toLong + ' focus' + (toLong===1?'':'es');
+      }
+
+      var historyList = document.getElementById('historyList');
+      if (historyList) {
+        var last10 = focusSessions.slice().reverse().slice(0, 10);
+        if (!last10.length) {
+          historyList.innerHTML = '<div class="todo-empty">No sessions yet — start your first focus!</div>';
+        } else {
+          historyList.innerHTML = last10.map(function(s) {
+            var durMin = Math.round(s.durationMs / 60000);
+            var when = new Date(s.end).toLocaleString();
+
+            var icon = '📌';
+            var tag = 'Unlinked';
+            if (s.targetKind === 'syllabus' || (s.subjectKey && s.chapter)) {
+                icon = '📚';
+                tag = s.targetDisplay || ((subjectDisplayNames[s.subjectKey] || s.subjectKey || '') +
+                      (s.subSubjectKey ? ' → ' + s.subSubjectKey : '') +
+                      (s.chapter ? ' → ' + s.chapter : ''));
+            } else if (s.targetKind === 'todo') {
+                icon = '✅';
+                tag = s.targetDisplay || 'To-Do';
+            } else if (s.targetKind === 'exam') {
+                icon = '📝';
+                tag = s.targetDisplay || ((subjectDisplayNames[s.subjectKey] || s.subjectKey || '') + ' Exam');
+            } else if (s.targetKind === 'custom') {
+                icon = '✍️';
+                tag = s.targetDisplay || s.customText || 'Custom';
+            }
+
+            var mode = s.type === 'focus' ? 'Focus' : 'Break';
+            var interruptions = s.interruptions || 0;
+
+            return '<div class="history-item">' +
+                      '<div>' +
+                          '<div><strong>' + mode + '</strong> • ' + durMin + ' min</div>' +
+                          '<div class="subtle">' + when + '</div>' +
+                          '<div class="subtle">' + icon + ' ' + escapeHtml(tag) + '</div>' +
+                      '</div>' +
+                      '<div style="display:flex; gap:6px; align-items:center;">' +
+                          '<span class="pill">' + interruptions + ' disruptions</span>' +
+                      '</div>' +
+                  '</div>';
+          }).join('');
+        }
+      }
+
+      if (isFocusView) updateProgress();
+    }
+
+    // ============ GLOBAL SHORTCUT LISTENER ============
+    // F9 = toggle timer, F8 = skip session (from Electron main process)
+    if (window.electronAPI && typeof window.electronAPI.onGlobalShortcut === 'function') {
+      window.electronAPI.onGlobalShortcut(function(action) {
+        if (action === 'toggle-timer') {
+          if (timerState.running) {
+            pauseTimer();
+          } else {
+            startTimer();
+          }
+          console.log('[Global shortcut] Timer', timerState.running ? 'started' : 'paused');
+        } else if (action === 'skip-timer') {
+          skipTimer();
+          console.log('[Global shortcut] Session skipped');
+        }
+      });
+    }
+
+    focusBtn.addEventListener('click', renderFocus);
+
+    renderSubjectProgress();
+
+    // ============
+    // Reset Everything
+    // ============
+    function resetAll() {
+      var ok = confirm('Reset everything? This will erase all progress, notes, to-dos, focus settings, sessions, exams, and timer data. This action cannot be undone.');
+      if (!ok) return;
+      try {
+        localStorage.removeItem('syllabusProgress');
+        localStorage.removeItem('todoData');
+        localStorage.removeItem('focusSettings');
+        localStorage.removeItem('focusSessions');
+        localStorage.removeItem('focusTimerState');
+        localStorage.removeItem('examPrepData');
+      } catch (e) {}
+      location.reload();
+    }
+
+    // ============
+    // Exams planner
+    // ============
+    var EXAM_LS_KEY = 'examPrepData';
+    var examSubjects = ['English','History','Geography','PoliticalScience','Math'];
+    var ALL_KEY = '__ALL__';
+    var currentExamSubject = examSubjects[0];
+
+    function defaultExamData() {
+      return { English: [], History: [], Geography: [], PoliticalScience: [], Math: [] };
+    }
+
+    function loadExamData() {
+      try {
+        var obj = JSON.parse(localStorage.getItem(EXAM_LS_KEY));
+        if (!obj || typeof obj !== 'object') return defaultExamData();
+        examSubjects.forEach(function(k) { if (!Array.isArray(obj[k])) obj[k] = []; });
+        examSubjects.forEach(function(k) {
+          obj[k] = obj[k].map(function(it) {
+            return {
+              id: it.id,
+              title: it.title,
+              done: !!it.done,
+              notes: it.notes || '',
+              dueDate: it.dueDate || '',
+              priority: it.priority || 'Medium'
+            };
+          });
+        });
+        return obj;
+      } catch(e) {
+        return defaultExamData();
+      }
+    }
+
+    function saveExamData() {
+      localStorage.setItem(EXAM_LS_KEY, JSON.stringify(examPrepData));
+    }
+
+    var examPrepData = loadExamData();
+
+    function examSubjectProgress(subjectKey) {
+      var arr = examPrepData[subjectKey] || [];
+      var total = arr.length;
+      var completed = arr.filter(function(x) { return x.done; }).length;
+      var percent = total ? Math.round((completed / total) * 100) : 0;
+      return { total: total, completed: completed, percent: percent };
+    }
+
+    function examOverallProgress() {
+      var total = 0, completed = 0;
+      examSubjects.forEach(function(s) {
+        var p = examSubjectProgress(s);
+        total += p.total; completed += p.completed;
+      });
+      var percent = total ? Math.round((completed / total) * 100) : 0;
+      return { total: total, completed: completed, percent: percent };
+    }
+
+    function isOverdue(item) {
+      if (!item || !item.dueDate || item.done) return false;
+      var today = new Date(); today.setHours(0,0,0,0);
+      var due = new Date(item.dueDate); due.setHours(0,0,0,0);
+      return due.getTime() < today.getTime();
+    }
+
+    function priorityEmoji(p) {
+      if (p === 'High') return '🔴';
+      if (p === 'Low') return '🟢';
+      return '🟡';
+    }
+
+    function renderExams() {
+      scrollToTop();
+      isHomeView = false;
+      isFocusView = false;
+      isExamsView = true;
+
+      homeBtn.classList.remove('active');
+      focusBtn.classList.remove('active');
+      examBtn.classList.add('active');
+
+      document.getElementById('header-actions').innerHTML = '';
+
+      document.querySelectorAll('.subject').forEach(function(s) {
+        s.classList.remove('active');
+        var id = s.dataset.subject + 'Subs';
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('show');
+      });
+      subSubjects.forEach(function(s) { s.classList.remove('active'); });
+      currentSubject = null;
+      currentSubSubject = null;
+
+      document.querySelector('#main h1').textContent = 'Exams';
+      document.getElementById('subject-subtitle').textContent = 'Plan custom chapters, due dates, priority, and notes';
+
+      var overall = examOverallProgress();
+      progressLabelEl.textContent = 'Exam prep — ' + overall.percent + '% complete';
+      progressStatsEl.textContent = overall.completed + ' of ' + overall.total + ' chapters complete';
+      progressBarEl.style.width = overall.percent + '%';
+
+      var chapterList = document.getElementById('chapterList');
+      chapterList.innerHTML = '';
+
+      var toolbarCard = document.createElement('div');
+      toolbarCard.className = 'card fade-in';
+      toolbarCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">assignment</span> Planner</div>' +
+        '<div class="exam-toolbar">' +
+          '<label class="subtle">Subject</label>' +
+          '<select id="examSubjectSel" class="input">' +
+            '<option value="' + ALL_KEY + '" ' + (currentExamSubject===ALL_KEY?'selected':'') + '>All Subjects</option>' +
+            examSubjects.map(function(s) {
+              return '<option value="' + s + '" ' + (s===currentExamSubject?'selected':'') + '>' +
+                ((window.subjectDisplayNames && window.subjectDisplayNames[s]) || s) +
+              '</option>';
+            }).join('') +
+          '</select>' +
+          '<span id="examSubjectStats" class="pill">0 of 0 chapters complete (0%)</span>' +
+        '</div>';
+      chapterList.appendChild(toolbarCard);
+
+      var addCard = document.createElement('div');
+      addCard.className = 'card fade-in';
+      var todayStr = new Date().toISOString().slice(0,10);
+      addCard.innerHTML =
+        '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">add_circle</span> Add chapter/topic</div>' +
+        '<form id="examAddForm" style="display:flex; gap:8px; flex-wrap:wrap;">' +
+          '<input id="examInput" class="input" type="text" placeholder="e.g., Revolutions • PYQs • Formulas set" style="flex:2; min-width:220px;">' +
+          '<input id="examDate" class="input" type="date" style="flex:1; min-width:160px;" value="' + todayStr + '">' +
+          '<select id="examPriority" class="input" style="flex:1; min-width:140px;">' +
+            '<option value="High">High 🔴</option>' +
+            '<option value="Medium" selected>Medium 🟡</option>' +
+            '<option value="Low">Low 🟢</option>' +
+          '</select>' +
+          '<button class="btn" type="submit"><span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;margin-right:4px;">add</span> Add</button>' +
+        '</form>';
+      chapterList.appendChild(addCard);
+
+      var listCard = document.createElement('div');
+      listCard.className = 'card fade-in';
+      listCard.innerHTML =
+        '<div class="card-title">' +
+          'Chapters for ' +
+          '<span class="subtle" id="examSubjectName">' +
+            (currentExamSubject===ALL_KEY
+              ? 'All Subjects'
+              : ((window.subjectDisplayNames && window.subjectDisplayNames[currentExamSubject]) || currentExamSubject)) +
+          '</span>' +
+        '</div>' +
+        '<div id="examList" class="exam-list"></div>';
+      chapterList.appendChild(listCard);
+
+      function renderStats() {
+        if (currentExamSubject === ALL_KEY) {
+          var ov = examOverallProgress();
+          var stat = document.getElementById('examSubjectStats');
+          if (stat) stat.textContent = ov.completed + ' of ' + ov.total + ' chapters complete (' + ov.percent + '%)';
+          progressLabelEl.textContent = 'Exam prep — ' + ov.percent + '% complete';
+          progressStatsEl.textContent = ov.completed + ' of ' + ov.total + ' chapters complete';
+          progressBarEl.style.width = ov.percent + '%';
+        } else {
+          var p = examSubjectProgress(currentExamSubject);
+          var stat2 = document.getElementById('examSubjectStats');
+          if (stat2) stat2.textContent = p.completed + ' of ' + p.total + ' chapters complete (' + p.percent + '%)';
+          var ov2 = examOverallProgress();
+          progressLabelEl.textContent = 'Exam prep — ' + ov2.percent + '% complete';
+          progressStatsEl.textContent = ov2.completed + ' of ' + ov2.total + ' chapters complete';
+          progressBarEl.style.width = ov2.percent + '%';
+        }
+      }
+
+      function renderList() {
+        var wrap = document.getElementById('examList');
+        wrap.innerHTML = '';
+
+        var entries = [];
+        if (currentExamSubject === ALL_KEY) {
+          examSubjects.forEach(function(s) {
+            (examPrepData[s] || []).forEach(function(it) { entries.push({ subject: s, item: it }); });
+          });
+        } else {
+          (examPrepData[currentExamSubject] || []).forEach(function(it) { entries.push({ subject: currentExamSubject, item: it }); });
+        }
+
+        if (!entries.length) {
+          wrap.innerHTML = '<div class="todo-empty">No chapters yet — ' + (currentExamSubject===ALL_KEY ? 'add a chapter by selecting a specific subject' : 'add your first one above') + '.</div>';
+          renderStats();
+          return;
+        }
+
+        var order = { High: 0, Medium: 1, Low: 2 };
+        entries.sort(function(a, b) {
+          var ia = a.item, ib = b.item;
+          var pa = order[ia.priority || 'Medium'], pb = order[ib.priority || 'Medium'];
+          if (pa !== pb) return pa - pb;
+          var da = ia.dueDate ? ia.dueDate : '9999-12-31';
+          var db = ib.dueDate ? ib.dueDate : '9999-12-31';
+          if (da !== db) return da.localeCompare(db);
+          return Number(ia.done) - Number(ib.done);
+        });
+
+        entries.forEach(function(entry) {
+          var subjKey = entry.subject;
+          var item = entry.item;
+          var row = document.createElement('div');
+          row.className = 'todo-item' + (item.done ? ' done' : '');
+          row.dataset.id = item.id;
+          row.dataset.subject = subjKey;
+
+          var label = document.createElement('label');
+          label.className = 'todo-label';
+
+          var cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = !!item.done;
+          cb.addEventListener('change', function() {
+            item.done = !!cb.checked;
+            saveExamData();
+            renderList();
+          });
+
+          var textWrap = document.createElement('div');
+          textWrap.style.display = 'flex';
+          textWrap.style.flexDirection = 'column';
+
+          var title = document.createElement('span');
+          title.className = 'todo-text';
+          title.textContent = item.title;
+          title.title = 'Double click to rename';
+          title.addEventListener('dblclick', function() {
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'input';
+            input.style.flex = '1';
+            input.value = item.title;
+            var commit = function() {
+              var v = (input.value || '').trim();
+              if (v) item.title = v;
+              saveExamData();
+              renderList();
+            };
+            input.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') commit();
+              if (e.key === 'Escape') renderList();
+            });
+            input.addEventListener('blur', commit);
+            textWrap.replaceChild(input, title);
+            input.focus();
+            input.select();
+          });
+
+          var meta = document.createElement('span');
+          meta.className = 'subtle';
+          var dueStr = item.dueDate ? 'Due: ' + item.dueDate : 'Due: —';
+          var priStr = priorityEmoji(item.priority) + ' ' + (item.priority || 'Medium');
+          meta.textContent = dueStr + '  •  ' + priStr;
+
+          label.appendChild(cb);
+          textWrap.appendChild(title);
+          textWrap.appendChild(meta);
+          label.appendChild(textWrap);
+
+          var actions = document.createElement('div');
+          actions.className = 'todo-actions';
+
+          var notesBtn = document.createElement('button');
+          notesBtn.className = 'icon-btn';
+          notesBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">edit_note</span>';
+          notesBtn.title = 'Notes';
+          if (item.notes && item.notes.trim()) {
+            notesBtn.style.background = 'var(--primary)';
+            notesBtn.style.color = 'var(--accent-primary-text)';
+          }
+          notesBtn.addEventListener('click', function() {
+            var modal = document.getElementById('notes-modal');
+            var titleEl = document.getElementById('modal-title');
+            var textarea = document.getElementById('notes-textarea');
+            titleEl.textContent = 'Notes — ' + item.title;
+            textarea.value = item.notes || '';
+            modal.style.display = 'flex';
+            var original = window.saveNotes;
+            window.saveNotes = function() {
+              item.notes = textarea.value || '';
+              saveExamData();
+              modal.style.display = 'none';
+              window.saveNotes = original;
+              renderList();
+            };
+            setTimeout(function() { textarea.focus(); }, 50);
+          });
+
+          var delBtn = document.createElement('button');
+          delBtn.className = 'icon-btn danger';
+          delBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">delete</span>';
+          delBtn.title = 'Delete';
+          delBtn.addEventListener('click', function() {
+            examPrepData[subjKey] = (examPrepData[subjKey] || []).filter(function(x) { return x.id !== item.id; });
+            saveExamData();
+            renderList();
+          });
+
+          if (isOverdue(item)) {
+            row.style.borderColor = 'var(--error)';
+            var warn = document.createElement('span');
+            warn.className = 'pill';
+            warn.innerHTML = '<span class="material-symbols-rounded" style="font-size:14px;vertical-align:middle;">warning</span> Overdue';
+            warn.style.borderColor = 'rgba(220, 38, 38, 0.35)';
+            warn.style.color = 'var(--error)';
+            actions.appendChild(warn);
+          }
+
+          actions.appendChild(notesBtn);
+          actions.appendChild(delBtn);
+
+          row.appendChild(label);
+          row.appendChild(actions);
+          wrap.appendChild(row);
+        });
+
+        renderStats();
+      }
+
+      var sel = document.getElementById('examSubjectSel');
+      sel.addEventListener('change', function() {
+        currentExamSubject = sel.value;
+        var nameEl = document.getElementById('examSubjectName');
+        if (nameEl) {
+          nameEl.textContent = currentExamSubject===ALL_KEY
+            ? 'All Subjects'
+            : ((window.subjectDisplayNames && window.subjectDisplayNames[currentExamSubject]) || currentExamSubject);
+        }
+        renderList();
+        renderStats();
+      });
+
+      document.getElementById('examAddForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var input = document.getElementById('examInput');
+        var dateEl = document.getElementById('examDate');
+        var priEl = document.getElementById('examPriority');
+        var v = (input.value || '').trim();
+        var due = (dateEl.value || '').trim();
+        var pri = priEl.value || 'Medium';
+        if (!v) return;
+        if (currentExamSubject === ALL_KEY) {
+          alert('Select a single subject (not "All Subjects") to add a chapter.');
+          return;
+        }
+        examPrepData[currentExamSubject] = examPrepData[currentExamSubject] || [];
+        examPrepData[currentExamSubject].push({
+          id: uid(),
+          title: v,
+          done: false,
+          notes: '',
+          dueDate: due,
+          priority: pri
+        });
+        input.value = '';
+        saveExamData();
+        renderList();
+      });
+
+      renderList();
+    }
+
+    examBtn.addEventListener('click', renderExams);
+
+    // ================
+    // Initial screen
+    // ================
+    renderHome();
+
+    // =========================
+    // Hide loading screen
+    // =========================
+    window.addEventListener('load', function() {
+      var loader = document.getElementById('app-loader');
+      if (!loader) return;
+      setTimeout(function() {
+        loader.classList.add('hidden');
+      }, 1800);
+    });
+</script>
+</body>
+</html>
