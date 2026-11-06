@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <title>Class 11 Syllabus Tracker — Final Test (5C + League + Social)</title>
+    <title>StudyLeague — Home</title>
 
     <!-- Fonts / Icons (matching YT-DLP) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" rel="stylesheet">
@@ -1930,6 +1930,1375 @@
         *::-webkit-scrollbar { width:10px; height:10px; } *::-webkit-scrollbar-thumb { background:rgba(148,163,184,.45); border-radius:8px; border:2px solid transparent; background-clip:content-box; } *::-webkit-scrollbar-track { background:transparent; }
         * { scrollbar-width:thin; scrollbar-color:rgba(148,163,184,.5) transparent; }
 </style>
+    <style id="v5-css">
+/* ============================================================================
+   STUDYLEAGUE V2 — REDESIGN LAYER
+   Spacious, rich, clean. One job per tab. Appended last, so it wins.
+   ========================================================================== */
+:root{
+    --v2-accent: var(--l5c-indigo);
+    --v2-soft: color-mix(in srgb, var(--l5c-indigo) 9%, transparent);
+    --v2-soft-2: color-mix(in srgb, var(--l5c-indigo) 16%, transparent);
+    --v2-line: #E8EAEF;
+    --v2-ink: #0F1116;
+    --v2-muted: #6B7280;
+    --v2-card: #FFFFFF;
+    --v2-page: #F6F7F9;
+    --v2-radius: 18px;
+    --v2-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 32px -12px rgba(16,24,40,.10);
+    --v2-shadow-hover: 0 2px 4px rgba(16,24,40,.05), 0 18px 40px -14px rgba(16,24,40,.18);
+}
+[data-theme="dark"]{
+    --v2-line: #24262D;
+    --v2-ink: #F3F4F8;
+    --v2-muted: #9AA1B0;
+    --v2-card: #14161B;
+    --v2-page: #0B0C0F;
+    --v2-soft: color-mix(in srgb, var(--l5c-indigo) 22%, transparent);
+    --v2-shadow: 0 1px 2px rgba(0,0,0,.4);
+    --v2-shadow-hover: 0 18px 40px -14px rgba(0,0,0,.7);
+}
+/* base tokens the whole app reads from */
+html, body { height: 100%; }
+body {
+    background: var(--v2-page) !important;
+    color: var(--v2-ink);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.006em;
+}
+:root{
+    --bg-main: var(--v2-page);
+    --bg-card: var(--v2-card);
+    --bg-input: #F3F4F7;
+    --bg-input-focus: #FFFFFF;
+    --l5c-border: var(--v2-line);
+    --text-main: var(--v2-ink);
+    --text-muted: var(--v2-muted);
+    --text-soft: var(--v2-muted);
+    --shadow-soft: none;
+    --shadow-medium: var(--v2-shadow);
+}
+[data-theme="dark"]{
+    --bg-main: var(--v2-page);
+    --bg-card: var(--v2-card);
+    --bg-input: #1B1D23;
+    --bg-input-focus: #1F2229;
+    --text-main: var(--v2-ink);
+    --text-muted: var(--v2-muted);
+}
+
+/* ======================= TOP BAR (V2 layout) ======================= */
+body{ display: flex; flex-direction: column; height: 100vh; }
+#sidebar{
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    height: 66px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 20px;
+    padding: 0 26px !important;
+    background: var(--v2-card) !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--v2-line) !important;
+    box-shadow: none !important;
+    position: relative;
+    z-index: 50;
+}
+[data-theme="dark"] #sidebar{ background: #101116 !important; }
+
+.v2-brand{ display: flex; align-items: center; gap: 10px; padding: 0 !important; flex: 0 0 auto; }
+.v2-brand-logo{ width: 34px; height: 34px; border-radius: 10px; flex: 0 0 34px; }
+.v2-brand-name{ font-size: .98rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; white-space: nowrap; }
+.v2-brand-sub{ font-size: .7rem; font-weight: 600; color: var(--v2-muted); margin-top: 1px; white-space: nowrap; }
+
+.v2-nav{
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex !important;
+    align-items: center;
+    gap: 2px;
+    padding: 0 !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.v2-nav::-webkit-scrollbar{ display: none; }
+.v2-group{ display: flex !important; align-items: center; gap: 2px; margin: 0 !important; }
+.v2-group + .v2-group{
+    margin-left: 8px !important;
+    padding-left: 10px !important;
+    border-left: 1px solid var(--v2-line);
+}
+.v2-group-label{ display: none !important; }
+.v2-nav-item{
+    width: auto !important;
+    height: 38px;
+    padding: 0 11px !important;
+    margin: 0 !important;
+    gap: 8px;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--v2-ink) !important;
+    box-shadow: none !important;
+    border-radius: 9px;
+    font-family: inherit !important;
+    font-size: .875rem !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    white-space: nowrap;
+    transition: background .14s ease, color .14s ease;
+}
+.v2-nav-item:hover{ background: var(--bg-input) !important; }
+.v2-nav-item.is-active{ background: var(--v2-soft) !important; color: var(--v2-accent) !important; }
+.v2-nav-item.is-active .v2-i{ color: var(--v2-accent); }
+.v2-nav-item .v2-i{ color: var(--v2-muted); }
+.v2-nav-item .v2-i{ width: 18px !important; height: 18px !important; flex: 0 0 18px; }
+.v2-nav-badge{ display: none; }
+
+.v2-avatar-btn{
+    width: 34px; height: 34px; border-radius: 50%; padding: 0; cursor: pointer;
+    border: 1px solid var(--v2-line); background: var(--v2-soft); color: var(--v2-accent);
+    display: grid; place-items: center; transition: background .15s ease, color .15s ease;
+}
+.v2-avatar-btn .v2-i{ width: 18px; height: 18px; }
+.v2-avatar-btn:hover{ background: var(--v2-soft-2); }
+.v2-avatar-btn.is-active{ background: var(--v2-accent); color: #fff; border-color: transparent; }
+.v2-top-right{ margin-left: auto; display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.v2-brand-actions{ display: flex; gap: 6px; flex: 0 0 auto; margin: 0 !important; }
+.v2-brand-actions #themeToggle,
+.v2-brand-actions #inboxBtn,
+.v2-brand-actions .inbox-btn{
+    width: 34px !important; height: 34px !important; min-width: 34px;
+    border-radius: 10px !important; border: 1px solid var(--v2-line) !important;
+    background: var(--v2-card) !important; color: var(--v2-ink) !important;
+    display: grid !important; place-items: center !important;
+    box-shadow: none !important; position: relative; cursor: pointer;
+}
+.v2-side-footer{
+    padding: 0 !important;
+    border: 0 !important;
+    display: flex;
+    align-items: center;
+}
+#settingsBtn, .v2-side-footer .settings-btn{
+    width: auto !important;
+    height: 38px !important;
+    padding: 0 12px !important;
+    gap: 8px !important;
+    border: 1px solid var(--v2-line) !important;
+    border-radius: 10px !important;
+    font-size: .875rem !important;
+    background: var(--v2-card) !important;
+}
+#settingsBtn:hover{ background: var(--bg-input) !important; }
+#settingsBtn .v2-i{ width: 18px !important; height: 18px !important; }
+
+/* the hidden engine: original nav buttons + subject tree (kept alive for the app's JS) */
+#v2Engine{ display: none !important; }
+
+/* svg icon sizing */
+.v2-i{ width: 20px; height: 20px; flex: 0 0 20px; display: block; }
+.v2-nav-item .v2-i{ width: 21px; height: 21px; }
+.v2-quick-icon .v2-i{ width: 20px; height: 20px; }
+.v2-subject-icon .v2-i{ width: 19px; height: 19px; }
+.v2-chip .v2-i{ width: 15px; height: 15px; flex: 0 0 15px; }
+.v2-subject-pct .v2-i{ width: 18px; height: 18px; flex: 0 0 18px; color: var(--v2-muted); }
+#settingsBtn .v2-i{ width: 21px; height: 21px; color: var(--v2-muted); }
+#settingsBtn:hover .v2-i{ color: var(--v2-ink); }
+
+/* shell proxy buttons (drive the app's own toggles) */
+.v2-icon-btn{
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--v2-line); background: var(--v2-card); color: var(--v2-ink);
+    display: grid; place-items: center; position: relative; padding: 0;
+    transition: background .15s ease, border-color .15s ease;
+}
+.v2-icon-btn:hover{ background: var(--bg-input); }
+.v2-icon-btn .v2-i{ width: 18px; height: 18px; }
+.v2-icon-btn .inbox-badge{ position: absolute; top: -5px; right: -5px; }
+
+/* graceful degradation when the Material Symbols font is blocked (e.g. offline preview) */
+.v2-noiconfont .material-symbols-rounded{
+    font-size: 0 !important; line-height: 0 !important;
+    width: 15px; height: 15px; display: inline-block; vertical-align: -2px;
+    background: currentColor; opacity: .3; border-radius: 4px; overflow: hidden;
+    flex: 0 0 15px; margin-right: 6px;
+}
+
+/* ======================= MAIN + HEADER ======================= */
+#main{
+    background: var(--v2-page) !important;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.main-header{
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 34px 52px 4px !important;
+    position: relative;
+}
+.v2-header-top{ display: flex; align-items: center; gap: 12px; min-height: 30px; }
+.v2-eyebrow{
+    font-size: .69rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--v2-accent);
+}
+.main-header h1{
+    font-size: 2.1rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.032em !important;
+    line-height: 1.12 !important;
+    margin: 8px 0 0 !important;
+    color: var(--v2-ink) !important;
+}
+#subject-subtitle, .subject-subtitle{
+    margin-top: 10px !important;
+    font-size: .97rem !important;
+    font-weight: 500 !important;
+    color: var(--v2-muted) !important;
+    max-width: 78ch;
+    line-height: 1.55;
+}
+.header-actions:not(:empty){ margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.v2-menu-btn{ display: none !important; }
+
+.content-area{
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 22px 52px 96px !important;
+    display: block;
+}
+.content-area > * { margin-bottom: 0 !important; }
+#chapterList{ display: grid; gap: 24px; }
+#chapterList > * { margin: 0 !important; }
+
+/* hero only where it belongs */
+body.v2-nohero .l5c-hero{ display: none !important; }
+
+.l5c-hero{
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 44px;
+    padding: 34px 38px !important;
+    margin: 0 0 24px !important;
+    background: var(--v2-card) !important;
+    border: 1px solid var(--v2-line) !important;
+    border-radius: 22px !important;
+    box-shadow: var(--v2-shadow);
+    position: relative;
+    overflow: hidden;
+}
+.l5c-hero::after{
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(120% 160% at 0% 0%, var(--v2-soft) 0%, transparent 55%);
+    pointer-events: none;
+}
+.l5c-hero > *{ position: relative; z-index: 1; }
+.l5c-ring{
+    width: 146px !important; height: 146px !important; flex: 0 0 146px !important;
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--l5c-indigo) 7%, transparent);
+}
+.l5c-ring span{
+    width: 118px !important; height: 118px !important;
+    font-size: 1.62rem !important; font-weight: 800 !important; letter-spacing: -0.04em;
+    box-shadow: none !important;
+}
+[data-theme="dark"] .l5c-ring{ box-shadow: 0 0 0 8px rgba(255,255,255,.03); }
+.l5c-hero-center{ min-width: 0 !important; flex: 1 1 auto; text-align: left !important; align-items: flex-start; }
+.l5c-hero-center .progress-text{ display: flex; flex-direction: column; gap: 4px; text-align: left !important; align-items: flex-start; }
+#progress-label{ font-size: 1.16rem !important; font-weight: 750 !important; letter-spacing: -0.02em; color: var(--v2-ink); }
+#progress-stats{ font-size: .9rem !important; font-weight: 500 !important; color: var(--v2-muted) !important; }
+.progress-container{
+    height: 10px !important; border-radius: 999px !important; margin-top: 16px !important;
+    background: var(--bg-input) !important; overflow: hidden;
+}
+.progress-bar{ border-radius: 999px !important; height: 100% !important; }
+.l5c-hero-sub{ margin-top: 12px !important; font-size: .86rem !important; color: var(--v2-muted) !important; font-weight: 550; }
+.l5c-hero-stats{
+    display: grid !important; grid-template-columns: repeat(3, auto);
+    gap: 0 !important; margin: 0 !important; text-align: left !important;
+}
+.l5c-hero-stat{ padding: 2px 26px; border-left: 1px solid var(--v2-line); text-align: left; }
+.l5c-hero-stat:first-child{ border-left: 0; padding-left: 0; }
+.l5c-hero-stat:last-child{ padding-right: 0; }
+.l5c-hero-stat b{ font-size: 1.5rem !important; font-weight: 800 !important; letter-spacing: -0.035em; color: var(--v2-ink) !important; }
+.l5c-hero-stat span{ font-size: .74rem !important; font-weight: 600 !important; color: var(--v2-muted) !important; margin-top: 4px !important; }
+
+/* ======================= CARDS ======================= */
+.card, .subject-card, .todo-column, .chapter-row, .welcome-message, .modal-content, .reg-subjects{
+    background: var(--v2-card) !important;
+    border: 1px solid var(--v2-line) !important;
+    border-radius: var(--v2-radius) !important;
+    box-shadow: var(--v2-shadow) !important;
+}
+.card{ padding: 26px 28px !important; }
+.card-title{
+    font-size: 1rem !important; font-weight: 750 !important; letter-spacing: -0.015em;
+    display: flex !important; align-items: center; justify-content: flex-start !important;
+    gap: 8px !important; margin-bottom: 18px !important;
+    color: var(--v2-ink);
+}
+.card-title .league-updated{ margin-left: auto; }
+.card-title .material-symbols-rounded{ color: var(--v2-accent); }
+.card + .card{ margin-top: 0 !important; }
+
+.overview-grid{
+    grid-template-columns: repeat(auto-fill, minmax(304px, 1fr)) !important;
+    gap: 20px !important;
+}
+.subject-card{
+    padding: 24px !important;
+    gap: 16px !important;
+    transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease !important;
+}
+.subject-card:hover{
+    transform: translateY(-2px) !important;
+    box-shadow: var(--v2-shadow-hover) !important;
+    border-color: color-mix(in srgb, var(--l5c-indigo) 30%, var(--v2-line)) !important;
+}
+.subject-card .title{ font-size: 1.06rem !important; font-weight: 750 !important; letter-spacing: -0.02em; }
+.subject-card .badge{
+    font-size: .72rem !important; font-weight: 800 !important;
+    background: var(--v2-soft) !important; color: var(--v2-accent) !important;
+    border: 0 !important; padding: 4px 9px !important; border-radius: 999px !important;
+}
+.subject-card .card-progress-row{ gap: 18px !important; align-items: center !important; }
+.subject-card .small-label{ font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--v2-muted); }
+.subject-card .progress-stats{ font-size: .87rem !important; color: var(--v2-muted) !important; font-weight: 550; }
+.view-btn{
+    width: 100%; height: 42px !important; margin-top: 4px;
+    border: 1px solid var(--v2-line) !important; border-radius: 11px !important;
+    background: var(--bg-input) !important; color: var(--v2-ink) !important;
+    font-family: inherit; font-size: .88rem !important; font-weight: 650; cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.view-btn:hover{ background: var(--v2-accent) !important; color: #fff !important; border-color: var(--v2-accent) !important; }
+
+/* chapter rows */
+.chapter-row{
+    padding: 22px 26px !important;
+    border-left: 1px solid var(--v2-line) !important;
+    transition: box-shadow .18s ease, border-color .18s ease !important;
+}
+.chapter-row::before{ display: none !important; }
+.chapter-row:hover{
+    transform: none !important;
+    box-shadow: var(--v2-shadow-hover) !important;
+    border-color: color-mix(in srgb, var(--l5c-indigo) 26%, var(--v2-line)) !important;
+}
+.chapter-title{ font-size: 1rem !important; font-weight: 700 !important; letter-spacing: -0.015em; }
+.checkbox-group{ grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)) !important; gap: 12px !important; margin-top: 16px !important; }
+.checkbox-item{
+    background: var(--bg-input) !important; border: 1px solid transparent !important;
+    border-radius: 11px !important; padding: 12px 14px !important;
+    font-size: .85rem !important; font-weight: 600;
+    transition: background .15s ease, border-color .15s ease;
+}
+.checkbox-item:hover{ border-color: color-mix(in srgb, var(--l5c-indigo) 30%, var(--v2-line)) !important; }
+.checkbox-item.checked{ background: var(--v2-soft) !important; border-color: color-mix(in srgb, var(--l5c-indigo) 34%, transparent) !important; color: var(--v2-accent); }
+
+/* split layouts */
+.l5c-split{ grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr) !important; gap: 24px !important; margin: 0 !important; }
+.l5c-main-col{ gap: 20px !important; }
+.l5c-stack{ gap: 20px !important; }
+.l5c-main-col .overview-grid{ gap: 20px !important; }
+.focus-grid{ grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important; gap: 24px !important; margin: 0 !important; }
+.todo-board{ grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important; gap: 20px !important; margin: 0 !important; }
+.todo-column{ padding: 26px !important; min-height: 240px; display: flex; flex-direction: column; }
+.todo-column .todo-empty{ margin-top: 4px; }
+.insights-card{ padding: 26px 28px !important; }
+
+/* ======================= CONTROLS ======================= */
+.btn{
+    height: 42px !important; padding: 0 20px !important;
+    border-radius: 11px !important; border: 1px solid transparent !important;
+    background: var(--v2-accent) !important; color: #fff !important;
+    font-family: inherit !important; font-size: .89rem !important; font-weight: 650 !important;
+    letter-spacing: -0.01em; box-shadow: none !important; cursor: pointer;
+    display: inline-flex !important; align-items: center; justify-content: center; gap: 8px;
+    transition: filter .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+}
+.btn:hover{ filter: brightness(.94); transform: none !important; box-shadow: none !important; }
+.btn.secondary{
+    background: var(--v2-card) !important; color: var(--v2-ink) !important;
+    border: 1px solid var(--v2-line) !important;
+}
+.btn.secondary:hover{ background: var(--bg-input) !important; color: var(--v2-ink) !important; filter: none; }
+.btn.danger{ background: var(--v2-card) !important; color: #DC2626 !important; border: 1px solid rgba(220,38,38,.32) !important; }
+.btn.seg-btn.is-active, .btn.secondary.is-active{ background: var(--v2-accent) !important; color: #fff !important; border-color: var(--v2-accent) !important; }
+.btn.small, .btn-sm{ height: 34px !important; padding: 0 14px !important; font-size: .82rem !important; }
+
+.input, .todo-input-row input, .notes-textarea, .target-selects select, select.input, textarea.input{
+    font-family: inherit !important;
+    border-radius: 11px !important;
+    border: 1px solid var(--v2-line) !important;
+    background: var(--bg-input) !important;
+    color: var(--v2-ink) !important;
+    font-size: .91rem !important;
+    padding: 0 14px !important;
+    height: 44px;
+    box-shadow: none !important;
+}
+.notes-textarea{ padding: 12px 14px !important; height: auto; line-height: 1.6; }
+.input:focus, .todo-input-row input:focus, .notes-textarea:focus, select.input:focus, textarea.input:focus{
+    background: var(--bg-input-focus) !important;
+    border-color: var(--v2-accent) !important;
+    box-shadow: 0 0 0 3px var(--v2-soft) !important;
+    outline: none !important;
+}
+select.input{ padding-right: 38px !important; }
+
+.todo-add-btn, .todo-input-row button{
+    background: var(--v2-accent) !important; color: #fff !important;
+    border: 0 !important; border-radius: 11px !important; height: 44px !important;
+    padding: 0 22px !important; font-family: inherit !important; font-size: .88rem !important;
+    font-weight: 650 !important; cursor: pointer;
+}
+.todo-add-btn:hover, .todo-input-row button:hover{ filter: brightness(.94); }
+.icon-btn{
+    height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--v2-line);
+    background: var(--v2-card); color: var(--v2-ink); font-family: inherit;
+    font-size: .8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+}
+.icon-btn:hover{ background: var(--bg-input); }
+.icon-btn.danger{ color: #DC2626; border-color: rgba(220,38,38,.28); }
+.todo-item{
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    border: 1px solid var(--v2-line); border-radius: 12px; margin-bottom: 8px; background: var(--v2-card);
+}
+.todo-item.done .todo-text{ text-decoration: line-through; color: var(--v2-muted); }
+.todo-title{ font-weight: 750; font-size: .98rem; letter-spacing: -0.015em; }
+.todo-stat{ font-size: .8rem; font-weight: 700; color: var(--v2-muted); }
+.todo-column .circle{ --size: 52px; }
+
+/* number steppers */
+.cnum{ position: relative; }
+.cnum input{ text-align: center !important; padding: 0 40px !important; }
+.cnum-btn{
+    position: absolute; top: 1px; bottom: 1px; width: 36px; border: 0;
+    background: transparent; color: var(--v2-muted); cursor: pointer;
+    font-family: inherit; font-size: 1rem; font-weight: 700; border-radius: 9px;
+}
+.cnum-btn:first-child{ left: 1px; }
+.cnum-btn:last-child{ right: 1px; }
+.cnum-btn:hover{ background: var(--v2-soft); color: var(--v2-accent); }
+
+/* mini weekly bars */
+.mini-bars{ gap: 8px !important; height: 74px !important; align-items: flex-end; }
+.mini-bar{ flex: 1 1 0; width: auto !important; min-height: 6px; background: var(--bg-input) !important; border: 0 !important; border-radius: 7px !important; }
+.mini-bar.today{ background: var(--v2-accent) !important; }
+
+/* tables */
+.league-table{
+    width: 100%; border-collapse: collapse; font-size: .9rem;
+    background: transparent;
+}
+.league-table thead th{
+    text-align: left; font-size: .69rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--v2-muted); padding: 12px 14px; border-bottom: 1px solid var(--v2-line);
+    background: transparent; white-space: nowrap;
+}
+.league-table tbody td{ padding: 15px 14px; border-bottom: 1px solid var(--v2-line); vertical-align: middle; }
+.league-table tbody tr:last-child td{ border-bottom: 0; }
+.league-table tbody tr:hover td{ background: var(--bg-input); }
+.league-table tr.me td{ background: var(--v2-soft) !important; }
+.league-name{ font-weight: 700; cursor: pointer; }
+.league-avatar, .league-avatar-img{ border-radius: 12px !important; }
+.league-rank{ font-weight: 800; color: var(--v2-muted); }
+.pill{
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--bg-input) !important; border: 1px solid var(--v2-line) !important;
+    border-radius: 999px !important; padding: 6px 12px !important;
+    font-size: .82rem !important; font-weight: 600; color: var(--v2-ink);
+}
+.league-status, .league-bio, .league-updated{ color: var(--v2-muted) !important; font-size: .85rem !important; line-height: 1.6; }
+.league-row{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.todo-empty{
+    padding: 34px 20px !important; text-align: center; color: var(--v2-muted) !important;
+    border: 1px dashed var(--v2-line); border-radius: 14px; font-size: .89rem; background: transparent;
+}
+
+/* modals */
+.modal-content{
+    border-radius: 22px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    max-width: 780px;
+    width: calc(100% - 40px);
+    max-height: 88vh;
+    display: flex !important;
+    flex-direction: column;
+    box-shadow: 0 40px 90px -20px rgba(16,24,40,.4) !important;
+}
+.modal-header{ padding: 22px 28px 16px !important; border-bottom: 1px solid var(--v2-line); flex: 0 0 auto; }
+.modal-title{ font-size: 1.08rem !important; font-weight: 780 !important; letter-spacing: -0.02em; }
+.settings-body{ padding: 8px 28px 28px !important; overflow-y: auto !important; }
+.settings-section{
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--v2-line) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 20px 0 24px !important;
+    margin: 0 !important;
+}
+.settings-section:last-child{ border-bottom: 0 !important; padding-bottom: 8px !important; }
+.settings-section h4:first-child{ margin-top: 0 !important; }
+input[type="checkbox"], input[type="radio"]{ accent-color: var(--v2-accent); width: 18px; height: 18px; cursor: pointer; }
+.reg-subject{ padding: 10px 12px; border-radius: 10px; border: 1px solid var(--v2-line); display: flex; align-items: center; gap: 9px; font-size: .88rem; font-weight: 600; }
+.settings-section h4{
+    font-size: .68rem !important; font-weight: 800 !important; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--v2-muted) !important; margin-bottom: 14px !important;
+}
+.settings-row, .settings-check{
+    display: flex !important; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 12px 0 !important; font-size: .91rem; font-weight: 550;
+}
+.settings-check span small{ display: block; font-size: .78rem; color: var(--v2-muted); font-weight: 500; margin-top: 2px; }
+.settings-grid2{ display: grid !important; grid-template-columns: 1fr 1fr; gap: 14px !important; margin-bottom: 10px; }
+.settings-grid2 label{ display: grid; gap: 7px; font-size: .82rem; font-weight: 650; color: var(--v2-muted); }
+.close-btn{ width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--v2-line); background: var(--v2-card); color: var(--v2-ink); display: grid; place-items: center; cursor: pointer; }
+.close-btn:hover{ background: var(--bg-input); }
+
+.cselect-btn{ position: relative; }
+.cselect-btn::after{
+    content: '' !important;
+    -webkit-mask: none !important; mask: none !important;
+    background: none !important;
+    width: 7px !important; height: 7px !important;
+    border-right: 2px solid var(--v2-muted) !important;
+    border-bottom: 2px solid var(--v2-muted) !important;
+    border-radius: 0 0 2px 0;
+    transform: translateY(-70%) rotate(45deg) !important;
+    right: 15px !important; top: 50% !important;
+    position: absolute;
+}
+.cselect, .cdate{ position: relative; display: block; }
+.cselect-menu, .ccal{
+    border-radius: 14px !important;
+    box-shadow: 0 24px 60px -16px rgba(16,24,40,.35) !important;
+    padding: 6px !important;
+    border: 1px solid var(--v2-line) !important;
+}
+.cselect-opt{ border-radius: 9px !important; padding: 10px 12px !important; font-size: .89rem !important; }
+
+/* scrollbars */
+::-webkit-scrollbar{ width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb{ background: color-mix(in srgb, var(--v2-muted) 32%, transparent); border-radius: 999px; border: 3px solid var(--v2-page); }
+::-webkit-scrollbar-thumb:hover{ background: color-mix(in srgb, var(--v2-muted) 55%, transparent); }
+::-webkit-scrollbar-track{ background: transparent; }
+
+/* ============================================================================
+   V2 NATIVE PAGES (built by the redesign layer)
+   ========================================================================== */
+.v2-page-head{ display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.v2-page-head h3{ font-size: 1.02rem; font-weight: 780; letter-spacing: -0.02em; margin: 0; }
+.v2-page-head p{ margin: 6px 0 0; font-size: .87rem; color: var(--v2-muted); font-weight: 500; }
+.v2-count{ font-size: .8rem; font-weight: 700; color: var(--v2-muted); }
+
+/* quick actions */
+.v2-quick{ display: grid; grid-template-columns: repeat(auto-fit, minmax(216px, 1fr)); gap: 16px; }
+.v2-quick-card{
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    padding: 18px 20px; border-radius: 16px; cursor: pointer;
+    background: var(--v2-card); border: 1px solid var(--v2-line);
+    font-family: inherit; color: var(--v2-ink);
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.v2-quick-card:hover{ transform: translateY(-2px); box-shadow: var(--v2-shadow-hover); border-color: color-mix(in srgb, var(--l5c-indigo) 28%, var(--v2-line)); }
+.v2-quick-icon{
+    width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: var(--v2-soft); color: var(--v2-accent);
+}
+.v2-quick-icon .material-symbols-rounded{ font-size: 21px; }
+.v2-quick-card > span:last-child{ min-width: 0; display: block; }
+.v2-quick-t{ display: block; font-size: .9rem; font-weight: 700; letter-spacing: -0.012em; line-height: 1.25; }
+.v2-quick-s{ display: block; font-size: .78rem; color: var(--v2-muted); font-weight: 550; margin-top: 3px; line-height: 1.3; }
+
+/* subject cards (Subjects tab) */
+.v2-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px; }
+.v2-subject{
+    background: var(--v2-card); border: 1px solid var(--v2-line); border-radius: var(--v2-radius);
+    padding: 24px; box-shadow: var(--v2-shadow); display: flex; flex-direction: column; gap: 16px;
+    transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease;
+}
+.v2-subject:hover{ transform: translateY(-2px); box-shadow: var(--v2-shadow-hover); border-color: color-mix(in srgb, var(--l5c-indigo) 26%, var(--v2-line)); }
+.v2-subject-top{ display: flex; align-items: center; gap: 12px; }
+.v2-subject-icon{
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; display: grid; place-items: center;
+    background: var(--v2-soft); color: var(--v2-accent);
+}
+.v2-subject-name{ font-size: 1.02rem; font-weight: 750; letter-spacing: -0.02em; }
+.v2-subject-pct{ margin-left: auto; font-size: .82rem; font-weight: 800; color: var(--v2-accent); }
+.v2-bar{ height: 8px; border-radius: 999px; background: var(--bg-input); overflow: hidden; }
+.v2-bar i{ display: block; height: 100%; border-radius: 999px; background: var(--v2-accent); }
+.v2-sections{ display: flex; flex-wrap: wrap; gap: 8px; }
+.v2-chip{
+    height: 36px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--v2-line); background: var(--bg-input); color: var(--v2-ink);
+    font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background .14s ease, color .14s ease, border-color .14s ease;
+}
+.v2-chip:hover{ background: var(--v2-accent); color: #fff; border-color: var(--v2-accent); }
+.v2-chip .material-symbols-rounded{ font-size: 16px; }
+.v2-muted-note{ font-size: .8rem; color: var(--v2-muted); font-weight: 550; }
+
+/* profile */
+.v2-profile-head{
+    display: flex; align-items: center; gap: 22px; padding: 30px;
+    background: var(--v2-card); border: 1px solid var(--v2-line); border-radius: 22px;
+    box-shadow: var(--v2-shadow); flex-wrap: wrap;
+}
+.v2-avatar{
+    width: 76px; height: 76px; flex: 0 0 76px; border-radius: 22px; display: grid; place-items: center;
+    font-size: 34px; background: var(--v2-soft); color: var(--v2-accent); overflow: hidden;
+}
+.v2-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+.v2-profile-name{ font-size: 1.3rem; font-weight: 800; letter-spacing: -0.025em; }
+.v2-profile-bio{ font-size: .89rem; color: var(--v2-muted); font-weight: 550; margin-top: 5px; }
+.v2-stat-row{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.v2-stat{
+    background: var(--v2-card); border: 1px solid var(--v2-line); border-radius: 16px;
+    padding: 20px 22px; box-shadow: var(--v2-shadow);
+}
+.v2-stat b{ display: block; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.035em; }
+.v2-stat span{ display: block; font-size: .76rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--v2-muted); margin-top: 6px; }
+
+/* skeleton / notice */
+.v2-notice{
+    display: flex; align-items: center; gap: 12px; padding: 18px 20px;
+    background: var(--v2-card); border: 1px dashed var(--v2-line); border-radius: 14px;
+    color: var(--v2-muted); font-size: .88rem; font-weight: 550;
+}
+
+/* mobile nav */
+.v2-scrim{
+    position: fixed; inset: 0; background: rgba(9,11,16,.45); z-index: 55;
+    opacity: 0; pointer-events: none; transition: opacity .22s ease; backdrop-filter: blur(2px);
+}
+body.v2-nav-open .v2-scrim{ opacity: 1; pointer-events: auto; }
+
+@media (max-width: 1180px){
+    .main-header{ padding: 30px 30px 4px !important; }
+    .content-area{ padding: 22px 30px 80px !important; }
+    .l5c-hero{ gap: 28px; padding: 26px 26px !important; }
+    .l5c-hero-stat{ padding: 2px 18px; }
+    .l5c-split{ grid-template-columns: minmax(0, 1fr) !important; }
+    .l5c-stack{ position: static !important; }
+    .focus-grid{ grid-template-columns: minmax(0, 1fr) !important; }
+}
+@media (max-width: 1180px){
+    #sidebar{ height: auto; flex-wrap: wrap; padding: 10px 18px !important; gap: 10px; }
+    .v2-nav{ order: 3; flex: 1 0 100%; padding: 2px 0 4px !important; }
+    .v2-brand-sub{ display: none; }
+    .v2-top-right{ gap: 6px; }
+    .v2-scrim{ display: none; }
+    .v2-menu-btn{ display: none !important; }
+    body{ flex-direction: column !important; }
+}
+@media (max-width: 640px){
+    #settingsBtn{ width: 34px !important; padding: 0 !important; border-radius: 10px !important; }
+    #settingsBtn span{ display: none; }
+    .v2-brand-name{ font-size: .92rem; }
+}
+@media (max-width: 780px){
+    .main-header{ padding: 24px 20px 2px !important; }
+    .main-header h1{ font-size: 1.68rem !important; }
+    .content-area{ padding: 18px 20px 72px !important; }
+    .l5c-hero{ grid-template-columns: 1fr !important; justify-items: start; gap: 22px; padding: 24px !important; }
+    .l5c-ring{ width: 116px !important; height: 116px !important; flex: 0 0 116px !important; }
+    .l5c-ring span{ width: 94px !important; height: 94px !important; font-size: 1.3rem !important; }
+    .l5c-hero-stats{ grid-template-columns: repeat(3, 1fr); width: 100%; }
+    .l5c-hero-stat{ padding: 0 14px; }
+    .l5c-hero-stat b{ font-size: 1.22rem !important; }
+    .overview-grid, .v2-grid, .v2-quick{ grid-template-columns: 1fr !important; }
+    .settings-grid2{ grid-template-columns: 1fr !important; }
+    .card{ padding: 20px !important; }
+    .modal-content{ width: calc(100% - 24px); max-height: 92vh; }
+    .modal-header{ padding: 18px 18px 12px !important; }
+    .settings-body{ padding: 4px 18px 22px !important; }
+}
+
+/* ============================================================================
+   OPTION C — "MINIMAL PRO" (Linear × Notion) COLOUR + UI PASS
+   Palette lifted from ui-options.html › Option C:
+     page #FFFFFF · chrome #FBFBFA · hairline #E8E8E6 · ink #111111
+     secondary ink #55534E · muted #8A8A85 · fill #F7F7F5
+     active state = solid #111 with white text (NOT indigo)
+     indigo #5E6AD2 is reserved for progress (bars, rings) only
+   Radii tightened: cards 12px · hero 14px · controls 8-9px · pills 999px
+   Shadows removed (hover = border + 1px shadow at most)
+   ========================================================================== */
+:root{
+    --c-page:#FFFFFF;
+    --c-bar:#FBFBFA;
+    --c-bg:#FFFFFF;
+    --c-line:#E8E8E6;
+    --c-line-strong:#D8D8D3;
+    --c-ink:#111111;
+    --c-ink-2:#55534E;
+    --c-ink-3:#8A8A85;
+    --c-fill:#F7F7F5;
+    --c-hover:#F1F1EE;
+    --c-active:#111111;
+    --c-active-ink:#FFFFFF;
+    --c-danger:#B42318;
+}
+[data-theme="dark"]{
+    --c-page:#0F0F10;
+    --c-bar:#131314;
+    --c-bg:#171718;
+    --c-line:#2A2A2C;
+    --c-line-strong:#3A3A3D;
+    --c-ink:#F5F5F4;
+    --c-ink-2:#C9C9C5;
+    --c-ink-3:#A3A3A3;
+    --c-fill:#222224;
+    --c-hover:#262628;
+    --c-active:#F5F5F4;
+    --c-active-ink:#111111;
+    --c-danger:#FF7B72;
+}
+
+/* app-level tokens follow the Option C palette */
+:root{
+    --v2-page:var(--c-page);
+    --v2-card:var(--c-bg);
+    --v2-line:var(--c-line);
+    --v2-ink:var(--c-ink);
+    --v2-muted:var(--c-ink-3);
+    --v2-soft:var(--c-hover);
+    --v2-soft-2:var(--c-fill);
+    --v2-accent:var(--c-ink);
+    --v2-radius:12px;
+    --v2-shadow:none;
+    --v2-shadow-hover:0 1px 2px rgba(17,17,17,.05);
+    --bg-main:var(--c-page);
+    --bg-card:var(--c-bg);
+    --bg-input:var(--c-fill);
+    --bg-input-focus:var(--c-bg);
+    --l5c-border:var(--c-line);
+    --text-main:var(--c-ink);
+    --text-muted:var(--c-ink-3);
+    --text-soft:var(--c-ink-3);
+    --primary:#111111;
+    --primary-dark:#000000;
+    --shadow-soft:none;
+    --shadow-medium:none;
+    --radius-xl:14px;
+    --radius-lg:12px;
+    --radius-md:10px;
+    --radius-sm:8px;
+}
+[data-theme="dark"]{
+    --primary:#F5F5F4;
+    --primary-dark:#FFFFFF;
+    --accent-primary-text:#111111;
+}
+body{ background:var(--c-page) !important; color:var(--c-ink); }
+[data-theme="dark"] body{ background:var(--c-page) !important; }
+
+/* ---------------- top bar ---------------- */
+#sidebar, [data-theme="dark"] #sidebar{
+    background:var(--c-bar) !important;
+    border-bottom:1px solid var(--c-line) !important;
+}
+.v2-brand-name{ font-weight:700 !important; letter-spacing:-.025em; color:var(--c-ink); }
+.v2-brand-sub{ color:var(--c-ink-3) !important; font-weight:500 !important; }
+.v2-brand-logo{ border:1px solid var(--c-line) !important; border-radius:9px !important; }
+
+.v2-nav-item{
+    color:var(--c-ink-2) !important;
+    font-weight:500 !important;
+    border-radius:8px !important;
+    font-size:.86rem !important;
+}
+.v2-nav-item .v2-i{ color:var(--c-ink-3) !important; }
+.v2-nav-item:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; }
+.v2-nav-item:hover .v2-i{ color:var(--c-ink) !important; }
+.v2-nav-item.is-active{
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+}
+.v2-nav-item.is-active .v2-i{ color:var(--c-active-ink) !important; }
+.v2-group + .v2-group{ border-left:1px solid var(--c-line) !important; }
+
+.v2-icon-btn, .v2-avatar-btn{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:9px !important;
+}
+.v2-avatar-btn{ border-radius:50% !important; }
+.v2-icon-btn:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; }
+.v2-avatar-btn.is-active{
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+    border-color:var(--c-active) !important;
+}
+#settingsBtn{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:9px !important;
+    font-weight:500 !important;
+}
+#settingsBtn:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; }
+#settingsBtn .v2-i{ color:var(--c-ink-3) !important; }
+#settingsBtn:hover .v2-i{ color:var(--c-ink) !important; }
+
+/* ---------------- page header ---------------- */
+.main-header h1{
+    font-size:2rem !important;
+    font-weight:700 !important;
+    letter-spacing:-.035em !important;
+    color:var(--c-ink) !important;
+}
+.v2-eyebrow{
+    color:var(--c-ink-3) !important;
+    font-weight:700 !important;
+    letter-spacing:.1em !important;
+}
+#subject-subtitle, .subject-subtitle{ color:var(--c-ink-3) !important; font-weight:400 !important; }
+
+/* ---------------- hero ---------------- */
+.l5c-hero{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:14px !important;
+    box-shadow:none !important;
+    padding:22px 24px !important;
+    gap:30px !important;
+    margin-bottom:20px !important;
+}
+.l5c-hero::after{ display:none !important; }
+.l5c-ring{
+    width:104px !important; height:104px !important; flex:0 0 104px !important;
+    box-shadow:none !important;
+}
+.l5c-ring span{
+    width:82px !important; height:82px !important;
+    font-size:19px !important; font-weight:700 !important; letter-spacing:-.03em;
+}
+#progress-label{ font-size:1.06rem !important; font-weight:700 !important; }
+#progress-stats{ font-size:.85rem !important; color:var(--c-ink-3) !important; }
+.progress-container{ height:6px !important; margin-top:12px !important; background:var(--c-fill) !important; }
+.l5c-hero-sub{ font-size:.8rem !important; color:var(--c-ink-3) !important; margin-top:9px !important; }
+.l5c-hero-stats{ gap:0 !important; }
+.l5c-hero-stat{ padding:0 22px !important; border-left:1px solid var(--c-line) !important; }
+.l5c-hero-stat:first-child{ padding-left:0 !important; }
+.l5c-hero-stat:last-child{ padding-right:0 !important; }
+.l5c-hero-stat b{ font-size:1.3rem !important; font-weight:700 !important; letter-spacing:-.03em; }
+.l5c-hero-stat span{ font-size:.72rem !important; font-weight:500 !important; color:var(--c-ink-3) !important; }
+
+/* ---------------- cards ---------------- */
+.card, .subject-card, .todo-column, .chapter-row, .welcome-message, .modal-content, .reg-subjects{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+}
+.card{ padding:20px 22px !important; }
+.card-title{
+    font-size:.96rem !important; font-weight:700 !important; letter-spacing:-.015em;
+    margin-bottom:14px !important; color:var(--c-ink);
+}
+.card-title .v2-i, .card-title .material-symbols-rounded{ color:var(--c-ink-2) !important; }
+.chapter-row{ padding:18px 20px !important; }
+.chapter-row:hover, .subject-card:hover{
+    transform:none !important;
+    border-color:var(--c-line-strong) !important;
+    box-shadow:0 1px 2px rgba(17,17,17,.04) !important;
+}
+.chapter-title{ font-size:.95rem !important; font-weight:650 !important; }
+.insights-card{ padding:20px 22px !important; }
+.todo-column{ padding:20px 22px !important; min-height:200px; }
+
+/* subject cards */
+.subject-card{ padding:18px !important; gap:12px !important; border-radius:12px !important; }
+.subject-card .title{ font-size:.96rem !important; font-weight:650 !important; letter-spacing:-.01em; }
+.subject-card .badge{
+    background:var(--c-fill) !important;
+    color:var(--c-ink-2) !important;
+    font-weight:600 !important;
+    border-radius:6px !important;
+    padding:3px 7px !important;
+}
+.subject-card .small-label{ font-size:.68rem; letter-spacing:.07em; color:var(--c-ink-3); font-weight:600; }
+.subject-card .progress-stats{ font-size:.82rem !important; color:var(--c-ink-2) !important; }
+.view-btn{
+    height:34px !important;
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink) !important;
+    border-radius:8px !important;
+    font-size:.82rem !important;
+    font-weight:600 !important;
+}
+.view-btn:hover{
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+    border-color:var(--c-active) !important;
+}
+
+/* quick action tiles */
+.v2-quick-card{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:12px !important;
+    padding:14px 16px !important;
+    box-shadow:none !important;
+}
+.v2-quick-card:hover{
+    transform:none !important;
+    border-color:var(--c-line-strong) !important;
+    box-shadow:none !important;
+}
+.v2-quick-icon{
+    width:32px; height:32px; flex:0 0 32px;
+    background:var(--c-fill) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:8px !important;
+}
+.v2-quick-icon .v2-i{ width:17px; height:17px; }
+.v2-quick-t{ font-size:.86rem !important; font-weight:650 !important; }
+.v2-quick-s{ font-size:.76rem !important; color:var(--c-ink-3) !important; font-weight:400 !important; }
+
+/* ---------------- buttons ---------------- */
+.btn{
+    height:38px !important;
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+    border:1px solid var(--c-active) !important;
+    border-radius:8px !important;
+    font-size:.85rem !important;
+    font-weight:600 !important;
+    box-shadow:none !important;
+}
+.btn:hover{ background:var(--c-active) !important; filter:brightness(.9); }
+.btn.secondary{
+    background:var(--c-bg) !important;
+    color:var(--c-ink) !important;
+    border:1px solid var(--c-line) !important;
+}
+.btn.secondary:hover{ background:var(--c-hover) !important; border-color:var(--c-line-strong) !important; filter:none; }
+.btn.danger{
+    background:var(--c-bg) !important;
+    color:var(--c-danger) !important;
+    border:1px solid var(--c-line) !important;
+}
+.btn.danger:hover{ background:var(--c-fill) !important; }
+.btn.preset{
+    background:var(--c-bg) !important;
+    color:var(--c-ink) !important;
+    border:1px solid var(--c-line) !important;
+    font-weight:600 !important;
+}
+.btn.preset:hover{ background:var(--c-hover) !important; border-color:var(--c-line-strong) !important; filter:none; }
+.btn.seg-btn.is-active, .btn.secondary.is-active{
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+    border-color:var(--c-active) !important;
+}
+
+/* ---------------- inputs ---------------- */
+.input, .todo-input-row input, .notes-textarea, select.input, textarea.input, .target-selects select{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:8px !important;
+    color:var(--c-ink) !important;
+    height:40px;
+    font-size:.88rem !important;
+}
+.notes-textarea{ height:auto !important; }
+.input:focus, .todo-input-row input:focus, .notes-textarea:focus, select.input:focus, textarea.input:focus{
+    background:var(--c-bg) !important;
+    border-color:var(--c-ink) !important;
+    box-shadow:0 0 0 3px rgba(17,17,17,.06) !important;
+}
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] .todo-input-row input:focus,
+[data-theme="dark"] .notes-textarea:focus{ box-shadow:0 0 0 3px rgba(245,245,244,.10) !important; }
+.cselect-btn, .cdate-btn{
+    background:var(--c-bg) !important;
+    border-color:var(--c-line) !important;
+    border-radius:8px !important;
+    height:40px;
+    font-size:.88rem;
+}
+.cselect-btn::after{ border-color:var(--c-ink-3) !important; }
+.cselect-menu, .ccal{
+    border-radius:10px !important;
+    border:1px solid var(--c-line) !important;
+    box-shadow:0 12px 32px -12px rgba(17,17,17,.22) !important;
+}
+.cselect-opt{ border-radius:7px !important; font-size:.86rem !important; }
+.cselect-opt.is-selected{ background:var(--c-active) !important; color:var(--c-active-ink) !important; }
+.cnum-btn{ color:var(--c-ink-3) !important; }
+.cnum-btn:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; }
+
+/* ---------------- chapter activity chips ---------------- */
+.checkbox-item{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:8px !important;
+    color:var(--c-ink-2) !important;
+    font-size:.81rem !important;
+    font-weight:500 !important;
+    padding:10px 12px !important;
+}
+.checkbox-item .material-symbols-rounded{ color:var(--c-ink-3) !important; }
+.checkbox-item:hover{ border-color:var(--c-line-strong) !important; }
+.checkbox-item.checked{
+    background:var(--c-active) !important;
+    border-color:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+}
+.checkbox-item.checked .material-symbols-rounded{ color:var(--c-active-ink) !important; }
+.checkbox-item.checked input[type="checkbox"]{ accent-color:var(--c-bg) !important; }
+[data-theme="dark"] .checkbox-item.checked input[type="checkbox"]{ accent-color:#111111 !important; }
+
+/* ---------------- to-do board ---------------- */
+.todo-add-btn, .todo-input-row button{
+    background:var(--c-active) !important;
+    color:var(--c-active-ink) !important;
+    border-radius:8px !important;
+    height:40px !important;
+    font-weight:600 !important;
+    font-size:.85rem !important;
+}
+.todo-item{
+    border:1px solid var(--c-line) !important;
+    border-radius:9px !important;
+    background:var(--c-bg) !important;
+    padding:10px 12px !important;
+}
+.todo-title{ font-weight:650 !important; font-size:.94rem !important; }
+.todo-item.done .todo-text{ color:var(--c-ink-3) !important; opacity:1 !important; }
+.todo-stat{ font-size:.76rem !important; font-weight:600 !important; color:var(--c-ink-3) !important; }
+.icon-btn{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:7px !important;
+    height:30px !important;
+    font-size:.76rem !important;
+    font-weight:600 !important;
+}
+.icon-btn:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; }
+.icon-btn.danger{ color:var(--c-danger) !important; }
+.todo-empty{
+    border:1px dashed var(--c-line) !important;
+    color:var(--c-ink-3) !important;
+    border-radius:9px !important;
+    padding:26px 16px !important;
+    font-size:.85rem;
+}
+.todo-column .circle{ --size:46px; }
+.mini-bar{ background:var(--c-fill) !important; border-radius:4px !important; }
+.mini-bar.today{ background:var(--c-active) !important; }
+
+/* ---------------- subjects page ---------------- */
+.v2-subject{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+    padding:18px !important;
+    gap:12px !important;
+}
+.v2-subject:hover{ transform:none !important; border-color:var(--c-line-strong) !important; box-shadow:none !important; }
+.v2-subject-icon{
+    background:var(--c-fill) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:8px !important;
+    width:32px; height:32px; flex:0 0 32px;
+}
+.v2-subject-name{ font-size:.96rem !important; font-weight:650 !important; }
+.v2-subject-pct{ color:var(--c-ink-2) !important; font-size:.78rem !important; font-weight:600 !important; }
+.v2-bar{ height:5px !important; background:var(--c-fill) !important; border-radius:99px !important; }
+.v2-chip{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:8px !important;
+    color:var(--c-ink) !important;
+    font-size:.81rem !important;
+    font-weight:500 !important;
+    height:32px; padding:0 12px;
+}
+.v2-chip:hover{ background:var(--c-active) !important; color:var(--c-active-ink) !important; border-color:var(--c-active) !important; }
+.v2-muted-note{ color:var(--c-ink-3) !important; font-size:.76rem !important; }
+.v2-page-head h3{ font-size:.96rem !important; font-weight:700 !important; }
+.v2-page-head p{ font-size:.82rem !important; color:var(--c-ink-3) !important; }
+.v2-count{ font-size:.77rem !important; color:var(--c-ink-3) !important; font-weight:600; }
+.v2-notice{
+    background:var(--c-bg) !important;
+    border:1px dashed var(--c-line) !important;
+    color:var(--c-ink-3) !important;
+    border-radius:10px !important;
+    font-size:.85rem !important;
+}
+
+/* ---------------- profile / stats ---------------- */
+.v2-profile-head{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:14px !important;
+    box-shadow:none !important;
+    padding:22px !important;
+}
+.v2-avatar{
+    background:var(--c-fill) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:12px !important;
+    width:64px; height:64px; flex:0 0 64px; font-size:28px;
+}
+.v2-profile-name{ font-size:1.2rem !important; font-weight:700 !important; }
+.v2-profile-bio{ font-size:.85rem !important; color:var(--c-ink-3) !important; }
+.v2-stat{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+    padding:16px 18px !important;
+}
+.v2-stat b{ font-size:1.35rem !important; font-weight:700 !important; }
+.v2-stat span{ font-size:.7rem !important; letter-spacing:.06em; color:var(--c-ink-3) !important; font-weight:600 !important; }
+
+/* ---------------- league tables & pills ---------------- */
+.league-table thead th{
+    color:var(--c-ink-3) !important;
+    border-bottom:1px solid var(--c-line) !important;
+    font-size:.66rem !important;
+    letter-spacing:.08em;
+}
+.league-table tbody td{ border-bottom:1px solid var(--c-fill) !important; padding:13px 12px !important; }
+.league-table tbody tr:hover td{ background:var(--c-fill) !important; }
+.league-table tr.me td{ background:var(--c-fill) !important; }
+.league-rank{ color:var(--c-ink-3) !important; font-weight:600; }
+.pill{
+    background:var(--c-fill) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:6px !important;
+    font-size:.78rem !important;
+    font-weight:500 !important;
+    padding:5px 10px !important;
+}
+.league-status, .league-bio, .league-updated{ color:var(--c-ink-3) !important; }
+.league-name{ font-weight:600 !important; }
+
+/* ---------------- modals / settings ---------------- */
+.modal-content{
+    border-radius:14px !important;
+    box-shadow:0 24px 64px -24px rgba(17,17,17,.28) !important;
+}
+.modal-header{ border-bottom:1px solid var(--c-line) !important; padding:18px 22px 14px !important; }
+.modal-title{ font-size:1rem !important; font-weight:700 !important; }
+.settings-body{ padding:6px 22px 22px !important; }
+.settings-section{ border-bottom:1px solid var(--c-line) !important; padding:18px 0 20px !important; }
+.settings-section h4{ color:var(--c-ink-3) !important; font-size:.66rem !important; letter-spacing:.1em; }
+.settings-row, .settings-check{ font-weight:500 !important; font-size:.88rem !important; }
+.settings-check span small{ color:var(--c-ink-3) !important; }
+.close-btn{
+    background:var(--c-bg) !important;
+    border:1px solid var(--c-line) !important;
+    color:var(--c-ink-2) !important;
+    border-radius:8px !important;
+}
+.close-btn:hover{ background:var(--c-hover) !important; }
+.reg-subject{ border:1px solid var(--c-line) !important; border-radius:8px !important; background:var(--c-bg) !important; }
+input[type="checkbox"], input[type="radio"]{ accent-color:#111111; }
+[data-theme="dark"] input[type="checkbox"], [data-theme="dark"] input[type="radio"]{ accent-color:#F5F5F4; }
+
+/* ---------------- scrollbars ---------------- */
+::-webkit-scrollbar-thumb{
+    background:rgba(17,17,17,.18) !important;
+    border-color:var(--c-page) !important;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb{ background:rgba(245,245,244,.18) !important; }
+
+/* ---------------- leftover light-only accents ---------------- */
+.note-icon:hover{ background:var(--c-active) !important; color:var(--c-active-ink) !important; }
+.v2-nav-badge{ background:var(--c-fill) !important; color:var(--c-ink-3) !important; }
+
+/* ---------------- focus ring (monochrome) ---------------- */
+:focus-visible{ outline:2px solid var(--c-ink); outline-offset:2px; }
+.checkbox-item input[type="checkbox"]:focus-visible,
+.todo-checkbox:focus-visible{ outline:2px solid var(--c-ink); outline-offset:2px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible{ outline:none; }
+
+/* ---------------- custom-drawn checkboxes / radios (were indigo) ---------------- */
+input[type="checkbox"]:not(.cui-native){
+    background-color:var(--c-bg) !important;
+    border:1.5px solid var(--c-line-strong) !important;
+    border-radius:5px !important;
+}
+input[type="checkbox"]:not(.cui-native):checked{
+    background-color:var(--c-active) !important;
+    border-color:var(--c-active) !important;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12.5l5 5L20 6.5'/></svg>") !important;
+}
+[data-theme="dark"] input[type="checkbox"]:not(.cui-native):checked{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12.5l5 5L20 6.5'/></svg>") !important;
+}
+/* inside an ink-filled chip the little box inverts so it stays visible */
+.checkbox-item.checked input[type="checkbox"]:not(.cui-native):checked{
+    background-color:var(--c-active-ink) !important;
+    border-color:var(--c-active-ink) !important;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12.5l5 5L20 6.5'/></svg>") !important;
+}
+[data-theme="dark"] .checkbox-item.checked input[type="checkbox"]:not(.cui-native):checked{
+    background-color:var(--c-active-ink) !important;
+    border-color:var(--c-active-ink) !important;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12.5l5 5L20 6.5'/></svg>") !important;
+}
+input[type="radio"]{
+    border:1.5px solid var(--c-line-strong) !important;
+    background:var(--c-bg) !important;
+}
+input[type="radio"]:checked{
+    border-color:var(--c-active) !important;
+    background:radial-gradient(circle, var(--c-active) 0 4.5px, transparent 5.5px) !important;
+}
+/* checked chapter chip: drop the old green inset ring */
+.checkbox-item.checked{ box-shadow:none !important; }
+
+/* modals that have no .settings-body wrapper (register / inbox) — restore inner padding */
+.modal-content.settings-content:not(:has(> .settings-body)) > *:not(.modal-header){
+    margin-left:22px !important;
+    margin-right:22px !important;
+}
+.modal-content.settings-content:not(:has(> .settings-body)) > *:last-child{
+    margin-bottom:22px !important;
+}
+/* ============================================================================
+   V5 layer — small, surgical fixes on top of the Option C skin
+   ========================================================================== */
+
+/* ---------- 1. hero stats: no vertical rules between the numbers ---------- */
+.l5c-hero-stats{ gap:34px !important; }
+.l5c-hero-stat{ border-left:0 !important; padding:0 !important; }
+.l5c-hero-stat + .l5c-hero-stat{ padding-left:0 !important; }
+
+/* ---------- 2. modal close button: perfectly centred glyph ---------- */
+.close-btn{
+    padding:0 !important;
+    width:34px !important;
+    height:34px !important;
+    display:grid !important;
+    place-items:center !important;
+    line-height:1 !important;
+    flex:0 0 auto;
+}
+.close-btn .material-symbols-rounded,
+.close-btn .v2-i{
+    font-size:19px !important;
+    line-height:1 !important;
+    width:19px !important;
+    height:19px !important;
+    display:block !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+.close-btn:hover{ background:var(--c-hover) !important; color:var(--c-ink) !important; transform:none !important; }
+
+/* ---------- 3. Google sign-in gate ---------- */
+body.sl-gate-open{ overflow:hidden; }
+.sl-gate{
+    position:fixed; inset:0; z-index:12000;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    background:rgba(17,17,17,.42);
+    backdrop-filter:blur(3px);
+    opacity:0; pointer-events:none; transition:opacity .18s ease;
+}
+[data-theme="dark"] .sl-gate{ background:rgba(0,0,0,.6); }
+.sl-gate.is-open{ opacity:1; pointer-events:auto; }
+.sl-gate-card{
+    width:100%; max-width:430px;
+    background:var(--c-bg); border:1px solid var(--c-line);
+    border-radius:14px; padding:26px 26px 22px;
+    box-shadow:0 30px 70px -30px rgba(17,17,17,.35);
+}
+.sl-gate-brand{ display:flex; align-items:center; gap:11px; margin-bottom:20px; }
+.sl-gate-logo{
+    width:34px; height:34px; border-radius:9px; background:var(--c-active); color:var(--c-active-ink);
+    display:grid; place-items:center; font-weight:800; font-size:1rem; letter-spacing:-.02em;
+}
+.sl-gate-brand-t b{ display:block; font-size:.95rem; font-weight:700; letter-spacing:-.015em; line-height:1.15; }
+.sl-gate-brand-t small{ display:block; font-size:.74rem; color:var(--c-ink-3); font-weight:500; }
+.sl-gate-card h2{ font-size:1.22rem; font-weight:750; letter-spacing:-.02em; margin:0 0 8px; color:var(--c-ink); }
+.sl-gate-sub{ font-size:.87rem; line-height:1.55; color:var(--c-ink-2); margin:0 0 18px; }
+.sl-google-btn{
+    width:100%; height:46px; display:flex; align-items:center; justify-content:center; gap:11px;
+    background:var(--c-bg); color:var(--c-ink);
+    border:1px solid var(--c-line-strong); border-radius:9px;
+    font-size:.92rem; font-weight:650; font-family:inherit; cursor:pointer;
+    transition:background .14s ease, border-color .14s ease;
+}
+.sl-google-btn:hover{ background:var(--c-hover); }
+.sl-google-btn.is-busy{ opacity:.6; pointer-events:none; }
+.sl-google-btn .sl-g{ width:19px; height:19px; flex:none; }
+.sl-gate-skip{
+    width:100%; margin-top:9px; height:38px; background:transparent; border:0;
+    color:var(--c-ink-3); font-size:.83rem; font-weight:600; font-family:inherit; cursor:pointer;
+    border-radius:8px;
+}
+.sl-gate-skip:hover{ color:var(--c-ink); background:var(--c-hover); }
+.sl-gate-msg{ min-height:0; font-size:.79rem; line-height:1.45; color:var(--c-ink-3); margin-top:10px; }
+.sl-gate-msg.is-err{ color:var(--c-danger); }
+.sl-gate-list{ margin:16px 0 0; padding:14px 0 0; border-top:1px solid var(--c-line); list-style:none; display:grid; gap:9px; }
+.sl-gate-list li{ position:relative; padding-left:18px; font-size:.78rem; line-height:1.5; color:var(--c-ink-3); }
+.sl-gate-list li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; background:var(--c-line-strong); }
+.sl-gate-list b{ color:var(--c-ink-2); font-weight:650; }
+
+/* top-bar "Sign in" chip */
+.sl-sign-chip{
+    display:inline-flex; align-items:center; gap:8px; height:34px; padding:0 12px;
+    background:var(--c-bg); border:1px solid var(--c-line); border-radius:9px;
+    font-family:inherit; font-size:.82rem; font-weight:650; color:var(--c-ink); cursor:pointer;
+    transition:background .14s ease, border-color .14s ease;
+}
+.sl-sign-chip:hover{ background:var(--c-hover); border-color:var(--c-line-strong); }
+.sl-sign-chip .sl-g{ width:15px; height:15px; }
+
+/* google avatar inside the round top-bar button */
+.v2-avatar-btn.sl-has-photo{ padding:0 !important; overflow:hidden; border-color:var(--c-line-strong) !important; }
+.v2-avatar-btn .sl-av-img{ width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block; }
+
+/* ---------- 4. profile card: read-only once filled ---------- */
+#socialProfileCard .sl-pf-edit{ height:32px !important; padding:0 12px !important; font-size:.8rem !important; }
+.sl-pf-note{
+    font-size:.77rem; color:var(--c-ink-3); line-height:1.5;
+    margin:2px 0 14px; display:flex; align-items:center; gap:6px;
+}
+.sl-pf-note .material-symbols-rounded{ color:var(--c-ink-3); }
+#socialProfileCard.sl-pf-collapsed{ padding-bottom:18px !important; }
+
+/* ---------- 5. account block inside Settings ---------- */
+.sl-acct{ display:flex; align-items:center; gap:12px; padding:12px 0 2px; }
+.sl-acct-img{ width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid var(--c-line); background:var(--c-fill); }
+.sl-acct-b{ flex:1 1 auto; min-width:0; }
+.sl-acct-b b{ display:block; font-size:.88rem; font-weight:650; color:var(--c-ink); }
+.sl-acct-b small{ display:block; font-size:.76rem; color:var(--c-ink-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sl-acct-state{ font-size:.74rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--c-ink-3); }
+.sl-acct-state.on{ color:#1a7f37; }
+[data-theme="dark"] .sl-acct-state.on{ color:#6ee7a0; }
+
+    </style>
 </head>
 <body>
 
@@ -1941,60 +3310,84 @@
 </div>
 
 <div id="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-header-row">
-            <h2>Class 11 Syllabus Tracker 📘</h2>
-            <button id="themeToggle" title="Toggle dark mode"><span class="material-symbols-rounded" style="font-size:20px;">dark_mode</span></button>
-            <button id="inboxBtn" class="inbox-btn" title="Notifications"><span class="material-symbols-rounded" style="font-size:20px;">notifications</span><span id="inboxBadge" class="inbox-badge" style="display:none;">0</span></button>
+    <!-- ===== V2 layout: top navigation ===== -->
+    <div class="v2-brand">
+        <img src="studyleague-logo.png" alt="" class="v2-brand-logo">
+        <div class="v2-brand-text">
+            <div class="v2-brand-name">StudyLeague</div>
+            <div class="v2-brand-sub" id="v2BrandSub">Class 11 &middot; League</div>
         </div>
-        <p>Track your academic progress</p>
     </div>
 
-    <div class="nav-container">
-        <button id="homeBtn" class="home-btn"><span class="material-symbols-rounded" style="font-size:20px;">home</span> Home</button>
-        <button id="focusBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">timer</span> Focus</button>
-        <button id="examBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">edit_note</span> Exams</button>
-        <button id="leagueBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">emoji_events</span> Leaderboard</button>
-        <button id="sharedNotesBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">library_books</span> Shared Notes</button>
+    <nav class="v2-nav" id="v2Nav"></nav>
+
+    <div class="v2-top-right">
+        <div class="v2-brand-actions" id="v2BrandActions"></div>
+        <div class="v2-side-footer" id="v2SideFooter"></div>
     </div>
 
-    <div class="subjects-container">
-        <div class="subject" data-subject="English"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">menu_book</span>English
-            <div class="sub-subjects" id="EnglishSubs">
-                <div class="sub-subject" data-sub="Flamingo">Flamingo</div>
-                <div class="sub-subject" data-sub="Vistas">Vistas</div>
+    <!-- ===== hidden engine: original nav + subject tree, kept alive for the app's own JS ===== -->
+    <div id="v2Engine">
+        
+            <div class="sidebar-header">
+                <div class="sidebar-header-row">
+                    <h2>Class 11 Syllabus Tracker 📘</h2>
+                    <button id="themeToggle" title="Toggle dark mode"><span class="material-symbols-rounded" style="font-size:20px;">dark_mode</span></button>
+                    <button id="inboxBtn" class="inbox-btn" title="Notifications"><span class="material-symbols-rounded" style="font-size:20px;">notifications</span><span id="inboxBadge" class="inbox-badge" style="display:none;">0</span></button>
+                </div>
+                <p>Track your academic progress</p>
             </div>
-        </div>
-        <div class="subject" data-subject="History"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">account_balance</span>History
-            <div class="sub-subjects" id="HistorySubs">
-                <div class="sub-subject" data-sub="ThemesInIndianHistory">Themes in Indian History</div>
+        
+            <div class="nav-container">
+                <button id="homeBtn" class="home-btn"><span class="material-symbols-rounded" style="font-size:20px;">home</span> Home</button>
+                <button id="focusBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">timer</span> Focus</button>
+                <button id="examBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">edit_note</span> Exams</button>
+                <button id="leagueBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">emoji_events</span> Leaderboard</button>
+                <button id="sharedNotesBtn" class="focus-btn"><span class="material-symbols-rounded" style="font-size:20px;">library_books</span> Shared Notes</button>
             </div>
-        </div>
-        <div class="subject" data-subject="Geography"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">public</span>Geography
-            <div class="sub-subjects" id="GeographySubs">
-                <div class="sub-subject" data-sub="FundamentalsOfHumanGeography">Fundamentals of Human Geography</div>
-                <div class="sub-subject" data-sub="IndiaPeopleAndEconomy">India - People and Economy</div>
+        
+            <div class="subjects-container">
+                <div class="subject" data-subject="English"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">menu_book</span>English
+                    <div class="sub-subjects" id="EnglishSubs">
+                        <div class="sub-subject" data-sub="Flamingo">Flamingo</div>
+                        <div class="sub-subject" data-sub="Vistas">Vistas</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="History"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">account_balance</span>History
+                    <div class="sub-subjects" id="HistorySubs">
+                        <div class="sub-subject" data-sub="ThemesInIndianHistory">Themes in Indian History</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Geography"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">public</span>Geography
+                    <div class="sub-subjects" id="GeographySubs">
+                        <div class="sub-subject" data-sub="FundamentalsOfHumanGeography">Fundamentals of Human Geography</div>
+                        <div class="sub-subject" data-sub="IndiaPeopleAndEconomy">India - People and Economy</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="PoliticalScience"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">gavel</span>Political Science
+                    <div class="sub-subjects" id="PoliticalScienceSubs">
+                        <div class="sub-subject" data-sub="ContemporaryWorldPolitics">Contemporary World Politics</div>
+                        <div class="sub-subject" data-sub="PoliticsInIndiaSinceIndependence">Politics in India since Independence</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Math"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">calculate</span>Mathematics
+                    <div class="sub-subjects" id="MathSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="subject" data-subject="PoliticalScience"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">gavel</span>Political Science
-            <div class="sub-subjects" id="PoliticalScienceSubs">
-                <div class="sub-subject" data-sub="ContemporaryWorldPolitics">Contemporary World Politics</div>
-                <div class="sub-subject" data-sub="PoliticsInIndiaSinceIndependence">Politics in India since Independence</div>
+            <div class="sidebar-footer">
+                <button id="settingsBtn" class="settings-btn" title="App settings"><span class="material-symbols-rounded" style="font-size:18px;">settings</span> Settings</button>
             </div>
-        </div>
-        <div class="subject" data-subject="Math"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">calculate</span>Mathematics
-            <div class="sub-subjects" id="MathSubs">
-                <div class="sub-subject" data-sub="All">All Chapters</div>
-            </div>
-        </div>
-    </div>
-    <div class="sidebar-footer">
-        <button id="settingsBtn" class="settings-btn" title="App settings"><span class="material-symbols-rounded" style="font-size:18px;">settings</span> Settings</button>
     </div>
 </div>
 
 <div id="main">
     <div class="main-header">
+        <div class="v2-header-top">
+            <button id="v2MenuBtn" class="v2-menu-btn" type="button" aria-label="Open menu"><span class="material-symbols-rounded">menu</span></button>
+            <div class="v2-eyebrow" id="v2Eyebrow">Study &middot; Overview</div>
+        </div>
         <h1>Welcome to Your Academic Journey</h1>
         <div class="subject-subtitle" id="subject-subtitle"></div>
         <div class="header-actions" id="header-actions"></div>
@@ -4916,7 +6309,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     else setStatus('Signed in. Create a league or join one with a code.');
                 }
             });
-            auth.signInAnonymously().catch(function (e) { setStatus('Sign-in failed: ' + e.message, 'err'); });
+            (window.__slAuth ? window.__slAuth.ensure() : Promise.reject(new Error('auth-boot'))).catch(function (e) { setStatus('Sign-in failed: ' + e.message, 'err'); });
             return true;
         } catch (e) { setStatus('Firebase error: ' + e.message, 'err'); return false; }
     }
@@ -5000,7 +6393,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     function ensureSignedIn() {
         if (currentUser) return Promise.resolve(currentUser);
-        return auth.signInAnonymously().then(function (cred) { currentUser = cred.user; return currentUser; });
+        return (window.__slAuth ? window.__slAuth.ensure() : Promise.reject(new Error('auth-boot'))).then(function (cred) { currentUser = cred.user; return currentUser; });
     }
     function joinOfficialLeague() {
         if (!initFirebase()) { setStatus('League is not connected yet — see setup steps above.', 'err'); return; }
@@ -5075,7 +6468,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">cloud_off</span> League not connected yet</div>' +
                     '<div style="line-height:1.8;font-size:.95rem;">This test build is ready for Firebase — it just needs your free project keys:<br>' +
                     '1. Create a free project at <b>console.firebase.google.com</b><br>' +
-                    '2. Create <b>Firestore</b> + enable <b>Anonymous</b> sign-in<br>' +
+                    '2. Create <b>Firestore</b> + enable <b>Google</b> sign-in<br>' +
                     '3. Paste your <b>firebaseConfig</b> into <b>LEAGUE_FIREBASE_CONFIG</b> at the top of the Leaderboard code in this file (or send it to me and I\'ll paste it for you)<br>' +
                     'Full screenshots-level steps are in <b>FIREBASE-SETUP-GUIDE.md</b>.</div>' +
                 '</div>';
@@ -5305,7 +6698,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 me = user; firebaseReady = !!user;
                 if (user) { startInboxListener(); startChatListener(true); heartbeat(); }
             });
-            if (!firebase.auth().currentUser) firebase.auth().signInAnonymously().catch(function () {});
+            if (!firebase.auth().currentUser) (window.__slAuth ? window.__slAuth.ensure() : Promise.reject(new Error('auth-boot'))).catch(function () {});
             return true;
         } catch (e) { return false; }
     }
@@ -5725,7 +7118,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             me = u;
             if (u) { watchMembers(); publishScore(); startFeedListener(); }
         });
-        if (!firebase.auth().currentUser) firebase.auth().signInAnonymously().catch(function(){});
+        if (!firebase.auth().currentUser) (window.__slAuth ? window.__slAuth.ensure() : Promise.reject(new Error('auth-boot'))).catch(function(){});
     }
     function watchMembers() {
         var code = leagueCode(); if (!db || !code) return;
@@ -6243,7 +7636,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             if (!firebase.apps.length) firebase.initializeApp(LEAGUE_FIREBASE_CONFIG);
             db = firebase.firestore();
             firebase.auth().onAuthStateChanged(function(u){ me = u; });
-            if (!firebase.auth().currentUser) firebase.auth().signInAnonymously().catch(function(){});
+            if (!firebase.auth().currentUser) (window.__slAuth ? window.__slAuth.ensure() : Promise.reject(new Error('auth-boot'))).catch(function(){});
             return true;
         } catch(e) { return false; }
     }
@@ -6579,5 +7972,1080 @@ var LEAGUE_FIREBASE_CONFIG = {
     };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d13217b523ed9',t:'MTc5Mzg5NDQ2MQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d13217b523ed9',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>
+/* ============================================================================
+   STUDYLEAGUE V2 — TAB SHELL / LAYOUT ENGINE
+   Re-organises the existing app into spacious, single-purpose tabs.
+   It never rewrites app logic: it drives the app's own buttons and then
+   arranges the DOM the app produced.
+   ========================================================================== */
+(function () {
+    'use strict';
+
+    var S = { tab: 'overview', sub: 'standings', pending: false, busy: 0 };
+
+    /* ---------- remember where the user was (survives refresh) ---------- */
+    var LAST_KEY = 'slLastView';
+    function saveView(rec) {
+        try {
+            rec.at = Date.now();
+            var m = $('main'); if (m) rec.scroll = m.scrollTop || 0;
+            localStorage.setItem(LAST_KEY, JSON.stringify(rec));
+        } catch (e) {}
+    }
+    (function () {
+        var t = null;
+        function hook() {
+            var m = $('main'); if (!m || m.__slHooked) return;
+            m.__slHooked = true;
+            m.addEventListener('scroll', function () {
+                clearTimeout(t);
+                t = setTimeout(function () {
+                    try {
+                        var rec = JSON.parse(localStorage.getItem(LAST_KEY) || 'null') || { tab: S.tab };
+                        rec.scroll = m.scrollTop || 0;
+                        localStorage.setItem(LAST_KEY, JSON.stringify(rec));
+                    } catch (e) {}
+                }, 400);
+            }, { passive: true });
+        }
+        setTimeout(hook, 900);
+    })();
+
+    var TABS = {
+        overview:  { engine: 'homeBtn',        group: 'Study',  label: 'Home',          icon: 'home',       nav: 'Home' },
+        subjects:  { group: 'Study',  label: 'Subjects',      icon: 'book',       nav: 'Subjects' },
+        focus:     { engine: 'focusBtn',       group: 'Study',  label: 'Focus & Time',  icon: 'clock',      nav: 'Focus' },
+        exams:     { engine: 'examBtn',        group: 'Study',  label: 'Exams',         icon: 'note',       nav: 'Exams' },
+        league:    { engine: 'leagueBtn',      group: 'League', label: 'Leaderboard',   icon: 'bars',       nav: 'Leaderboard', sub: 'standings' },
+        activity:  { engine: 'leagueBtn',      group: 'League', label: 'Activity',      icon: 'pulse',      nav: 'Activity',    sub: 'activity' },
+        messages:  { engine: 'leagueBtn',      group: 'League', label: 'Messages',      icon: 'chat',       nav: 'Messages',    sub: 'messages' },
+        notes:     { engine: 'sharedNotesBtn', group: 'League', label: 'Shared Notes',  icon: 'notebook',   nav: 'Notes' },
+        profile:   { group: 'You',    label: 'My Profile',     icon: 'user',       nav: 'My Profile' }
+    };
+    var NAV = [
+        { group: 'Study',  items: ['overview', 'subjects', 'focus', 'exams'] },
+        { group: 'League', items: ['league', 'activity', 'messages', 'notes'] }
+    ];
+
+    /* ---------- helpers ---------- */
+    function $(id) { return document.getElementById(id); }
+    function cl() { return $('chapterList'); }
+    function h1El() { return document.querySelector('#main h1'); }
+    function h1Text() { var e = h1El(); return e ? e.textContent.trim() : ''; }
+    function el(tag, cls, html) {
+        var n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (html != null) n.innerHTML = html;
+        return n;
+    }
+    /* ---- inline SVG icon set (no font dependency) ---- */
+    var PATHS = {
+        home: '<path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/>',
+        dashboard: '<rect x="3" y="3" width="7.6" height="7.6" rx="2.2"/><rect x="13.4" y="3" width="7.6" height="7.6" rx="2.2"/><rect x="3" y="13.4" width="7.6" height="7.6" rx="2.2"/><rect x="13.4" y="13.4" width="7.6" height="7.6" rx="2.2"/>',
+        book: '<path d="M5 4.6A1.6 1.6 0 0 1 6.6 3H19v14.4H6.6A1.6 1.6 0 0 0 5 19v-14.4z"/><path d="M5 19a2 2 0 0 1 2-2h12v4H6.6A1.6 1.6 0 0 1 5 19z"/>',
+        checklist: '<path d="M4 6.2l1.7 1.7L8.6 5"/><path d="M4 13.2l1.7 1.7L8.6 12"/><path d="M12 6.5h8M12 13.5h8M12 20h8"/>',
+        clock: '<circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.3 2"/>',
+        note: '<path d="M4.5 20.2l.9-4 10-10a2.3 2.3 0 0 1 3.2 3.2l-10 10z"/><path d="M13.4 7.3l3.3 3.3"/><path d="M4 22h16"/>',
+        bars: '<path d="M5.5 20V11.5M12 20V4.5M18.5 20v-5.5"/>',
+        pulse: '<path d="M2.5 12.5h4L9 6l3.6 12 2.6-5.5h6.3"/>',
+        chat: '<path d="M20.5 15.2a2.6 2.6 0 0 1-2.6 2.6H8.3L3.5 21.5V6.5a2.6 2.6 0 0 1 2.6-2.6h11.8a2.6 2.6 0 0 1 2.6 2.6z"/>',
+        notebook: '<path d="M6.5 3h12v18h-12z"/><path d="M6.5 3v18"/><path d="M10.5 8h4.5M10.5 12h4.5"/>',
+        user: '<circle cx="12" cy="8.4" r="3.8"/><path d="M4.6 20.6c1.7-3.7 4.4-5.5 7.4-5.5s5.7 1.8 7.4 5.5"/>',
+        settings: '<circle cx="12" cy="12" r="3.1"/><path d="M19.5 14.9a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.4.87z"/>',
+        sun: '<circle cx="12" cy="12" r="4.3"/><path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M18.7 5.3l-1.5 1.5M6.8 17.2l-1.5 1.5"/>',
+        moon: '<path d="M20.6 14.3A8.7 8.7 0 0 1 9.7 3.4 8.8 8.8 0 1 0 20.6 14.3z"/>',
+        bell: '<path d="M18.2 8.9a6.2 6.2 0 1 0-12.4 0c0 5.1-2.1 6.5-2.1 6.5h16.6s-2.1-1.4-2.1-6.5"/><path d="M13.8 19.3a2.2 2.2 0 0 1-3.6 0"/>',
+        trophy: '<path d="M8 4h8v5.2a4 4 0 0 1-8 0z"/><path d="M8 5.2H5.4v1.4a3.1 3.1 0 0 0 3.1 3.1M16 5.2h2.6v1.4a3.1 3.1 0 0 1-3.1 3.1"/><path d="M12 13.4v3.2M9 20.5h6M10.2 20.5l.6-3.9h2.4l.6 3.9"/>',
+        info: '<circle cx="12" cy="12" r="9"/><path d="M12 11.2v5.2M12 7.6v.9"/>',
+        spinner: '<path d="M12 3.4a8.6 8.6 0 1 0 8.6 8.6"/>',
+        users: '<circle cx="9.2" cy="8.2" r="3.3"/><path d="M2.8 20.2c1.4-3.4 3.8-5.1 6.4-5.1s5 1.7 6.4 5.1"/><path d="M17.6 8.6v4.2M19.7 10.7h-4.2"/>',
+        chevron: '<path d="M9.5 5.5l6.5 6.5-6.5 6.5"/>',
+        arrow: '<path d="M4.5 12h14M13 6.5l5.5 5.5-5.5 5.5"/>'
+    };
+    function icon(name, cls) {
+        var body = PATHS[name] || PATHS.dashboard;
+        return '<svg class="v2-i ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+               'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+    }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function readJSON(key, fb) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fb : v; } catch (e) { return fb; } }
+    function scrollTop() { var m = $('main'); if (m) m.scrollTop = 0; }
+
+    /* ---------- stash: nodes the app builds that belong on other tabs ---------- */
+    var stash = $('v2Stash');
+    if (!stash) { stash = el('div'); stash.id = 'v2Stash'; stash.style.display = 'none'; document.body.appendChild(stash); }
+
+    /* ---------- wire the shell chrome ---------- */
+    /* nav is generated so the shell owns every icon */
+    var navHost = $('v2Nav');
+    if (navHost) {
+        navHost.innerHTML = NAV.map(function (g) {
+            return '<div class="v2-group"><div class="v2-group-label">' + g.group + '</div>' +
+                g.items.map(function (k) {
+                    return '<button class="v2-nav-item' + (k === 'overview' ? ' is-active' : '') + '" data-v2go="' + k + '" type="button">' +
+                        icon(TABS[k].icon) + '<span>' + TABS[k].nav + '</span></button>';
+                }).join('') + '</div>';
+        }).join('');
+    }
+
+    var brandActions = $('v2BrandActions');
+    var sideFooter = $('v2SideFooter');
+
+    /* proxy buttons that drive the app's own toggles */
+    function proxy(targetId, svgName, cls) {
+        var b = el('button', 'v2-icon-btn ' + (cls || ''));
+        b.type = 'button';
+        b.setAttribute('data-v2proxy', targetId);
+        b.innerHTML = icon(svgName);
+        b.addEventListener('click', function () {
+            var real = $(targetId);
+            if (real) real.click();
+        });
+        return b;
+    }
+    if (brandActions) {
+        var themeBtn = proxy('themeToggle', (document.documentElement.getAttribute('data-theme') === 'dark') ? 'sun' : 'moon', 'v2-theme-proxy');
+        var inboxProxy = proxy('inboxBtn', 'bell', 'v2-inbox-proxy');
+        brandActions.appendChild(themeBtn);
+        brandActions.appendChild(inboxProxy);
+        var profileBtn = el('button', 'v2-avatar-btn');
+        profileBtn.type = 'button';
+        profileBtn.title = 'My Profile';
+        profileBtn.setAttribute('aria-label', 'My Profile');
+        profileBtn.setAttribute('data-v2go-quick', 'profile');
+        profileBtn.innerHTML = icon('user');
+        brandActions.appendChild(profileBtn);
+        S.profileBtn = profileBtn;
+        var badge = $('inboxBadge');
+        if (badge) inboxProxy.appendChild(badge);
+        // keep the theme glyph truthful
+        new MutationObserver(function () {
+            var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            themeBtn.innerHTML = icon(dark ? 'sun' : 'moon');
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+
+    var settings = $('settingsBtn');
+    if (settings && sideFooter) {
+        sideFooter.appendChild(settings);
+        settings.innerHTML = icon('settings') + '<span>Settings</span>';
+    }
+
+    /* if the Material Symbols font is unavailable (offline preview, blocked CDN),
+       degrade the app's own ligature icons to neutral shapes instead of words */
+    (function iconFontGuard() {
+        function check() {
+            var missing = false;
+            try {
+                if (document.fonts && document.fonts.check) missing = !document.fonts.check('24px "Material Symbols Rounded"');
+            } catch (e) { missing = false; }
+            if (missing) document.documentElement.classList.add('v2-noiconfont');
+        }
+        setTimeout(check, 1400);
+        setTimeout(check, 3500);
+    })();
+
+    // mobile drawer
+    var scrim = el('div', 'v2-scrim');
+    document.body.appendChild(scrim);
+    scrim.addEventListener('click', function () { document.body.classList.remove('v2-nav-open'); });
+    var menuBtn = $('v2MenuBtn');
+    if (menuBtn) menuBtn.addEventListener('click', function () { document.body.classList.toggle('v2-nav-open'); });
+
+    /* ---------- nav ---------- */
+    var navItems = Array.prototype.slice.call(document.querySelectorAll('.v2-nav-item'));
+
+    function syncNav(view) {
+        var active = S.tab;
+        if (view === 'All Subjects Overview' || view === 'Home') active = 'overview';
+        else if (view === 'Focus & Time') active = 'focus';
+        else if (view === 'Exams') active = 'exams';
+        else if (view === 'Shared Notes') active = 'notes';
+        else if (view === 'Leaderboard') active = 'league';
+        else if (view === 'Activity') active = 'activity';
+        else if (view === 'Messages') active = 'messages';
+        else if (view === 'Subjects' || view === 'My Profile') active = S.tab;
+        else active = 'subjects'; // subject / section view
+
+        navItems.forEach(function (n) { n.classList.toggle('is-active', n.dataset.v2go === active); });
+        if (S.profileBtn) S.profileBtn.classList.toggle('is-active', active === 'profile');
+        var eb = $('v2Eyebrow');
+        if (eb) {
+            var t = TABS[active] || TABS.overview;
+            eb.textContent = (view === '__section__' ? 'Study · Section' : t.group + ' · ' + t.label);
+        }
+    }
+
+    function setTab(tab) { S.tab = tab; if (TABS[tab] && TABS[tab].sub) S.sub = TABS[tab].sub; }
+
+    function go(tab) {
+        if (!TABS[tab]) return;
+        setTab(tab);
+        var t = TABS[tab];
+        document.body.classList.remove('v2-nav-open');
+        if (tab === 'subjects') { renderSubjects(); }
+        else if (tab === 'profile') { renderProfile(); }
+        else if (tab === 'activity' || tab === 'messages') { renderSocialPage(tab); }
+        else if (t.engine) {
+            var b = $(t.engine);
+            if (b) b.click();
+        }
+        saveView({ tab: tab });
+        scrollTop();
+        schedule();
+    }
+
+    navItems.forEach(function (n) {
+        n.addEventListener('click', function () { go(n.dataset.v2go); });
+    });
+
+    /* quick-action tiles reuse the same router */
+    document.addEventListener('click', function (e) {
+        var q = e.target.closest ? e.target.closest('[data-v2go-quick]') : null;
+        if (q) {
+            var target = q.dataset.v2goQuick;
+            if (target.charAt(0) === '#') {
+                if (S.tab !== 'overview') go('overview');
+                setTimeout(function () {
+                    var el2 = document.querySelector(target);
+                    if (el2 && el2.scrollIntoView) el2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 120);
+            } else { go(target); }
+        }
+        var sec = e.target.closest ? e.target.closest('[data-v2sec]') : null;
+        if (sec) { openSection(sec.dataset.v2subject, sec.dataset.v2sec); }
+    });
+
+    /* ---------- overview ---------- */
+    var quickBarEl = null;
+    function quickBar() {
+        if (quickBarEl) return quickBarEl;
+        var wrap = el('div', 'v2-quick');
+        wrap.id = 'v2Quick';
+        [
+            ['focus', 'clock', 'Start a focus session', 'Pomodoro timer & breaks'],
+            ['#todoBoard', 'checklist', "Today's tasks", 'Jump to your plan'],
+            ['exams', 'note', 'Review exam topics', 'Priority & progress'],
+            ['league', 'trophy', 'See the standings', 'Your class league']
+        ].forEach(function (c) {
+            var b = el('button', 'v2-quick-card',
+                '<span class="v2-quick-icon">' + icon(c[1]) + '</span>' +
+                '<span><span class="v2-quick-t">' + c[2] + '</span><span class="v2-quick-s">' + c[3] + '</span></span>');
+            b.type = 'button';
+            b.setAttribute('data-v2go-quick', c[0]);
+            wrap.appendChild(b);
+        });
+        quickBarEl = wrap;
+        return wrap;
+    }
+
+    function overviewLayout(list) {
+        // the To-Do board and Time Insights now live on Home, so only the
+        // league-only cards get parked for their own tabs
+        var feed = $('activityFeedCard'); if (feed) stash.appendChild(feed);
+        var ch = $('challengeCard'); if (ch) stash.appendChild(ch);
+        var dm = $('socialDMCard'); if (dm) stash.appendChild(dm);
+        var lb = $('feedCard'); if (lb) stash.appendChild(lb);
+
+        // drop the duplicated right-hand stack, promote the subject grid to full width
+        var split = list.querySelector('.l5c-split');
+        if (split) {
+            var stack = split.querySelector('.l5c-stack');
+            if (stack) stack.remove();
+            var left = split.querySelector('.l5c-main-col');
+            if (left) { while (left.firstChild) list.insertBefore(left.firstChild, split); }
+            split.remove();
+        }
+        if (!list.querySelector('#v2Quick')) list.insertBefore(quickBar(), list.firstChild);
+    }
+
+    /* ---------- league sub-tabs ---------- */
+    function leagueLayout(list) {
+        var kids = Array.prototype.slice.call(list.children);
+        kids.forEach(function (k) {
+            var id = k.id || '';
+            var isSocial = (id === 'activityFeedCard' || id === 'feedCard' || id === 'socialDMCard');
+            if (isSocial) k.style.display = 'none';
+            else k.style.display = '';
+        });
+    }
+
+    /* ---------- activity / messages ---------- */
+    var socialPoll = null;
+    function renderSocialPage(which) {
+        var list = cl(); if (!list) return;
+        setTab(which);
+        syncNav(which === 'activity' ? 'Activity' : 'Messages');
+        if (h1El()) h1El().textContent = which === 'activity' ? 'Activity' : 'Messages';
+        var subtitle = $('subject-subtitle');
+        if (subtitle) subtitle.textContent = which === 'activity'
+            ? 'Everything your league mates are doing — chapters, streaks and focus sessions.'
+            : 'Private 1-to-1 chats with the people in your class league.';
+        var ha = $('header-actions'); if (ha) ha.innerHTML = '';
+
+        var wanted = which === 'activity' ? 'activityFeedCard' : 'socialDMCard';
+        var node = $(wanted) || stash.querySelector('#' + wanted);
+        if (node) stash.appendChild(node);           // detach safely before clearing
+        list.innerHTML = '';
+        if (node) { list.appendChild(node); return; }
+
+        var code = (localStorage.getItem('leagueCode') || '').toUpperCase();
+        var notice = el('div', 'v2-notice', icon('spinner') + '<span>Connecting to your league… this takes a few seconds.</span>');
+        if (!code) {
+            notice = el('div', 'v2-notice', icon('info') + '<span>Join the class league first — open Leaderboard and tap “Join the Class League”.</span>');
+            list.appendChild(notice);
+            var jumpRow = el('div', 'league-row');
+            var jump = el('button', 'btn', 'Open Leaderboard');
+            jump.type = 'button';
+            jump.setAttribute('data-v2go-quick', 'league');
+            jumpRow.appendChild(jump);
+            list.appendChild(jumpRow);
+            return;
+        }
+        list.appendChild(notice);
+
+        // the app only injects these cards while its league view is mounted
+        if (h1Text() !== 'Leaderboard') {
+            S.busy++;
+            var b = $('leagueBtn');
+            if (b) { b.click(); }
+            S.busy--;
+        }
+        clearInterval(socialPoll);
+        var tries = 0;
+        socialPoll = setInterval(function () {
+            tries++;
+            var n = $(wanted) || stash.querySelector('#' + wanted);
+            if (n || tries > 18) {
+                clearInterval(socialPoll);
+                if (S.tab === which) renderSocialPage(which);
+            }
+        }, 350);
+    }
+
+    /* ---------- subjects ---------- */
+    function subjectRows() {
+        var out = [];
+        Array.prototype.slice.call(document.querySelectorAll('#v2Engine .subject')).forEach(function (subEl) {
+            var key = subEl.dataset.subject || '';
+            var pctEl = subEl.querySelector('.subject-progress');
+            var pct = pctEl ? parseInt(pctEl.textContent, 10) || 0 : 0;
+            var ic = subEl.querySelector('.material-symbols-rounded');
+            var name = (window.subjectDisplayNames && window.subjectDisplayNames[key]) || key;
+            var sections = [];
+            Array.prototype.slice.call(subEl.querySelectorAll('.sub-subject')).forEach(function (s) {
+                sections.push({ label: s.textContent.trim(), key: s.dataset.sub || '' });
+            });
+            if (!sections.length) sections.push({ label: 'All Chapters', key: '' });
+            out.push({ key: key, name: name, pct: pct, icon: ic ? ic.textContent.trim() : 'menu_book', sections: sections });
+        });
+        return out.filter(function (r) { return r.key; });
+    }
+
+    function renderSubjects() {
+        var list = cl(); if (!list) return;
+        setTab('subjects');
+        if (h1El()) h1El().textContent = 'Subjects';
+        var sub = $('subject-subtitle');
+        if (sub) sub.textContent = 'Pick a subject, then open the section you want to study.';
+        var ha = $('header-actions'); if (ha) ha.innerHTML = '';
+        syncNav('Subjects');
+
+        var rows = subjectRows();
+        list.innerHTML = '';
+        list.appendChild(el('div', 'v2-page-head',
+            '<div><h3>Your subjects</h3><p>' + rows.length + ' subjects in your stream · progress updates as you check chapters</p></div>' +
+            '<span class="v2-count">Overall ' + (($('heroRingText') || {}).textContent || '0%') + '</span>'));
+
+        if (!rows.length) {
+            list.appendChild(el('div', 'v2-notice', icon('info') + '<span>No subjects yet — finish the welcome setup or add subjects in Settings.</span>'));
+            return;
+        }
+        var grid = el('div', 'v2-grid');
+        rows.forEach(function (r) {
+            var card = el('div', 'v2-subject');
+            card.innerHTML =
+                '<div class="v2-subject-top">' +
+                    '<span class="v2-subject-icon">' + icon('book') + '</span>' +
+                    '<span class="v2-subject-name">' + esc(r.name) + '</span>' +
+                    '<span class="v2-subject-pct">' + r.pct + '%</span>' +
+                '</div>' +
+                '<div class="v2-bar"><i style="width:' + Math.max(0, Math.min(100, r.pct)) + '%"></i></div>';
+            var secWrap = el('div', 'v2-sections');
+            r.sections.forEach(function (s) {
+                var chip = el('button', 'v2-chip', s.label + icon('chevron'));
+                chip.type = 'button';
+                chip.setAttribute('data-v2subject', r.key);
+                chip.setAttribute('data-v2sec', s.key);
+                secWrap.appendChild(chip);
+            });
+            card.appendChild(secWrap);
+            card.appendChild(el('div', 'v2-muted-note', r.sections.length + ' section' + (r.sections.length > 1 ? 's' : '') + ' · open a section to see its chapters'));
+            grid.appendChild(card);
+        });
+        list.appendChild(grid);
+    }
+
+    function openSection(subjectKey, sectionKey) {
+        setTab('subjects');
+        saveView({ tab: 'section', subject: subjectKey, sub: sectionKey || '' });
+        var subEl = document.querySelector('#v2Engine .subject[data-subject="' + subjectKey + '"]');
+        if (!subEl) return;
+        if (!sectionKey) { subEl.click(); return; }
+        var secEl = null;
+        Array.prototype.slice.call(subEl.querySelectorAll('.sub-subject')).forEach(function (s) {
+            if ((s.dataset.sub || '') === sectionKey) secEl = s;
+        });
+        if (secEl) { secEl.click(); scrollTop(); schedule(); return; }
+        subEl.click();
+    }
+
+    function activeEngineSubject() {
+        return document.querySelector('#v2Engine .subject.active');
+    }
+    function subjectTitle(subEl) {
+        var k = subEl ? subEl.dataset.subject : '';
+        return (window.subjectDisplayNames && window.subjectDisplayNames[k]) || k;
+    }
+    function renderSectionChooser(list, subEl) {
+        var name = subjectTitle(subEl);
+        var chips = Array.prototype.slice.call(subEl.querySelectorAll('.sub-subject'));
+        if (!chips.length) return;
+        list.innerHTML = '';
+        list.appendChild(el('div', 'v2-page-head',
+            '<div><h3>' + esc(name) + '</h3><p>Pick a section to open its chapter list.</p></div>'));
+        var grid = el('div', 'v2-grid');
+        chips.forEach(function (c) {
+            var card = el('button', 'v2-subject');
+            card.type = 'button';
+            card.style.textAlign = 'left';
+            card.style.cursor = 'pointer';
+            card.innerHTML = '<div class="v2-subject-top">' +
+                    '<span class="v2-subject-icon">' + icon('book') + '</span>' +
+                    '<span class="v2-subject-name">' + esc(c.textContent.trim()) + '</span>' +
+                    '<span class="v2-subject-pct">' + icon('chevron') + '</span>' +
+                '</div>' +
+                '<div class="v2-muted-note">Open chapter list</div>';
+            card.addEventListener('click', function () {
+                openSection(subEl.dataset.subject, c.dataset.sub || '');
+            });
+            grid.appendChild(card);
+        });
+        list.appendChild(grid);
+        if (h1El()) h1El().textContent = name;
+        var sub = $('subject-subtitle');
+        if (sub) sub.textContent = 'Choose a section to begin.';
+        var ha = $('header-actions'); if (ha) ha.innerHTML = '';
+    }
+
+    /* ---------- profile ---------- */
+    function renderProfile() {
+        var list = cl(); if (!list) return;
+        setTab('profile');
+        syncNav('My Profile');
+        if (h1El()) h1El().textContent = 'My Profile';
+        var sub = $('subject-subtitle');
+        if (sub) sub.textContent = 'How you appear to your class league, plus your study record.';
+        var ha = $('header-actions'); if (ha) ha.innerHTML = '';
+
+        var p = readJSON('leagueProfile', {}) || {};
+        var reg = readJSON('appRegistration', null) || {};
+        var code = (localStorage.getItem('leagueCode') || '').toUpperCase();
+
+        list.innerHTML = '';
+        var head = el('div', 'v2-profile-head');
+        var avatar = p.photo
+            ? '<span class="v2-avatar"><img src="' + esc(p.photo) + '" alt=""></span>'
+            : '<span class="v2-avatar">' + esc(p.emoji || '📚') + '</span>';
+        head.innerHTML = avatar +
+            '<div style="min-width:200px;flex:1 1 auto;">' +
+                '<div class="v2-profile-name">' + esc(p.name || 'Add your name') + '</div>' +
+                '<div class="v2-profile-bio">' + esc([p.bio, p.school, p.classLabel].filter(Boolean).join(' · ') || 'No bio yet — add one in Settings › Profile') + '</div>' +
+                '<div class="v2-profile-bio">' + (code ? 'League: ' + esc(code) : 'Not joined the league yet') + ' · ' + esc(reg.stream || 'Stream not set') + '</div>' +
+            '</div>' +
+            '<div class="league-row" style="margin-left:auto;">' +
+                '<button class="btn secondary" type="button" data-v2editprofile="1">Edit profile</button>' +
+            '</div>';
+        list.appendChild(head);
+
+        var stats = el('div', 'v2-stat-row');
+        [['xp', 'XP'], ['percent', '% complete'], ['chapters', 'Chapters'], ['focus', 'Focus this week'], ['streak', 'Day streak']].forEach(function (s) {
+            var d = el('div', 'v2-stat', '<b id="v2p_' + s[0] + '">–</b><span>' + s[1] + '</span>');
+            stats.appendChild(d);
+        });
+        list.appendChild(stats);
+
+        var subjCard = el('div', 'card');
+        subjCard.innerHTML = '<div class="card-title">' + icon('book') + 'Your subjects</div>' +
+            '<div class="v2-sections">' + ((reg.subjects || []).map(function (k) {
+                var nm = (window.subjectDisplayNames && window.subjectDisplayNames[k]) || k;
+                return '<span class="pill">' + esc(nm) + '</span>';
+            }).join('') || '<span class="v2-muted-note">No subjects selected yet</span>') + '</div>' +
+            '<div class="league-status" style="margin-top:14px;">Subjects, activities and focus settings are managed in Settings.</div>';
+        list.appendChild(subjCard);
+
+        var invite = el('div', 'card');
+        invite.innerHTML = '<div class="card-title">' + icon('users') + 'Bring your classmates</div>' +
+            '<div class="league-status">Everyone joins the same class league — no codes. Send them the link and they land in the same standings.</div>' +
+            '<div class="league-row" style="margin-top:14px;">' +
+                '<button class="btn" type="button" id="v2CopyInvite">Copy invite link</button>' +
+                '<button class="btn secondary" type="button" data-v2go-quick="league">Open leaderboard</button>' +
+            '</div><div class="league-status" id="v2InviteStatus"></div>';
+        list.appendChild(invite);
+
+        var editBtn = head.querySelector('[data-v2editprofile]');
+        if (editBtn) editBtn.addEventListener('click', function () {
+            var sb = $('settingsBtn'); if (sb) sb.click();
+            setTimeout(function () {
+                var body = document.querySelector('#settingsModal .settings-body');
+                var iso = document.querySelector('#settingsModal [data-profile-section], #settingsModal .cfg-profile');
+                if (iso && iso.scrollIntoView) iso.scrollIntoView({ block: 'start' });
+                else if (body) body.scrollTop = 0;
+            }, 150);
+        });
+        var copyBtn = $('v2CopyInvite');
+        if (copyBtn) copyBtn.addEventListener('click', function () {
+            var link = location.href.split('#')[0].split('?')[0] + (code ? '?join=' + code : '');
+            var done = function ok() { var s = $('v2InviteStatus'); if (s) s.textContent = 'Link copied — send it in your class group ✓'; };
+            if (navigator.clipboard) navigator.clipboard.writeText(link).then(done).catch(done); else done();
+        });
+
+        fillProfileStats(code);
+    }
+
+    function fillProfileStats(code) {
+        function put(id, v) { var e = $(id); if (e) e.textContent = v; }
+        try {
+            if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
+            var auth = firebase.auth();
+            var uid = auth.currentUser && auth.currentUser.uid;
+            if (!uid || !code) return;
+            firebase.firestore().collection('leagues').doc(code).collection('members').doc(uid).get().then(function (snap) {
+                var m = snap.exists ? snap.data() : {};
+                put('v2p_xp', m.xp || 0);
+                put('v2p_percent', (m.percent || 0) + '%');
+                put('v2p_chapters', (m.chaptersDone || 0) + '/' + (m.chaptersTotal || 0));
+                put('v2p_focus', m.focusHidden ? 'private' : (m.focusWeekMin || 0) + 'm');
+                put('v2p_streak', '🔥 ' + (m.streak || 0));
+            }).catch(function () {});
+        } catch (e) {}
+    }
+
+    /* ---------- main layout pass ---------- */
+    function applyLayout() {
+        var list = cl(); if (!list) return;
+        // if we renamed the heading to a section name, put it back when we leave the section
+        if (S.sectionH1 && h1El() && h1Text() === S.sectionH1 && !list.querySelector('.chapter-row')) {
+            h1El().textContent = 'Home'; S.sectionH1 = null;
+        }
+        var view = h1Text();
+        // the app calls this page "All Subjects Overview" — we present it as Home
+        var isHome = (view === 'Home' || view === 'All Subjects Overview');
+        if (view === 'All Subjects Overview' && h1El()) h1El().textContent = 'Home';
+        // a chapter list inside the page means we are inside a subject/section,
+        // no matter what the app left in the <h1>
+        if (list.querySelector('.chapter-row')) { view = '__section__'; isHome = false; }
+
+        syncNav(view);
+
+        // hero: only where it adds value (overview + chapter/section views)
+        var known = { 'All Subjects Overview': 1, 'Home': 1, 'Focus & Time': 1, 'Exams': 1, 'Leaderboard': 1, 'Shared Notes': 1, 'Planner': 1, 'Subjects': 1, 'My Profile': 1, 'Activity': 1, 'Messages': 1 };
+        var isSection = (view === '__section__');
+        var showHero = isHome || !known[view];
+        document.body.classList.toggle('v2-nohero', !showHero);
+
+        if (isSection && h1El() && (h1Text() === 'All Subjects Overview' || h1Text() === 'Home' || h1Text() === 'Subjects' || !h1Text())) {
+            var actSub = activeEngineSubject();
+            var nm = subjectTitle(actSub);
+            var st = $('subject-subtitle');
+            var secName = nm || (st && st.textContent ? st.textContent.trim() : '');
+            if (secName) { h1El().textContent = secName; S.sectionH1 = secName; }
+            return;
+        }
+
+        var welcome = list.querySelector('.welcome-message');
+        if (welcome && !isSection) {
+            var actNow = activeEngineSubject();
+            if (actNow && actNow.querySelector('.sub-subject')) {
+                renderSectionChooser(list, actNow);
+                return;
+            }
+        }
+
+        if (isHome) {
+            var homeSub = $('subject-subtitle');
+            if (homeSub && (!homeSub.textContent || !homeSub.textContent.trim())) {
+                homeSub.textContent = 'Your progress, your plan and your subjects in one place';
+            }
+            overviewLayout(list);
+        }
+        if (view === 'Leaderboard') leagueLayout(list);
+
+    }
+
+    function schedule() {
+        if (S.pending) return;
+        S.pending = true;
+        var run = function () { S.pending = false; try { applyLayout(); } catch (e) {} };
+        if (window.requestAnimationFrame) requestAnimationFrame(run); else setTimeout(run, 30);
+    }
+
+    var mo = new MutationObserver(function () { if (!S.busy) schedule(); });
+    try {
+        if (cl()) mo.observe(cl(), { childList: true });
+        if (h1El()) mo.observe(h1El(), { childList: true, characterData: true, subtree: true });
+    } catch (e) {}
+
+    // a couple of catch-up passes for the delayed league cards
+    [250, 900, 1800, 3400].forEach(function (t) { setTimeout(schedule, t); });
+
+    // first paint: home is already rendered by the app at this point
+    var lastView = null;
+    try { lastView = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch (e) { lastView = null; }
+    var canRestore = !!(lastView && (TABS[lastView.tab] || (lastView.tab === 'section' && lastView.subject)));
+    setTab('overview');
+
+    // then jump back to the tab (or chapter section) the user was on last time
+    if (canRestore) {
+        var bootTries = 0, bootTimer = setInterval(function () {
+            bootTries++;
+            var gate = $('regModal');
+            var gateOpen = gate && getComputedStyle(gate).display !== 'none';
+            if (gateOpen && bootTries < 160) return;      // wait for the welcome screen
+            if (bootTries > 160) { clearInterval(bootTimer); return; }
+            clearInterval(bootTimer);
+            try {
+                if (lastView.tab === 'section') openSection(lastView.subject, lastView.sub || '');
+                else if (lastView.tab !== 'overview') go(lastView.tab);
+                var m = $('main');
+                if (m && lastView.scroll) setTimeout(function () { m.scrollTop = lastView.scroll || 0; }, 700);
+            } catch (e) {}
+        }, 250);
+    }
+    schedule();
+    window.__v2go = go;
+})();
+</script>
+
+<script>
+/* ============================================================
+   V5 — GOOGLE SIGN-IN (replaces anonymous auth)
+   One identity per student, synced across devices.
+   Requires: Firebase Console > Authentication > Sign-in method
+   > Google = Enabled, and your domain in Authorized domains.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    var CFG = (typeof LEAGUE_FIREBASE_CONFIG !== 'undefined') ? LEAGUE_FIREBASE_CONFIG : null;
+    var SDK = (typeof firebase !== 'undefined' && firebase && firebase.auth);
+    var auth = null, user = null, booted = false;
+    var waiters = [];
+    var dismissed = false;
+
+    function ready() {
+        if (!CFG || !CFG.apiKey || String(CFG.apiKey).indexOf('PASTE_') === 0) return false;
+        if (!SDK) return false;
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(CFG);
+            if (!auth) auth = firebase.auth();
+            return true;
+        } catch (e) { return false; }
+    }
+
+    /* ---------------- styles are in the V5 css layer ---------------- */
+    var G_LOGO = '<svg class="sl-g" viewBox="0 0 48 48" aria-hidden="true">' +
+        '<path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-2.7-.4-3.9H24v7.1h12.1c-.2 2-1.2 5-3.5 7l-.1.3 5.3 4.1.4.1c3.4-3.1 5.4-7.7 5.4-13.1"/>' +
+        '<path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.6-5.3l-7-5.4c-1.9 1.3-4.4 2.2-7.6 2.2-5.9 0-10.9-3.9-12.7-9.2l-.3.1-5.6 4.3-.1.3C9.1 41.1 15.9 46 24 46"/>' +
+        '<path fill="#FBBC05" d="M11.3 28.3c-.5-1.4-.8-2.8-.8-4.3s.3-3 .7-4.3v-.3l-5.6-4.4-.2.1A22 22 0 0 0 3 24c0 3.5.9 6.9 2.4 9.8z"/>' +
+        '<path fill="#EA4335" d="M24 9.5c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 3.2 29.9 1 24 1 15.9 1 9.1 5.9 5.4 13.2l5.8 4.5C13.1 13.4 18.1 9.5 24 9.5"/>' +
+        '</svg>';
+
+    var gateHTML =
+        '<div class="sl-gate-card" role="dialog" aria-modal="true" aria-labelledby="slGateTitle">' +
+            '<div class="sl-gate-brand"><span class="sl-gate-logo">S</span>' +
+                '<span class="sl-gate-brand-t"><b>StudyLeague</b><small>Class 11 · League</small></span></div>' +
+            '<h2 id="slGateTitle">Sign in to save your league</h2>' +
+            '<p class="sl-gate-sub">One tap with Google keeps your progress, streak and messages on every device — and puts you on your class leaderboard.</p>' +
+            '<button type="button" class="sl-google-btn" id="slGoogleBtn">' + G_LOGO + '<span>Continue with Google</span></button>' +
+            '<button type="button" class="sl-gate-skip" id="slSkipBtn">Continue without an account</button>' +
+            '<div class="sl-gate-msg" id="slAuthMsg"></div>' +
+            '<ul class="sl-gate-list">' +
+                '<li><b>Works offline too.</b> Tasks, chapters and notes stay on this device.</li>' +
+                '<li><b>Only your league sees you.</b> Nothing is posted publicly.</li>' +
+                '<li><b>You can sign out any time</b> from Settings › Account.</li>' +
+            '</ul>' +
+        '</div>';
+
+    var gate = null;
+    function buildGate() {
+        if (gate) return gate;
+        gate = document.createElement('div');
+        gate.id = 'slAuthGate';
+        gate.className = 'sl-gate';
+        gate.setAttribute('aria-hidden', 'true');
+        gate.innerHTML = gateHTML;
+        document.body.appendChild(gate);
+        gate.addEventListener('click', function (e) { if (e.target === gate) hideGate(); });
+        gate.querySelector('#slGoogleBtn').addEventListener('click', function () { signIn(); });
+        gate.querySelector('#slSkipBtn').addEventListener('click', function () {
+            dismissed = true;
+            hideGate();
+            flush(new Error('cancelled'));
+        });
+        return gate;
+    }
+
+    function registrationDone() {
+        try { return !!JSON.parse(localStorage.getItem('appRegistration') || 'null'); } catch (e) { return false; }
+    }
+
+    function anyModalOpen() {
+        var ids = ['regModal', 'profileModal', 'noteModal', 'settingsModal', 'inboxModal'];
+        for (var i = 0; i < ids.length; i++) {
+            var m = document.getElementById(ids[i]);
+            if (m && getComputedStyle(m).display !== 'none') return true;
+        }
+        return false;
+    }
+
+    function showGate(msg) {
+        buildGate();
+        gate.classList.add('is-open');
+        gate.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('sl-gate-open');
+        var m = gate.querySelector('#slAuthMsg');
+        if (m) m.textContent = msg || '';
+    }
+    function hideGate() {
+        if (!gate) return;
+        gate.classList.remove('is-open');
+        gate.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('sl-gate-open');
+    }
+    function msg(text, kind) {
+        var m = gate && gate.querySelector('#slAuthMsg');
+        if (!m) return;
+        m.textContent = text || '';
+        m.className = 'sl-gate-msg' + (kind ? ' is-' + kind : '');
+    }
+
+    function flush(err) {
+        var list = waiters; waiters = [];
+        list.forEach(function (w) {
+            if (err) w.reject(err);
+            else w.resolve({ user: user });
+        });
+    }
+
+    /* ---------------- sign in / out ---------------- */
+    function signIn() {
+        if (!ready()) { msg('Firebase is not configured yet.', 'err'); return Promise.reject(new Error('not-configured')); }
+        var provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        var btn = gate && gate.querySelector('#slGoogleBtn');
+        if (btn) btn.classList.add('is-busy');
+        msg('Opening Google…');
+        return auth.signInWithPopup(provider).then(function (cred) {
+            if (btn) btn.classList.remove('is-busy');
+            msg('');
+            onSignedIn(cred.user);
+            return cred;
+        }).catch(function (err) {
+            if (btn) btn.classList.remove('is-busy');
+            var code = (err && err.code) || '';
+            if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
+                msg('Your browser blocked the popup — retrying with a redirect…');
+                return auth.signInWithRedirect(provider);
+            }
+            if (code === 'auth/popup-closed-by-user') { msg('Sign-in window closed. Tap the button to try again.'); return Promise.reject(err); }
+            if (code === 'auth/unauthorized-domain') {
+                msg('This domain is not allowed yet. Firebase Console → Authentication → Settings → Authorized domains → add "' + location.hostname + '".', 'err');
+            } else if (code === 'auth/operation-not-allowed') {
+                msg('Google sign-in is switched off. Firebase Console → Authentication → Sign-in method → Google → Enable, then reload.', 'err');
+            } else if (code === 'auth/network-request-failed') {
+                msg('No connection to Google right now — you can keep studying offline and sign in later.', 'err');
+            } else {
+                msg('Could not sign in: ' + ((err && err.message) || 'unknown error'), 'err');
+            }
+            return Promise.reject(err);
+        });
+    }
+
+    function signOut() {
+        if (!ready()) return Promise.resolve();
+        return auth.signOut().then(function () { user = null; paint(); });
+    }
+
+    function onSignedIn(u) {
+        user = u || (auth && auth.currentUser) || null;
+        hideGate();
+        paint();
+        prefillProfile();
+        flush(null);
+        try { document.dispatchEvent(new CustomEvent('sl:signed-in', { detail: { uid: user && user.uid } })); } catch (e) {}
+    }
+
+    /* fill an empty profile with the Google name so the app looks finished */
+    function prefillProfile() {
+        if (!user) return;
+        try {
+            var p = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {};
+            var changed = false;
+            if (!p.name && user.displayName) { p.name = String(user.displayName).split(' ')[0]; changed = true; }
+            if (changed) localStorage.setItem('leagueProfile', JSON.stringify(p));
+        } catch (e) {}
+    }
+
+    /* ---------------- top-bar chip + avatar ---------------- */
+    function paint() {
+        var chip = document.getElementById('slSignChip');
+        if (chip) chip.style.display = user ? 'none' : '';
+        var av = document.querySelector('.v2-avatar-btn');
+        if (av) {
+            var pr = {};
+            try { pr = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {}; } catch (e) {}
+            av.classList.toggle('sl-has-photo', !!(user && user.photoURL && !pr.photo));
+            if (user && user.photoURL && !pr.photo) {
+                if (!av.querySelector('img.sl-av-img')) av.innerHTML = '<img class="sl-av-img" src="' + user.photoURL + '" alt="">';
+                av.title = user.displayName || 'My Profile';
+            } else if (av.querySelector('img.sl-av-img')) {
+                av.innerHTML = '<svg class="v2-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.4" r="3.8"/><path d="M4.6 20.6c1.7-3.7 4.4-5.5 7.4-5.5s5.7 1.8 7.4 5.5"/></svg>';
+            }
+        }
+    }
+
+    function buildChip() {
+        var host = document.querySelector('.v2-top-right');
+        if (!host || document.getElementById('slSignChip')) return;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.id = 'slSignChip';
+        b.className = 'sl-sign-chip';
+        b.innerHTML = G_LOGO + '<span>Sign in</span>';
+        b.addEventListener('click', function () { showGate(''); });
+        var settings = document.getElementById('settingsBtn');
+        if (settings && settings.parentNode === host) host.insertBefore(b, settings);
+        else host.appendChild(b);
+    }
+
+    /* ---------------- public API used by the rest of the app ---------------- */
+    function ensure() {
+        if (!ready()) return Promise.reject(new Error('firebase-not-configured'));
+        if (auth.currentUser) { user = auth.currentUser; return Promise.resolve({ user: user }); }
+        return new Promise(function (resolve, reject) {
+            waiters.push({ resolve: resolve, reject: reject });
+            showGate('');
+        });
+    }
+
+    window.__slAuth = {
+        ensure: ensure,
+        signIn: signIn,
+        signOut: signOut,
+        showGate: showGate,
+        hideGate: hideGate,
+        get user() { return user; }
+    };
+    window.__slSignOut = signOut;
+
+    /* ---------------- Account block inside Settings ---------------- */
+    function injectAccount() {
+        var body = document.querySelector('#settingsModal .settings-body');
+        if (!body) return;
+        if (!document.getElementById('slAcctSection')) {
+            var sec = document.createElement('div');
+            sec.className = 'settings-section';
+            sec.id = 'slAcctSection';
+            sec.innerHTML =
+                '<h4>Account</h4>' +
+                '<div class="sl-acct">' +
+                    '<span class="sl-acct-img" id="slAcctImg"></span>' +
+                    '<span class="sl-acct-b"><b id="slAcctName">Not signed in</b><small id="slAcctMail">Sign in to sync your league across devices</small></span>' +
+                    '<span class="sl-acct-state" id="slAcctState"></span>' +
+                '</div>' +
+                '<div class="league-row" style="margin-top:12px;">' +
+                    '<button class="btn" type="button" id="slAcctBtn">Sign in with Google</button>' +
+                    '<span class="league-status" id="slAcctMsg"></span>' +
+                '</div>';
+            body.insertBefore(sec, body.firstChild);
+            sec.querySelector('#slAcctBtn').addEventListener('click', function () {
+                var b = this;
+                if (user) {
+                    b.textContent = 'Signing out…';
+                    signOut().then(function () { b.textContent = 'Sign in with Google'; updateAccount(); });
+                } else {
+                    showGate('');
+                    hideSettings();
+                }
+            });
+        }
+        updateAccount();
+    }
+    function hideSettings() {
+        var m = document.getElementById('settingsModal');
+        if (m) m.style.display = 'none';
+    }
+    function updateAccount() {
+        var img = document.getElementById('slAcctImg');
+        if (!img) return;
+        var name = document.getElementById('slAcctName');
+        var mail = document.getElementById('slAcctMail');
+        var state = document.getElementById('slAcctState');
+        var btn = document.getElementById('slAcctBtn');
+        var msg = document.getElementById('slAcctMsg');
+        if (msg) msg.textContent = '';
+        if (user) {
+            img.innerHTML = user.photoURL ? '<img class="sl-acct-img" src="' + user.photoURL + '" alt="">' : '';
+            img.style.display = user.photoURL ? 'none' : 'grid';
+            name.textContent = user.displayName || 'Signed in';
+            mail.textContent = user.email || 'Google account';
+            state.textContent = 'Synced';
+            state.className = 'sl-acct-state on';
+            if (btn) btn.textContent = 'Sign out';
+        } else {
+            img.innerHTML = '';
+            name.textContent = 'Not signed in';
+            mail.textContent = 'Sign in to sync your league across devices';
+            state.textContent = '';
+            state.className = 'sl-acct-state';
+            if (btn) btn.textContent = 'Sign in with Google';
+        }
+    }
+
+    /* ---------------- boot ---------------- */
+    function boot() {
+        if (booted) return; booted = true;
+        if (!ready()) return;                       // no firebase → app runs local-only
+        buildChip();
+        setTimeout(injectAccount, 400);
+        auth.onAuthStateChanged(function (u) {
+            user = u;
+            paint();
+            updateAccount();
+            if (u) { hideGate(); }
+        });
+        // finish a redirect sign-in if the popup path fell back
+        auth.getRedirectResult().then(function (res) {
+            if (res && res.user) onSignedIn(res.user);
+        }).catch(function () {});
+        // wait for the first-run welcome screen to be answered before asking to sign in
+        var tries = 0;
+        var auto = setInterval(function () {
+            tries++;
+            if (auth.currentUser || dismissed || tries > 240) { clearInterval(auto); return; }
+            if (!registrationDone() || anyModalOpen()) return;
+            clearInterval(auto);
+            showGate('');
+        }, 500);
+        setInterval(paint, 2500);
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(boot, 60);
+    else document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 60); });
+})();
+</script>
+
+<script>
+/* ============================================================
+   V5 — PROFILE CARD: collapse the editor once details are saved
+   Filled profile  ->  clean read-only card + "Edit details"
+   Empty profile   ->  the form stays open so it can be filled
+   ============================================================ */
+(function () {
+    'use strict';
+
+    var editing = false;
+
+    function getProfile() {
+        try { return JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {}; } catch (e) { return {}; }
+    }
+    function isFilled() {
+        var p = getProfile();
+        return !!(p.name && String(p.name).trim() && p.name !== 'Student');
+    }
+
+    function parts(card) {
+        return {
+            grid: card.querySelector('.profile-grid'),
+            colors: card.querySelector('.profile-colors'),
+            saveRow: card.querySelector('#pfSave') ? card.querySelector('#pfSave').parentNode : null,
+            head: card.querySelector('.card-title'),
+            previewRow: card.querySelector('.league-avatar, .league-avatar-img') ?
+                card.querySelector('.league-avatar, .league-avatar-img').parentNode : null
+        };
+    }
+
+    function show(el, on) {
+        if (!el) return;
+        if (on) el.style.removeProperty('display');
+        else el.style.setProperty('display', 'none', 'important');
+    }
+
+    function setMode(card, open) {
+        var p = parts(card);
+        show(p.grid, open);
+        show(p.saveRow, open);
+        if (p.colors) show(p.colors.parentNode, open);     // the whole “Avatar colour” block
+        show(card.querySelector('#slPfEdit'), !open);
+        show(card.querySelector('#slPfNote'), !open);
+        card.classList.toggle('sl-pf-collapsed', !open);
+    }
+
+    function decorate() {
+        var card = document.getElementById('socialProfileCard');
+        if (!card) return;
+        if (card.dataset.slPf === '1') { setMode(card, editing || !isFilled()); return; }
+        card.dataset.slPf = '1';
+
+        var p = parts(card);
+        if (p.previewRow) {
+            var edit = document.createElement('button');
+            edit.type = 'button';
+            edit.id = 'slPfEdit';
+            edit.className = 'btn secondary sl-pf-edit';
+            edit.textContent = 'Edit details';
+            edit.style.marginLeft = 'auto';
+            edit.addEventListener('click', function () {
+                editing = true;
+                setMode(card, true);
+                var first = card.querySelector('#pfName');
+                if (first && first.focus) first.focus();
+            });
+            p.previewRow.appendChild(edit);
+        }
+
+        // a quiet helper line under the header while collapsed
+        var note = document.createElement('div');
+        note.id = 'slPfNote';
+        note.className = 'sl-pf-note';
+        note.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">check_circle</span> ' +
+            'Your name, avatar and bio are what the league sees on the board.';
+        var target = p.grid ? p.grid.parentNode : card;
+        if (p.grid && p.grid.parentNode) p.grid.parentNode.insertBefore(note, p.grid);
+        else target.appendChild(note);
+
+        setMode(card, editing || !isFilled());
+    }
+
+    // the app re-creates this card on every leaderboard render
+    var t = null;
+    var host = document.getElementById('chapterList');
+    if (host) {
+        new MutationObserver(function () {
+            clearTimeout(t);
+            t = setTimeout(decorate, 60);
+        }).observe(host, { childList: true, subtree: false });
+    }
+    setInterval(decorate, 1200);
+    document.addEventListener('sl:signed-in', function () { setTimeout(decorate, 200); });
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56546d8784d59ca',t:'MTc5Mzk4MDQ2Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56546d8784d59ca',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
