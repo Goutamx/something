@@ -1930,7 +1930,7 @@
         *::-webkit-scrollbar { width:10px; height:10px; } *::-webkit-scrollbar-thumb { background:rgba(148,163,184,.45); border-radius:8px; border:2px solid transparent; background-clip:content-box; } *::-webkit-scrollbar-track { background:transparent; }
         * { scrollbar-width:thin; scrollbar-color:rgba(148,163,184,.5) transparent; }
 </style>
-    <style id="v5-css">
+    <style id="v6-css">
 /* ============================================================================
    STUDYLEAGUE V2 — REDESIGN LAYER
    Spacious, rich, clean. One job per tab. Appended last, so it wins.
@@ -3297,6 +3297,113 @@ body.sl-gate-open{ overflow:hidden; }
 .sl-acct-state{ font-size:.74rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--c-ink-3); }
 .sl-acct-state.on{ color:#1a7f37; }
 [data-theme="dark"] .sl-acct-state.on{ color:#6ee7a0; }
+
+/* ============================================================================
+   V6 — Messages page (group chat + DMs), sign-in state, league clean-up
+   ========================================================================== */
+
+/* ---- page-level chat cards ---- */
+.sl-chat-card, .sl-dm-card{ padding:20px 22px !important; margin-bottom:16px; }
+.sl-chat-card .card-title, .sl-dm-card .card-title{ margin-bottom:14px; }
+
+/* ---- message list ---- */
+.sl-msgs{
+    height:330px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+    padding:14px; background:var(--c-page); border:1px solid var(--c-line);
+    border-radius:10px;
+}
+.sl-dm-thread .sl-msgs{ height:300px; }
+.sl-msg{
+    max-width:76%; align-self:flex-start;
+    background:var(--c-bg); border:1px solid var(--c-line); border-radius:12px;
+    padding:8px 12px; font-size:.88rem; line-height:1.45; color:var(--c-ink);
+    box-shadow:none;
+}
+.sl-msg.me{
+    align-self:flex-end; background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink);
+}
+.sl-msg-meta{ font-size:.68rem; font-weight:650; letter-spacing:.02em; opacity:.62; margin-bottom:3px; }
+.sl-msg-body{ white-space:pre-wrap; word-break:break-word; }
+.sl-msg-actions{ display:flex; gap:4px; margin-top:6px; }
+.sl-msg-actions .sl-react{ opacity:.72; transition:opacity .12s ease, background .12s ease; }
+.sl-msg:hover .sl-msg-actions .sl-react, .sl-msg-actions .sl-react:focus-visible{ opacity:1; }
+.sl-code-chip{
+    font-size:.68rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--c-ink-3); background:var(--c-page); border:1px solid var(--c-line);
+    border-radius:6px; padding:2px 7px;
+}
+.sl-react, .sl-del{
+    border:1px solid var(--c-line); background:var(--c-bg); color:var(--c-ink-2);
+    border-radius:999px; font-size:.72rem; line-height:1; padding:2px 7px; cursor:pointer;
+    font-family:inherit; display:inline-flex; align-items:center; gap:3px;
+}
+.sl-msg.me .sl-react, .sl-msg.me .sl-del{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.24); color:#fff; }
+.sl-react i{ font-style:normal; font-weight:700; font-size:.68rem; }
+.sl-react:hover, .sl-del:hover{ background:var(--c-hover); }
+.sl-msg.me .sl-react:hover, .sl-msg.me .sl-del:hover{ background:rgba(255,255,255,.26); }
+[data-theme="dark"] .sl-msg.me .sl-react, [data-theme="dark"] .sl-msg.me .sl-del{ background:rgba(17,17,17,.08); border-color:rgba(17,17,17,.18); color:#111; }
+
+/* ---- composer ---- */
+.sl-composer{ display:flex; gap:10px; margin-top:12px; }
+.sl-composer .input{ flex:1 1 auto; }
+.sl-composer .btn{ flex:0 0 auto; }
+.sl-empty{
+    margin:auto; text-align:center; font-size:.85rem; color:var(--c-ink-3);
+    padding:18px; max-width:42ch; line-height:1.55;
+}
+
+/* ---- people column ---- */
+.sl-dm-layout{ display:grid; grid-template-columns:250px 1fr; gap:16px; align-items:start; }
+.sl-dm-people{ display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto; padding-right:4px; }
+.sl-person{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:transparent; border:1px solid transparent; border-radius:9px;
+    padding:8px 10px; cursor:pointer; font-family:inherit; color:var(--c-ink);
+}
+.sl-person:hover{ background:var(--c-hover); }
+.sl-person.is-active{ background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink); }
+.sl-person-av{
+    width:28px; height:28px; border-radius:8px; display:grid; place-items:center;
+    font-size:.9rem; color:#fff; flex:0 0 auto; overflow:hidden;
+}
+.sl-person-t{ display:flex; flex-direction:column; min-width:0; }
+.sl-person-t b{ font-size:.84rem; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sl-person-t small{ font-size:.71rem; color:var(--c-ink-3); }
+.sl-person.is-active .sl-person-t small{ color:rgba(255,255,255,.72); }
+[data-theme="dark"] .sl-person.is-active .sl-person-t small{ color:rgba(17,17,17,.68); }
+
+/* ---- signed-out card ---- */
+.sl-signin-card{ padding:24px !important; }
+.sl-signin-card .card-title{ margin-bottom:10px; }
+
+/* ---- settings › league data ---- */
+.sl-clean{ display:flex; align-items:center; gap:14px; padding:4px 0 2px; }
+.sl-clean-t{ flex:1 1 auto; min-width:0; }
+.sl-clean-t b{ display:block; font-size:.88rem; font-weight:650; color:var(--c-ink); }
+.sl-clean-t small{ display:block; font-size:.76rem; line-height:1.5; color:var(--c-ink-3); margin-top:2px; }
+.sl-clean .btn{ flex:0 0 auto; }
+
+/* ---- fetching app cards (see holdForCard) ---- */
+body.sl-hold #main h1{ visibility:hidden; }
+body.sl-hold .v2-stand-in-h1{
+    font-size:2rem; font-weight:750; letter-spacing:-.02em; color:var(--c-ink);
+    margin:0 0 14px; line-height:1.15;
+}
+.v2-stand-in-h1{ display:none; }
+body.sl-hold .v2-stand-in-h1{ display:block; }
+
+/* ---- ghost rows (hidden anyway, kept for debugging) ---- */
+tr.sl-ghost{ display:none !important; }
+
+/* ---- responsive ---- */
+@media (max-width:760px){
+    .sl-dm-layout{ grid-template-columns:1fr; }
+    .sl-dm-people{ flex-direction:row; overflow-x:auto; max-height:none; padding-bottom:6px; }
+    .sl-person{ width:auto; flex:0 0 auto; }
+    .sl-msgs{ height:260px; }
+    .sl-msg{ max-width:88%; }
+    .sl-clean{ flex-direction:column; align-items:flex-start; gap:10px; }
+}
 
     </style>
 </head>
@@ -6449,7 +6556,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var configured = isConfigured();
 
         var meCard =
-            '<div class="card fade-in" style="margin-bottom:14px;">' +
+            '<div class="card fade-in" id="slMeCard" style="margin-bottom:14px;">' +
                 '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">person</span> My Stats (this device)</div>' +
                 '<div class="league-row">' +
                     '<span class="pill"><b>' + stats.xp + '</b>&nbsp;XP</span>' +
@@ -8183,14 +8290,28 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     function setTab(tab) { S.tab = tab; if (TABS[tab] && TABS[tab].sub) S.sub = TABS[tab].sub; }
 
+    /* the app has its own nav (Home / Focus / Exams / Leaderboard / subjects);
+       remember when one of those was clicked so our pages can step aside */
+    var VIEW_TAB = {
+        'Home': 'overview', 'All Subjects Overview': 'overview',
+        'Leaderboard': 'league', 'Focus & Time': 'focus', 'Exams': 'exams',
+        'Shared Notes': 'notes', 'Subjects': 'subjects'
+    };
+    document.addEventListener('click', function (e) {
+        var t = e.target && e.target.closest ? e.target.closest('#homeBtn, #focusBtn, #examBtn, #leagueBtn, .subject, .sub-subject') : null;
+        if (t) S.engineNavAt = Date.now();
+    }, true);
+
     function go(tab) {
         if (!TABS[tab]) return;
+        document.body.classList.remove('sl-building');
         setTab(tab);
         var t = TABS[tab];
         document.body.classList.remove('v2-nav-open');
         if (tab === 'subjects') { renderSubjects(); }
         else if (tab === 'profile') { renderProfile(); }
-        else if (tab === 'activity' || tab === 'messages') { renderSocialPage(tab); }
+        else if (tab === 'messages') { renderMessagesPage(); }
+        else if (tab === 'activity') { renderSocialPage(tab); }
         else if (t.engine) {
             var b = $(t.engine);
             if (b) b.click();
@@ -8266,13 +8387,17 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     /* ---------- league sub-tabs ---------- */
     function leagueLayout(list) {
-        var kids = Array.prototype.slice.call(list.children);
-        kids.forEach(function (k) {
-            var id = k.id || '';
-            var isSocial = (id === 'activityFeedCard' || id === 'feedCard' || id === 'socialDMCard');
-            if (isSocial) k.style.display = 'none';
-            else k.style.display = '';
+        // V6: the Leaderboard tab is the board only.
+        // profile editor -> My Profile, group chat + DMs -> Messages, feed -> Activity
+        ['slMeCard', 'activityFeedCard', 'feedCard', 'socialDMCard', 'socialChatCard', 'socialProfileCard'].forEach(function (id) {
+            var n = $(id);
+            if (n && n.parentNode !== stash) stash.appendChild(n);
         });
+        Array.prototype.slice.call(list.children).forEach(function (k) {
+            if (k.parentNode !== list) return;
+            k.style.display = '';
+        });
+        if (window.__slSocial) window.__slSocial.refresh();
     }
 
     /* ---------- activity / messages ---------- */
@@ -8326,6 +8451,67 @@ var LEAGUE_FIREBASE_CONFIG = {
                 if (S.tab === which) renderSocialPage(which);
             }
         }, 350);
+    }
+
+    /* ---------- messages (V6: our own group chat + DMs) ---------- */
+    function renderMessagesPage() {
+        var list = cl(); if (!list) return;
+        setTab('messages');
+        syncNav('Messages');
+        if (h1El()) h1El().textContent = 'Messages';
+        var sub = $('subject-subtitle');
+        if (sub) sub.textContent = 'Group chat and private chats with your class league.';
+        var ha = $('header-actions'); if (ha) ha.innerHTML = '';
+        // the app's cards belong to the leaderboard view; park them for good
+        ['socialChatCard', 'socialDMCard', 'socialProfileCard'].forEach(function (id) {
+            var n = $(id); if (n && n.parentNode !== stash) stash.appendChild(n);
+        });
+        list.innerHTML = '';
+        if (window.__slSocial && window.__slSocial.renderMessages) {
+            window.__slSocial.renderMessages();
+        } else {
+            list.appendChild(el('div', 'v2-notice', icon('info') + '<span>Messages are loading…</span>'));
+        }
+        scrollTop();
+    }
+
+    /* make sure an app-built card exists before we move it into our own page */
+    /* ---------- fetching app-rendered cards without touching the view ----------
+       Some cards (the profile editor) are only created by the app while its
+       heading reads "Leaderboard". Navigating there and back is what used to
+       wipe our pages, so instead we briefly satisfy that condition, keep the
+       stand-in title on screen, and lift the card out as soon as it appears. */
+    function holdForCard(id, done) {
+        var have = $(id) || stash.querySelector('#' + id);
+        if (have) { done(have); return; }
+        var head = h1El(), headText = head ? head.textContent : '';
+        document.body.classList.add('sl-hold');
+        if (head) head.textContent = 'Leaderboard';
+        var tries = 0;
+        var t = setInterval(function () {
+            tries++;
+            var x = $(id) || stash.querySelector('#' + id);
+            if (!x && tries < 4) return;
+            clearInterval(t);
+            document.body.classList.remove('sl-hold');
+            if (head && headText) head.textContent = headText;
+            done(x || null);
+        }, 1000);
+    }
+
+    function ensureCard(id, done) {
+        var n = $(id) || stash.querySelector('#' + id);
+        if (n) { done(n); return; }
+        S.busy++;
+        var lb = $('leagueBtn'); if (lb) lb.click();
+        S.busy--;
+        var tries = 0;
+        var t = setInterval(function () {
+            tries++;
+            var x = $(id) || stash.querySelector('#' + id);
+            if (x) { clearInterval(t); done(x); return; }
+            if (tries > 20) { clearInterval(t); done(null); }
+        }, 300);
     }
 
     /* ---------- subjects ---------- */
@@ -8446,6 +8632,9 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* ---------- profile ---------- */
     function renderProfile() {
         var list = cl(); if (!list) return;
+        // keep the app's profile editor alive between renders, then re-attach it
+        var liveCard = $('socialProfileCard');
+        if (liveCard && liveCard.parentNode === list) stash.appendChild(liveCard);
         setTab('profile');
         syncNav('My Profile');
         if (h1El()) h1El().textContent = 'My Profile';
@@ -8472,6 +8661,25 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<button class="btn secondary" type="button" data-v2editprofile="1">Edit profile</button>' +
             '</div>';
         list.appendChild(head);
+
+        var pfCard = stash.querySelector('#socialProfileCard');
+        var standIn = null;
+        if (!pfCard) {
+            // the app's page heading is borrowed for a moment while the editor
+            // card is fetched, so this keeps a proper title on screen
+            standIn = el('div', 'v2-stand-in-h1', 'My Profile');
+            list.insertBefore(standIn, list.firstChild);
+        }
+        if (pfCard) {
+            pfCard.style.marginBottom = '16px';
+            list.appendChild(pfCard);
+        } else if (!S.profileCardTried) {
+            S.profileCardTried = true;             // one attempt per page load
+            holdForCard('socialProfileCard', function (node) {
+                if (node && node.parentNode !== stash) stash.appendChild(node);
+                if (S.tab === 'profile') renderProfile();
+            });
+        }
 
         var stats = el('div', 'v2-stat-row');
         [['xp', 'XP'], ['percent', '% complete'], ['chapters', 'Chapters'], ['focus', 'Focus this week'], ['streak', 'Day streak']].forEach(function (s) {
@@ -8500,13 +8708,10 @@ var LEAGUE_FIREBASE_CONFIG = {
 
         var editBtn = head.querySelector('[data-v2editprofile]');
         if (editBtn) editBtn.addEventListener('click', function () {
+            var card = $('socialProfileCard');
+            var btn = card && card.querySelector('#slPfEdit');
+            if (btn) { btn.click(); if (card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
             var sb = $('settingsBtn'); if (sb) sb.click();
-            setTimeout(function () {
-                var body = document.querySelector('#settingsModal .settings-body');
-                var iso = document.querySelector('#settingsModal [data-profile-section], #settingsModal .cfg-profile');
-                if (iso && iso.scrollIntoView) iso.scrollIntoView({ block: 'start' });
-                else if (body) body.scrollTop = 0;
-            }, 150);
         });
         var copyBtn = $('v2CopyInvite');
         if (copyBtn) copyBtn.addEventListener('click', function () {
@@ -8537,7 +8742,36 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     /* ---------- main layout pass ---------- */
+
+    /* ---------- page guard ----------
+       The app re-renders the Leaderboard into #chapterList whenever a league
+       snapshot arrives. If the user is on one of our own pages at that moment
+       the page would be replaced (that is the old "blank Messages tab" bug), so
+       we put it back. Cheap: one querySelector per layout pass. */
+    function pageGuard() {
+        var list = cl(); if (!list) return false;
+        // a click on the app's own nav (Home, Focus, a subject …) wins: adopt it
+        // instead of re-rendering our page over the user's choice
+        var view = h1Text();
+        var wanted = VIEW_TAB[view];
+        if (wanted && S.tab !== wanted && (Date.now() - (S.engineNavAt || 0)) < 2000) {
+            setTab(wanted); syncNav(view); return false;
+        }
+        if (S.tab === 'profile' && !document.body.classList.contains('sl-hold') && !list.querySelector('.v2-profile-head')) {
+            renderProfile(); return true;
+        }
+        if (S.tab === 'messages' && !list.querySelector('#slGroupChat') && !list.querySelector('.sl-signin-card')) {
+            renderMessagesPage(); return true;
+        }
+        if (S.tab === 'activity' && !list.querySelector('#activityFeedCard') && !list.querySelector('.v2-notice')) {
+            renderSocialPage('activity'); return true;
+        }
+        return false;
+    }
+
     function applyLayout() {
+        if (document.body.classList.contains('sl-hold')) return;   // heading borrowed
+        if (pageGuard()) return;
         var list = cl(); if (!list) return;
         // if we renamed the heading to a section name, put it back when we leave the section
         if (S.sectionH1 && h1El() && h1Text() === S.sectionH1 && !list.querySelector('.chapter-row')) {
@@ -8647,6 +8881,12 @@ var LEAGUE_FIREBASE_CONFIG = {
     var auth = null, user = null, booted = false;
     var waiters = [];
     var dismissed = false;
+    var authResolved = false;          // Firebase has told us whether a session exists
+    var DISMISS_KEY = 'slAuthDismissed';
+
+    function wasDismissed() { try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch (e) { return false; } }
+    function rememberDismiss() { try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {} }
+    function forgetDismiss() { try { localStorage.removeItem(DISMISS_KEY); } catch (e) {} }
 
     function ready() {
         if (!CFG || !CFG.apiKey || String(CFG.apiKey).indexOf('PASTE_') === 0) return false;
@@ -8695,6 +8935,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         gate.querySelector('#slGoogleBtn').addEventListener('click', function () { signIn(); });
         gate.querySelector('#slSkipBtn').addEventListener('click', function () {
             dismissed = true;
+            rememberDismiss();
             hideGate();
             flush(new Error('cancelled'));
         });
@@ -8784,6 +9025,9 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     function onSignedIn(u) {
         user = u || (auth && auth.currentUser) || null;
+        authResolved = true;
+        dismissed = false;
+        forgetDismiss();
         hideGate();
         paint();
         prefillProfile();
@@ -8926,6 +9170,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         setTimeout(injectAccount, 400);
         auth.onAuthStateChanged(function (u) {
             user = u;
+            authResolved = true;
             paint();
             updateAccount();
             if (u) { hideGate(); }
@@ -8934,15 +9179,18 @@ var LEAGUE_FIREBASE_CONFIG = {
         auth.getRedirectResult().then(function (res) {
             if (res && res.user) onSignedIn(res.user);
         }).catch(function () {});
-        // wait for the first-run welcome screen to be answered before asking to sign in
+        // ask only when we know there is no session, the welcome screen is done,
+        // and the student hasn't already chosen "continue without an account"
         var tries = 0;
         var auto = setInterval(function () {
             tries++;
-            if (auth.currentUser || dismissed || tries > 240) { clearInterval(auto); return; }
+            if (tries > 240) { clearInterval(auto); return; }
+            if (!authResolved) return;                       // still restoring the Google session
+            if (auth.currentUser || dismissed || wasDismissed()) { clearInterval(auto); return; }
             if (!registrationDone() || anyModalOpen()) return;
             clearInterval(auto);
             showGate('');
-        }, 500);
+        }, 400);
         setInterval(paint, 2500);
     }
 
@@ -9047,5 +9295,472 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56546d8784d59ca',t:'MTc5Mzk4MDQ2Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56546d8784d59ca',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>
+/* ============================================================================
+   V6 — LEAGUE CLEAN-UP + MESSAGES
+   Owns three things the old injected cards did badly:
+     1. the standings filter (old anonymous "device" rows are hidden + deletable)
+     2. the Messages tab — group chat AND direct messages, one reliable screen
+     3. the "who is real" member index other modules can reuse
+   Same Firestore schema as before, so nothing else has to change.
+   ========================================================================== */
+(function () {
+    'use strict';
+
+    var CFG = (typeof LEAGUE_FIREBASE_CONFIG !== 'undefined') ? LEAGUE_FIREBASE_CONFIG : null;
+    var db = null, auth = null, me = null, code = '';
+    var allMembers = {};                 // uid -> data (every row, ghosts included)
+    var membersUnsub = null, boardWatch = null;
+    var chatUnsub = null, chatMsgs = [];
+    var dmUnsub = null, dmMsgs = [], dmUser = null;
+    var chatFirst = true;
+    var page = '';
+
+    function $(id) { return document.getElementById(id); }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function nowCode() { return (localStorage.getItem('leagueCode') || 'STUDY1').toUpperCase(); }
+    function myProfile() { try { return JSON.parse(localStorage.getItem('leagueProfile')) || {}; } catch (e) { return {}; } }
+    function signedIn() { return !!(auth && auth.currentUser); }
+    function millis(ts) {
+        if (!ts) return 0;
+        try { if (ts.toMillis) return ts.toMillis(); } catch (e) {}
+        var d = ts instanceof Date ? ts : new Date(ts);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+    function ago(ts) {
+        if (!ts) return 'just now';
+        var d = ts.toDate ? ts.toDate() : (ts instanceof Date ? ts : new Date(ts));
+        var m = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+        return m < 1 ? 'just now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago';
+    }
+
+    /* ---------------------------------------------------------------- boot */
+    function initFB() {
+        if (!CFG || !CFG.apiKey || typeof firebase === 'undefined' || !firebase.firestore) return false;
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(CFG);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            auth.onAuthStateChanged(function (u) {
+                me = u;
+                code = nowCode();
+                if (u) {
+                    stampProvider();
+                    loadMembers();
+                } else {
+                    allMembers = {};
+                    window.__slMembers = allMembers;
+                }
+                if (page === 'messages') renderMessages();
+            });
+            return true;
+        } catch (e) { return false; }
+    }
+
+    /* mark my row as a real Google account (this is what separates people
+       from the anonymous rows older builds left behind) */
+    function stampProvider() {
+        if (!db || !me) return;
+        db.collection('leagues').doc(code).collection('members').doc(me.uid)
+            .set({ authProvider: 'google', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+            .catch(function () {});
+    }
+
+    function loadMembers() {
+        if (!db || !me || membersUnsub) return;
+        membersUnsub = db.collection('leagues').doc(code).collection('members')
+            .onSnapshot(function (snap) {
+                allMembers = {};
+                snap.forEach(function (d) { allMembers[d.id] = Object.assign({ uid: d.id }, d.data()); });
+                window.__slMembers = allMembers;
+                applyGhostFilter();
+                if (page === 'messages') { renderPeople(); updateCounts(); }
+            }, function () { /* rules not published yet — silent */ });
+    }
+
+    /* -------------------------------------------------- ghost detection */
+    function isGhost(m) {
+        if (!m) return true;
+        if (m.authProvider === 'google') return false;
+        var ts = 0;
+        try {
+            var t = m.lastSeen || m.updatedAt;
+            ts = t && t.toMillis ? t.toMillis() : 0;
+        } catch (e) { ts = 0; }
+        return !(ts && (Date.now() - ts) < 7 * 864e5);   // seen in the last week = still a person
+    }
+    function realUids() {
+        var out = {};
+        Object.keys(allMembers).forEach(function (u) { if (!isGhost(allMembers[u])) out[u] = allMembers[u]; });
+        if (me) out[me.uid] = out[me.uid] || (allMembers[me.uid] || { uid: me.uid });
+        return out;
+    }
+    function ghostUids() {
+        var out = [];
+        Object.keys(allMembers).forEach(function (u) { if (u !== (me && me.uid) && isGhost(allMembers[u])) out.push(u); });
+        return out;
+    }
+    window.__slRealMembers = realUids;
+    window.__slGhostCount = function () { return ghostUids().length; };
+
+    /* hide the anonymous rows on the app's standings table, then re-rank */
+    function applyGhostFilter() {
+        var body = $('leagueBoardBody');
+        if (!body || !me) return;
+        var real = realUids();
+        var visible = [];
+        Array.prototype.forEach.call(body.querySelectorAll('tr'), function (tr) {
+            var btn = tr.querySelector('[data-uid]');
+            var uid = btn ? btn.getAttribute('data-uid') : (tr.querySelector('.league-you') ? me.uid : '');
+            if (!uid) { tr.style.display = ''; visible.push(tr); return; }
+            var hide = !real[uid];
+            tr.style.display = hide ? 'none' : '';
+            tr.setAttribute('data-sl-uid', uid);
+            if (!hide) visible.push(tr);
+        });
+        visible.forEach(function (tr, i) {
+            var cell = tr.querySelector('.league-rank');
+            if (cell) cell.textContent = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
+        });
+        var note = $('slGhostNote');
+        if (note) note.style.display = ghostUids().length ? '' : 'none';
+    }
+
+    function watchBoard() {
+        var list = $('chapterList');
+        if (!list || boardWatch) return;
+        // MutationObserver callbacks run before paint, so filtering here means
+        // anonymous rows never appear on screen (the 60ms pass is a safety net
+        // for the app's own async re-render).
+        boardWatch = new MutationObserver(function () { applyGhostFilter(); setTimeout(applyGhostFilter, 60); });
+        boardWatch.observe(list, { childList: true, subtree: true });
+        setInterval(applyGhostFilter, 2500);
+    }
+
+    /* ------------------------------------------------ clean-up (settings) */
+    function cleanGhosts() {
+        if (!db || !me) return Promise.reject(new Error('sign-in required'));
+        var list = ghostUids();
+        if (!list.length) return Promise.resolve(0);
+        return Promise.all(list.map(function (uid) {
+            return db.collection('leagues').doc(code).collection('members').doc(uid).delete()
+                .catch(function () { return null; });
+        })).then(function () {
+            var left = ghostUids().length;
+            applyGhostFilter();
+            return list.length - left;
+        });
+    }
+
+    /* ------------------------------------------------------------ messages */
+    function shellAuthCard() {
+        return '<div class="card sl-signin-card"><div class="card-title">' +
+            '<span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">lock</span> Sign in to use messages</div>' +
+            '<div class="league-status">Your chats live inside your class league. Sign in with Google so your classmates know it is you — it takes one tap.</div>' +
+            '<div class="league-row" style="margin-top:14px;"><button class="btn" type="button" id="slMsgSignIn">Continue with Google</button></div></div>';
+    }
+
+    function renderMessages() {
+        var list = $('chapterList');
+        if (!list) return;
+        page = 'messages';
+        code = nowCode();
+
+        // headings + eyebrow handled by the shell, this is page content
+        if (!signedIn()) {
+            list.innerHTML = shellAuthCard();
+            var b = $('slMsgSignIn');
+            if (b) b.addEventListener('click', function () { if (window.__slAuth) window.__slAuth.showGate(''); });
+            return;
+        }
+
+        list.innerHTML =
+            '<div class="card sl-chat-card" id="slGroupChat">' +
+                '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">forum</span>' +
+                    'League group chat' +
+                    '<span class="league-updated" style="margin-left:auto;display:inline-flex;align-items:center;gap:10px;">' +
+                        '<span id="slMsgCount"></span>' +
+                        '<span class="sl-code-chip">' + esc(code) + '</span></span></div>' +
+                '<div class="sl-msgs" id="slGroupMsgs"><div class="sl-empty">Loading chat…</div></div>' +
+                '<form class="sl-composer" id="slGroupForm">' +
+                    '<input class="input" id="slGroupInput" maxlength="500" autocomplete="off" placeholder="Message your league…">' +
+                    '<button class="btn" type="submit">Send</button></form>' +
+                '<div class="league-status" id="slGroupStatus"></div>' +
+            '</div>' +
+
+            '<div class="card sl-dm-card" id="slDMs">' +
+                '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">mail</span>' +
+                    'Direct messages</div>' +
+                '<div class="sl-dm-layout">' +
+                    '<div class="sl-dm-people" id="slDmPeople"></div>' +
+                    '<div class="sl-dm-thread">' +
+                        '<div class="sl-msgs" id="slDmMsgs"><div class="sl-empty">Pick a classmate to start a private chat.</div></div>' +
+                        '<form class="sl-composer" id="slDmForm">' +
+                            '<input class="input" id="slDmInput" maxlength="500" autocomplete="off" placeholder="Message…">' +
+                            '<button class="btn" type="submit">Send</button></form>' +
+                        '<div class="league-status" id="slDmStatus"></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        $('slGroupForm').addEventListener('submit', function (e) { e.preventDefault(); sendGroup(); });
+        $('slDmForm').addEventListener('submit', function (e) { e.preventDefault(); sendDm(); });
+
+        renderPeople();
+        startChat();
+        if (dmUser && allMembers[dmUser]) startDm(dmUser); else stopDm();
+    }
+
+    function updateCounts() {
+        var el = $('slMsgCount');
+        if (!el) return;
+        var n = Object.keys(realUids()).length;
+        el.textContent = n + (n === 1 ? ' member' : ' members') + ' in league';
+    }
+
+    function renderPeople() {
+        var box = $('slDmPeople');
+        if (!box) return;
+        updateCounts();
+        var real = realUids();
+        var others = Object.keys(real).filter(function (u) { return !me || u !== me.uid; })
+            .sort(function (a, b) { return (real[b].xp || 0) - (real[a].xp || 0); });
+        if (!others.length) {
+            box.innerHTML = '<div class="sl-empty">No classmates yet — send them your invite link from My Profile.</div>';
+            return;
+        }
+        box.innerHTML = others.map(function (u) {
+            var m = real[u];
+            return '<button type="button" class="sl-person' + (u === dmUser ? ' is-active' : '') + '" data-dm-uid="' + esc(u) + '">' +
+                '<span class="sl-person-av" style="background:' + esc(m.avatarColor || '#111111') + '">' + esc(m.emoji || '📚') + '</span>' +
+                '<span class="sl-person-t"><b>' + esc(m.displayName || 'Student') + '</b>' +
+                '<small>' + (m.percent || 0) + '% · ' + (m.xp || 0) + ' XP</small></span></button>';
+        }).join('');
+        box.querySelectorAll('[data-dm-uid]').forEach(function (b) {
+            b.addEventListener('click', function () { startDm(b.getAttribute('data-dm-uid')); });
+        });
+    }
+
+    /* ----- group chat ----- */
+    function startChat() {
+        if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+        chatFirst = true;
+        if (!db || !me) return;
+        chatUnsub = db.collection('leagues').doc(code).collection('messages')
+            .orderBy('createdAt', 'desc').limit(50)
+            .onSnapshot(function (snap) {
+                chatMsgs = [];
+                snap.forEach(function (d) { chatMsgs.push(Object.assign({ id: d.id }, d.data())); });
+                chatMsgs.sort(function (a, b) { return millis(a.createdAt) - millis(b.createdAt); });
+                renderChat();
+            }, function (e) {
+                var st = $('slGroupStatus');
+                if (st) st.textContent = 'Chat unavailable: ' + (e && e.message ? e.message : 'permission denied') +
+                    ' — make sure latest.rules is published in Firebase.';
+            });
+    }
+    function renderChat() {
+        var box = $('slGroupMsgs');
+        if (!box) return;
+        if (!chatMsgs.length) { box.innerHTML = '<div class="sl-empty">No messages yet — say hello 👋</div>'; return; }
+        var nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+        box.innerHTML = chatMsgs.map(function (m) {
+            var mine = me && m.senderUid === me.uid;
+            var reactions = m.reactions || {};
+            var counts = {};
+            Object.keys(reactions).forEach(function (uid) { counts[reactions[uid]] = (counts[reactions[uid]] || 0) + 1; });
+            var react = ['👍', '🔥', '❤️'].map(function (em) {
+                return '<button type="button" class="sl-react" data-msg="' + m.id + '" data-emoji="' + em + '">' + em +
+                    (counts[em] ? '<i>' + counts[em] + '</i>' : '') + '</button>';
+            }).join('');
+            return '<div class="sl-msg' + (mine ? ' me' : '') + '">' +
+                '<div class="sl-msg-meta">' + (mine ? 'You' : esc(m.senderEmoji || '📚') + ' ' + esc(m.senderName || 'Student')) +
+                    ' · ' + ago(m.createdAt) + '</div>' +
+                '<div class="sl-msg-body">' + esc(m.text || '') + '</div>' +
+                '<div class="sl-msg-actions">' + react +
+                    (mine ? '<button type="button" class="sl-del" data-del="' + m.id + '" title="Delete">✕</button>' : '') + '</div>' +
+                '</div>';
+        }).join('');
+        if (nearBottom || chatFirst) { box.scrollTop = box.scrollHeight; chatFirst = false; }
+        box.querySelectorAll('[data-msg]').forEach(function (b) {
+            b.addEventListener('click', function () { reactTo(b.getAttribute('data-msg'), b.getAttribute('data-emoji')); });
+        });
+        box.querySelectorAll('[data-del]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                db.collection('leagues').doc(code).collection('messages').doc(b.getAttribute('data-del')).delete().catch(function () {});
+            });
+        });
+    }
+    function sendGroup() {
+        var input = $('slGroupInput');
+        var text = (input.value || '').trim();
+        if (!text || !db || !me) return;
+        var p = myProfile();
+        input.value = '';
+        db.collection('leagues').doc(code).collection('messages').add({
+            text: text.slice(0, 500), senderUid: me.uid,
+            senderName: p.name || 'Student', senderEmoji: p.emoji || '📚',
+            reactions: {}, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function (e) {
+            var st = $('slGroupStatus');
+            if (st) st.textContent = 'Could not send: ' + e.message;
+        });
+    }
+    function reactTo(msgId, emoji) {
+        if (!db || !me) return;
+        var msg = chatMsgs.filter(function (m) { return m.id === msgId; })[0];
+        if (!msg) return;
+        var cur = (msg.reactions || {})[me.uid];
+        var upd = {};
+        upd['reactions.' + me.uid] = cur === emoji ? firebase.firestore.FieldValue.delete() : emoji;
+        db.collection('leagues').doc(code).collection('messages').doc(msgId).update(upd).catch(function () {});
+    }
+
+    /* ----- direct messages ----- */
+    function dmId(a, b) { return [a, b].sort().join('_'); }
+    function stopDm() {
+        if (dmUnsub) { dmUnsub(); dmUnsub = null; }
+        dmMsgs = [];
+    }
+    function startDm(uid) {
+        dmUser = uid;
+        renderPeople();
+        stopDm();
+        var box = $('slDmMsgs');
+        var who = allMembers[uid] || {};
+        var label = who.displayName || 'this classmate';
+        if (box) box.innerHTML = '<div class="sl-empty">Loading your chat with ' + esc(label) + '…</div>';
+        var inp = $('slDmInput'); if (inp) inp.placeholder = 'Message ' + label + '…';
+        if (!db || !me) return;
+        dmUnsub = db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, uid)).collection('messages')
+            .orderBy('createdAt', 'desc').limit(50)
+            .onSnapshot(function (snap) {
+                dmMsgs = [];
+                snap.forEach(function (d) { dmMsgs.push(Object.assign({ id: d.id }, d.data())); });
+                dmMsgs.sort(function (a, b) { return millis(a.createdAt) - millis(b.createdAt); });
+                renderDm();
+            }, function (e) {
+                var st = $('slDmStatus');
+                if (st) st.textContent = 'Direct messages need latest.rules published in Firebase.';
+            });
+    }
+    function renderDm() {
+        var box = $('slDmMsgs');
+        if (!box) return;
+        if (!dmUser) { box.innerHTML = '<div class="sl-empty">Pick a classmate to start a private chat.</div>'; return; }
+        if (!dmMsgs.length) {
+            var who = allMembers[dmUser] || {};
+            box.innerHTML = '<div class="sl-empty">No messages with ' + esc(who.displayName || 'this classmate') + ' yet — say hi 👋</div>';
+            return;
+        }
+        box.innerHTML = dmMsgs.map(function (m) {
+            var mine = me && m.senderUid === me.uid;
+            return '<div class="sl-msg' + (mine ? ' me' : '') + '">' +
+                '<div class="sl-msg-meta">' + (mine ? 'You' : esc(m.senderName || 'Student')) + ' · ' + ago(m.createdAt) + '</div>' +
+                '<div class="sl-msg-body">' + esc(m.text || '') + '</div></div>';
+        }).join('');
+        box.scrollTop = box.scrollHeight;
+    }
+    function sendDm() {
+        var input = $('slDmInput');
+        var text = (input.value || '').trim();
+        if (!text || !db || !me || !dmUser) return;
+        var p = myProfile();
+        input.value = '';
+        db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, dmUser)).collection('messages').add({
+            text: text.slice(0, 500), senderUid: me.uid,
+            senderName: p.name || 'Student', senderEmoji: p.emoji || '📚',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function () {
+            return db.collection('leagues').doc(code).collection('notifications').add({
+                recipientUid: dmUser, actorUid: me.uid, actorName: p.name || 'Student', actorEmoji: p.emoji || '📚',
+                type: 'dm', text: 'sent you a direct message', read: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function () {});
+        }).catch(function (e) {
+            var st = $('slDmStatus');
+            if (st) st.textContent = 'Could not send: ' + e.message;
+        });
+    }
+
+    /* ------------------------------------------- Settings › League data */
+    function injectCleanup() {
+        var body = document.querySelector('#settingsModal .settings-body');
+        if (!body) return;
+        if (!document.getElementById('slCleanSection')) {
+            var sec = document.createElement('div');
+            sec.className = 'settings-section';
+            sec.id = 'slCleanSection';
+            sec.innerHTML =
+                '<h4>League data</h4>' +
+                '<div class="sl-clean">' +
+                    '<div class="sl-clean-t"><b id="slGhostTitle">Old device rows</b>' +
+                    '<small id="slGhostSub">Checking…</small></div>' +
+                    '<button class="btn secondary" type="button" id="slCleanBtn">Remove old rows</button>' +
+                '</div>' +
+                '<div class="league-status" id="slCleanMsg"></div>';
+            var account = document.getElementById('slAcctSection');
+            if (account && account.nextSibling) body.insertBefore(sec, account.nextSibling);
+            else body.appendChild(sec);
+            sec.querySelector('#slCleanBtn').addEventListener('click', function () {
+                var b = this, msg = document.getElementById('slCleanMsg');
+                if (!signedIn()) { if (msg) msg.textContent = 'Sign in with Google first.'; return; }
+                b.disabled = true; b.textContent = 'Removing…';
+                cleanGhosts().then(function (n) {
+                    b.disabled = false; b.textContent = 'Remove old rows';
+                    updateCleanup();
+                    if (msg) msg.textContent = n ? ('Removed ' + n + ' old row' + (n === 1 ? '' : 's') + ' ✓') : 'Nothing left to remove.';
+                }).catch(function (e) {
+                    b.disabled = false; b.textContent = 'Remove old rows';
+                    if (msg) msg.textContent = 'Could not remove: ' + (e.message || e) + ' — publish latest.rules.';
+                });
+            });
+        }
+        updateCleanup();
+    }
+
+    function updateCleanup() {
+        var title = document.getElementById('slGhostTitle');
+        if (!title) return;
+        var n = ghostUids().length;
+        var sub = document.getElementById('slGhostSub');
+        var btn = document.getElementById('slCleanBtn');
+        if (!signedIn()) {
+            if (sub) sub.textContent = 'Sign in to see and clean old rows.';
+            if (btn) btn.disabled = true;
+            return;
+        }
+        if (sub) sub.textContent = n
+            ? n + ' row' + (n === 1 ? '' : 's') + ' left by an older browser/device are hidden from the leaderboard. Removing them is permanent.'
+            : 'No old rows — your board only shows real signed-in accounts.';
+        if (btn) btn.disabled = !n;
+    }
+
+    /* ------------------------------------------------------- public API */
+    window.__slSocial = {
+        renderMessages: renderMessages,
+        cleanGhosts: function () {
+            return cleanGhosts().then(function (n) {
+                return n;
+            });
+        } ,
+        ghostCount: function () { return ghostUids().length; },
+        refresh: function () { applyGhostFilter(); if (page === 'messages') renderPeople(); }
+    };
+
+    if (initFB()) {
+        code = nowCode();
+        setTimeout(function () { if (me) loadMembers(); }, 1500);
+        watchBoard();
+        setInterval(injectCleanup, 2500);
+        setTimeout(injectCleanup, 800);
+    }
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565a4d68de6fa33',t:'MTc5Mzk4NDMxNQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565a4d68de6fa33',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
