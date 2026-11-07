@@ -3434,6 +3434,73 @@ tr.sl-ghost{ display:none !important; }
     .sl-table-wrap .league-table .league-avatar, .sl-table-wrap .league-table .league-avatar-img{ width:30px !important; height:30px !important; font-size:15px !important; }
     .sl-table-wrap .league-table .league-bio{ display:none; }
 }
+
+
+/* ============================================================================
+   V7.1 — bug-fix pass
+   ========================================================================== */
+
+/* Standings: the rank column used to render medals as specks inside a 22px
+   cell. Keep it a normal table cell (an inline-flex td overflowed the row) and
+   give the medal room to read. */
+#chapterList table.league-table td.league-rank{
+    padding:0 !important; width:52px; text-align:center; vertical-align:middle;
+    font-size:20px; line-height:1; font-weight:800; color:var(--c-ink, #14161a);
+}
+#chapterList table.league-table th:first-child{ width:52px; }
+
+/* Nudge belongs to the row you hover, not to every row at once. */
+.nudge-btn{
+    height:26px; padding:0 10px; font-size:.72rem; border-radius:8px; font-weight:650;
+}
+@media (hover:hover){
+    #chapterList table.league-table .nudge-btn{ opacity:0; transition:opacity .14s ease; }
+    #chapterList table.league-table tr:hover .nudge-btn{ opacity:1; }
+}
+
+/* Activity feed rows: readable, one icon per event type, quiet day dividers. */
+.sl-feed-ic{
+    width:30px; height:30px; border-radius:9px; flex:none; display:grid; place-items:center;
+    background:var(--c-fill, #f4f5f7); font-size:15px;
+}
+.feed-item{ display:flex; gap:11px; align-items:flex-start; }
+.feed-item .league-updated{ margin-top:2px; }
+.sl-feed-day{
+    font-size:.68rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--c-ink-3, #8b919b); margin:14px 0 4px;
+}
+.sl-feed-day:first-child{ margin-top:0; }
+
+/* Phone nav: show that the row keeps going instead of hiding four tabs silently. */
+@media (max-width:820px){
+    .v2-nav{ position:relative; }
+    .v2-nav::after{
+        content:""; position:sticky; right:0; flex:none; width:28px; align-self:stretch;
+        margin-left:-28px; pointer-events:none;
+        background:linear-gradient(90deg, rgba(255,255,255,0), var(--c-bg, #fff));
+    }
+    .v2-nav-item{ padding:0 11px; }
+}
+[data-theme="dark"] .v2-nav::after{ background:linear-gradient(90deg, rgba(0,0,0,0), var(--c-bg, #161719)); }
+
+/* the rank cell ignores the table's cell padding (its own rule lives above) */
+#chapterList table.league-table td.league-rank{ padding:0 !important; vertical-align:middle; }
+/* nav items never squeeze down to one letter on a narrow bar */
+.v2-nav-item{ flex:0 0 auto; }
+.v2-nav-item span{ white-space:nowrap; }
+
+/* the nav is one row of nine surfaces: let it scroll with a soft edge instead of
+   clipping the last item (Profile used to render as a single letter) */
+.v2-nav{ overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; position:relative; }
+.v2-nav::-webkit-scrollbar{ display:none; }
+.v2-nav::after{
+    content:""; position:sticky; right:0; flex:none; width:26px; align-self:stretch;
+    margin-left:-26px; pointer-events:none;
+    background:linear-gradient(90deg, rgba(255,255,255,0), var(--c-bg, #fff));
+}
+[data-theme="dark"] .v2-nav::after{ background:linear-gradient(90deg, rgba(0,0,0,0), var(--c-bg, #161719)); }
+.v2-nav-item{ padding-left:10px; padding-right:10px; }
+
 /* ============================================================================
    V6.4 — MESSAGES: one surface, two panes
    The tab used to be two stacked cards (a chat box inside a card, a DM grid
@@ -3456,6 +3523,9 @@ tr.sl-ghost{ display:none !important; }
     overflow:hidden;
 }
 .sl-msgr.has-ctx{ grid-template-columns:288px minmax(0,1fr) 300px; }
+/* closing the panel must remove it from the grid, or its child wraps to a
+   second row and the thread collapses (seen on a 1366px window) */
+.sl-msgr:not(.has-ctx) .sl-ctx{ display:none; }
 @media (max-width:1279px){
     .sl-msgr.has-ctx{ grid-template-columns:288px minmax(0,1fr); }
     .sl-msgr .sl-ctx{ display:none; }
@@ -6834,9 +6904,18 @@ var LEAGUE_FIREBASE_CONFIG = {
         var hash = JSON.stringify([payload.displayName, payload.emoji, payload.avatarColor, payload.photo, payload.bio, payload.school, payload.classLabel, stats.xp, stats.percent, stats.focusWeekMin, stats.tasksCompleted]);
         if (hash === lastSyncHash) return;
         lastSyncHash = hash;
-        db.collection('leagues').doc(code).collection('members').doc(currentUser.uid)
-            .set(payload, { merge: true })
-            .then(function () { setStatus('Synced just now ✓', 'ok'); })
+        var memberRef = db.collection('leagues').doc(code).collection('members').doc(currentUser.uid);
+        memberRef.get().then(function (snap) {
+            var cur = (snap && snap.exists) ? (snap.data() || {}) : {};
+            var stale = (Number(stats.xp) || 0) === 0 && (Number(cur.xp) || 0) > 0;
+            if (!stale) return payload;
+            var out = Object.assign({}, payload);
+            ['xp', 'percent', 'tasksCompleted', 'tasksTotal', 'chaptersDone', 'chaptersTotal',
+             'focusWeekMin', 'focusTodayMin', 'streak'].forEach(function (k) { delete out[k]; });
+            return out;
+        }).catch(function () { return payload; }).then(function (out) {
+            return memberRef.set(out, { merge: true });
+        }).then(function () { setStatus('Synced just now ✓', 'ok'); })
             .catch(function (e) { lastSyncHash = ''; setStatus('Sync failed: ' + e.message, 'err'); });
     }
     function attachLeaderboard(code) {
@@ -6929,7 +7008,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         leagueBtn.classList.add('active');
         document.querySelectorAll('.subject').forEach(function (x) { x.classList.remove('active'); });
         document.querySelector('#main h1').textContent = 'Leaderboard';
-        document.getElementById('subject-subtitle').textContent = 'Compete with your friend — progress, XP and focus, live';
+        document.getElementById('subject-subtitle').textContent = 'Your class league — progress, XP and focus, live';
         document.getElementById('header-actions').innerHTML = '';
 
         var op = computeOverallProgress();
@@ -7812,6 +7891,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function saveEvents(list) { localStorage.setItem('studyEvents', JSON.stringify(list.slice(-2000))); }
     function publishFeed(type, text, extra) {
         var code = leagueCode(); if (!db || !me || !code) return;
+        if (feedSeen(type + '|' + text + '|' + feedDay())) return;
         var p = myProfile();
         db.collection('leagues').doc(code).collection('feed').add(Object.assign({
             actorUid: me.uid, actorName: p.name || 'Student', actorEmoji: p.emoji || '📚',
@@ -7831,8 +7911,9 @@ var LEAGUE_FIREBASE_CONFIG = {
             events.push({id:Date.now()+'-'+Math.random(), ts:Date.now(), subject:currentSubject, sub:currentSubSubject, chapter:chapter, activity:input.dataset.type, checked:!!input.checked, credit:credit});
             saveEvents(events);
             var label = (window.getActivityTypes().filter(function(a){return a.key===input.dataset.type;})[0] || {}).label || input.dataset.type;
-            if (input.checked) publishFeed('task', 'completed "' + label + '" — ' + chapter + ' (' + subjectName(currentSubject) + ')');
-            if (input.checked && window.__activityAllDone(rec)) publishFeed('chapter', 'finished the chapter "' + chapter + '" (' + subjectName(currentSubject) + ') 🏆');
+            var otherTicks = Object.keys(rec || {}).some(function (k) { return k !== input.dataset.type && rec[k]; });
+            if (input.checked && !otherTicks) publishFeed('chapter', 'started ' + chapter + ' · ' + subjectName(currentSubject));
+            if (input.checked && window.__activityAllDone(rec)) publishFeed('chapter', 'finished ' + chapter + ' · ' + subjectName(currentSubject) + ' 🏆');
             publishScore();
         } catch(err) {}
     });
@@ -7850,21 +7931,88 @@ var LEAGUE_FIREBASE_CONFIG = {
     }, 5000);
 
     var feedUnsub = null, feedCode = '';
+    /* re-subscribing is cheap and idempotent: the old code returned early when
+       the league was already being watched, so a card that mounted later stayed
+       on "Loading activity…" forever. */
     function startFeedListener() {
-        var code = leagueCode(); if (!db || !code || code === feedCode) return;
-        feedCode = code; if (feedUnsub) feedUnsub();
+        var code = leagueCode(); if (!db || !code) return;
+        if (feedUnsub) { try { feedUnsub(); } catch (e) {} feedUnsub = null; }
+        feedCode = code;
         feedUnsub = db.collection('leagues').doc(code).collection('feed').orderBy('createdAt','desc').limit(30)
             .onSnapshot(function(snap){
                 var items=[]; snap.forEach(function(d){ items.push(Object.assign({id:d.id}, d.data())); });
+                window.__slFeed.items = items;
+                paintFeed();
+            }, function(){
                 var list = document.getElementById('activityFeedList');
-                if (list) {
-                    list.innerHTML = items.length ? items.map(function(it){
-                        var when = it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleString() : '';
-                        return '<div class="feed-item"><span style="font-size:20px;">'+(it.actorEmoji||'📚')+'</span><div><b>'+escapeHtml(it.actorName||'Student')+'</b> '+escapeHtml(it.text||'')+'<div class="league-updated">'+escapeHtml(when)+'</div></div></div>';
-                    }).join('') : '<div class="todo-empty">No activity yet — tick a chapter or finish a focus session</div>';
-                }
-            }, function(){ var list=document.getElementById('activityFeedList'); if(list) list.innerHTML='<div class="todo-empty">Activity Feed needs the updated firestore.rules (v3)</div>'; });
+                if (list) list.innerHTML = '<div class="todo-empty">Could not load the feed right now.</div>';
+            });
     }
+    /* ---- V7.1 feed: readable rows, no duplicates, no endless "Loading" ---- */
+    function relTime(ms) {
+        if (!ms) return '';
+        var d = Date.now() - ms;
+        if (d < 45000) return 'just now';
+        if (d < 3600000) return Math.max(1, Math.round(d / 60000)) + ' min ago';
+        if (d < 86400000) { var h = Math.round(d / 3600000); return h + (h === 1 ? ' hour ago' : ' hours ago'); }
+        if (d < 172800000) return 'yesterday';
+        if (d < 604800000) return Math.round(d / 86400000) + ' days ago';
+        return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    }
+    /* the same event must never be written twice — localStorage is shared by
+       every tab on this origin, so a second tab cannot duplicate it either */
+    function feedSeen(key) {
+        try {
+            var m = JSON.parse(localStorage.getItem('feedPublished') || '{}') || {}, now = Date.now();
+            Object.keys(m).forEach(function (k) { if (now - m[k] > 3 * 86400000) delete m[k]; });
+            var seen = m[key] && (now - m[key]) < 12 * 3600000;
+            m[key] = seen ? m[key] : now;
+            localStorage.setItem('feedPublished', JSON.stringify(m));
+            return !!seen;
+        } catch (e) { return false; }
+    }
+    function feedDay() {
+        var d = new Date();
+        return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+    window.__slFeed = { items: [], icon: {} };
+    function paintFeed() {
+        var list = document.getElementById('activityFeedList');
+        if (!list) return;
+        var items = (window.__slFeed.items || []).slice();
+        if (!items.length) {
+            list.innerHTML = '<div class="todo-empty">Nothing here yet. When you tick a chapter or finish a focus ' +
+                'session, it shows up here for your league.</div>';
+            return;
+        }
+        var seen = {}, out = [], lastDay = '';
+        items.forEach(function (it) {
+            var k = (it.actorUid || it.uid || '') + '|' + (it.text || '');
+            if (seen[k]) return;                       // legacy duplicate rows
+            seen[k] = 1;
+            var ms = it.createdAt && it.createdAt.toMillis ? it.createdAt.toMillis()
+                   : (it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().getTime() : 0);
+            var dayLabel = '';
+            if (ms) {
+                var d = new Date(ms), today = new Date();
+                var t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+                var t1 = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                dayLabel = t1 === t0 ? 'Today' : (t0 - t1 === 86400000 ? 'Yesterday'
+                    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
+            }
+            if (dayLabel && dayLabel !== lastDay) { lastDay = dayLabel; out.push({ day: dayLabel }); }
+            out.push({ it: it, ms: ms });
+        });
+        list.innerHTML = out.map(function (row) {
+            if (row.day) return '<div class="sl-feed-day">' + escapeHtml(row.day) + '</div>';
+            var it = row.it, kind = it.type || 'task';
+            var glyph = kind === 'chapter' ? '🏆' : kind === 'focus' ? '⏱️' : kind === 'note' ? '📝' : '✅';
+            return '<div class="feed-item"><span class="sl-feed-ic">' + glyph + '</span>' +
+                '<div><b>' + escapeHtml(it.actorName || it.name || 'Student') + '</b> ' + escapeHtml(it.text || '') +
+                '<div class="league-updated">' + relTime(row.ms) + '</div></div></div>';
+        }).join('');
+    }
+
     function injectFeedCard() {
         var list = document.getElementById('chapterList'); if (!list || document.getElementById('activityFeedCard')) return;
         var h1 = document.querySelector('#main h1');
@@ -7872,7 +8020,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var card = document.createElement('div');
         card.className='card fade-in'; card.id='activityFeedCard'; card.style.marginTop='14px';
         card.innerHTML='<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">rss_feed</span> Activity Feed</div><div class="feed-list" id="activityFeedList"><div class="todo-empty">Loading activity…</div></div>';
-        list.appendChild(card); startFeedListener();
+        list.appendChild(card); startFeedListener(); paintFeed();
     }
 
     /* ---------- Weekly Challenge ---------- */
@@ -8518,11 +8666,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         activity:  { engine: 'leagueBtn',      group: 'League', label: 'Activity',      icon: 'pulse',      nav: 'Activity',    sub: 'activity' },
         messages:  { engine: 'leagueBtn',      group: 'League', label: 'Messages',      icon: 'chat',       nav: 'Messages',    sub: 'messages' },
         notes:     { engine: 'sharedNotesBtn', group: 'League', label: 'Shared Notes',  icon: 'notebook',   nav: 'Notes' },
-        profile:   { group: 'You',    label: 'My Profile',     icon: 'user',       nav: 'My Profile' }
+        profile:   { group: 'You',    label: 'My Profile',     icon: 'user',       nav: 'Profile' }
     };
     var NAV = [
         { group: 'Study',  items: ['overview', 'subjects', 'focus', 'exams'] },
-        { group: 'League', items: ['league', 'activity', 'messages', 'notes'] }
+        { group: 'League', items: ['league', 'activity', 'messages', 'notes'] },
+        { group: 'You',    items: ['profile'] }
     ];
 
     /* ---------- helpers ---------- */
@@ -8571,7 +8720,10 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
     }
     function readJSON(key, fb) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fb : v; } catch (e) { return fb; } }
-    function scrollTop() { var m = $('main'); if (m) m.scrollTop = 0; }
+    function scrollTop() {
+        var m = $('main'); if (m) m.scrollTop = 0;
+        try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; } catch (e) {}
+    }
 
     /* ---------- stash: nodes the app builds that belong on other tabs ---------- */
     var stash = $('v2Stash');
@@ -8670,6 +8822,15 @@ var LEAGUE_FIREBASE_CONFIG = {
         else active = 'subjects'; // subject / section view
 
         navItems.forEach(function (n) { n.classList.toggle('is-active', n.dataset.v2go === active); });
+        // keep the visible heading and the nav label saying the same word
+        var h1n = h1El();
+        if (h1n && h1n.textContent.trim() === 'Shared Notes') h1n.textContent = 'Notes';
+        if (navHost) {
+            var act = navHost.querySelector('.v2-nav-item.is-active');
+            if (act && act.scrollIntoView) {
+                try { act.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+            }
+        }
         if (S.profileBtn) S.profileBtn.classList.toggle('is-active', active === 'profile');
         var eb = $('v2Eyebrow');
         if (eb) {
@@ -9080,8 +9241,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             '<div class="league-row" style="margin-left:auto;">' +
                 '<button class="btn secondary" type="button" data-v2editprofile="1">Edit profile</button>' +
             '</div>';
-        list.appendChild(head);
-
+        // the app's own editor card below carries the same name/avatar/bio, so the
+        // hero above it is not added to the page (it used to render twice)
         var pfCard = stash.querySelector('#socialProfileCard');
         var standIn = null;
         if (!pfCard) {
@@ -9114,7 +9275,9 @@ var LEAGUE_FIREBASE_CONFIG = {
                 var nm = (window.subjectDisplayNames && window.subjectDisplayNames[k]) || k;
                 return '<span class="pill">' + esc(nm) + '</span>';
             }).join('') || '<span class="v2-muted-note">No subjects selected yet</span>') + '</div>' +
-            '<div class="league-status" style="margin-top:14px;">Subjects, activities and focus settings are managed in Settings.</div>';
+            '<div class="league-status" style="margin-top:14px;">' +
+                (code ? 'League: ' + esc(code) + ' · ' + esc(reg.stream || 'Stream not set') + ' · ' : '') +
+                'Subjects, activities and focus settings are managed in Settings.</div>';
         list.appendChild(subjCard);
 
         var invite = el('div', 'card');
@@ -9294,7 +9457,8 @@ var LEAGUE_FIREBASE_CONFIG = {
                 if (lastView.tab === 'section') openSection(lastView.subject, lastView.sub || '');
                 else if (lastView.tab !== 'overview') go(lastView.tab);
                 var m = $('main');
-                if (m && lastView.scroll) setTimeout(function () { m.scrollTop = lastView.scroll || 0; }, 700);
+                if (m && lastView.scroll && ['messages', 'activity'].indexOf(lastView.tab) === -1)
+                    setTimeout(function () { m.scrollTop = lastView.scroll || 0; }, 700);
             } catch (e) {}
         }, 250);
     }
@@ -10332,7 +10496,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     var filter = 'all', railQ = '', threadQ = '', searching = false;
     var replyTo = null;
     var ctxOpen = false;
-    var mounted = false, booted = false;
+    var mounted = false, booted = false, authHooked = false;
     var subs = [];
     var readMap = store('read', {});
     var draftMap = store('draft', {});
@@ -10369,16 +10533,29 @@ var LEAGUE_FIREBASE_CONFIG = {
     function isOnlineText() { var n = onlineCount(); return n ? n + ' online' : 'no one else online'; }
 
     /* --------------------------------------------------------------- boot */
+    var authKnown = false;
     function ensure() {
-        if (booted) return signed;
-        booted = true;
         try {
-            if (!window.firebase || !firebase.auth || !firebase.firestore) return false;
-            me = firebase.auth().currentUser;
+            if (!window.firebase || !firebase.auth || !firebase.firestore) return signed;
             db = firebase.firestore();
             code = nowCode();
-            signed = !!me;
-        } catch (e) { signed = false; }
+            var u = firebase.auth().currentUser;
+            if (u) { me = u; signed = true; authKnown = true; }
+            else if (!signed && !authHooked) {
+                // the session is restored asynchronously — a first render that
+                // happens before it lands used to lock the tab into the old layout
+                authHooked = true;
+                try {
+                    firebase.auth().onAuthStateChanged(function (uu) {
+                        authKnown = true;
+                        if (uu) { me = uu; signed = true; booted = true; }
+                        else { signed = false; }
+                        if (signed) { render(); }
+                        else if (origRender) { origRender(); }
+                    });
+                } catch (e) {}
+            }
+        } catch (e) { return signed; }
         return signed;
     }
 
@@ -10698,6 +10875,28 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (members[me.uid]) rows.push(me.uid);
         rows = rows.sort(function (a, b) { return ((members[b] || {}).xp || 0) - ((members[a] || {}).xp || 0); });
         var board = rows.slice(0, 4);
+        var solo = Object.keys(members).length <= 1;
+        if (solo) {
+            // alone in the league: show one honest panel instead of empty rankings
+            box.innerHTML =
+                '<div class="sl-ctx-head">In this league<button type="button" id="slCtxClose">✕</button></div>' +
+                '<div class="sl-ctx-sec"><div class="sl-ctx-lab"><span>Members</span><span>1</span></div>' +
+                    '<div class="sl-rail-empty" style="padding:0">It is just you so far. Send the invite link and your ' +
+                    'classmates land in this same chat and on the same board.</div>' +
+                    '<button type="button" class="sl-ctx-dm" id="slCtxInvite" style="width:100%;margin-top:10px;' +
+                    'justify-content:center;height:32px;">Copy invite link</button></div>';
+            var close0 = $('slCtxClose');
+            if (close0) close0.addEventListener('click', function () {
+                ctxOpen = false; var r = $('slGroupChat'); if (r) r.classList.remove('has-ctx');
+            });
+            var inv = $('slCtxInvite');
+            if (inv) inv.addEventListener('click', function () {
+                var link = location.href.split('#')[0].split('?')[0] + (code ? '?join=' + code : '');
+                var done = function () { toast('Invite link copied'); };
+                if (navigator.clipboard) navigator.clipboard.writeText(link).then(done).catch(done); else done();
+            });
+            return;
+        }
         box.innerHTML =
             '<div class="sl-ctx-head">In this league<button type="button" id="slCtxClose">✕</button></div>' +
             '<div class="sl-ctx-sec"><div class="sl-ctx-lab"><span>Online now</span><span>' + online.length + '</span></div>' +
@@ -10717,18 +10916,13 @@ var LEAGUE_FIREBASE_CONFIG = {
                 }).join('')
                     : '<div class="sl-rail-empty" style="padding:0">The board is empty until someone joins.</div>') +
             '</div>' +
-            '<div class="sl-ctx-foot"><button type="button" class="sl-send" id="slGoBoard">Open the leaderboard</button></div>';
+            '';
         var close = $('slCtxClose');
         if (close) close.addEventListener('click', function () {
             ctxOpen = false; $('slGroupChat').classList.remove('has-ctx');
         });
         box.querySelectorAll('[data-dm]').forEach(function (b) {
             b.addEventListener('click', function () { openConvo('dm', b.getAttribute('data-dm')); });
-        });
-        var go = $('slGoBoard');
-        if (go) go.addEventListener('click', function () {
-            var nav = document.querySelector('.v2-nav-item[data-v2go="league"]');
-            if (nav) nav.click();
         });
     }
 
@@ -11207,7 +11401,8 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (ha) {
             ha.innerHTML = '<span class="sl-ha">' +
                 '<button type="button" class="btn secondary" id="slNewMsg">New message</button>' +
-                '<button type="button" class="btn secondary" id="slReadAll">Mark all read</button></span>';
+                ((bell.some(function (b) { return !b.read; }) || groupUnread())
+                    ? '<button type="button" class="btn secondary" id="slReadAll">Mark all read</button>' : '') + '</span>';
             var nm = $('slNewMsg');
             if (nm) nm.addEventListener('click', openNewMessage);
             var ra = $('slReadAll');
@@ -11223,10 +11418,21 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     /* --------------------------------------------------------------- mount */
     function render() {
-        if (!ensure()) { if (origRender) origRender(); return; }
+        if (!ensure()) {
+            // unknown/late auth: keep the new shell's shape, never the old cards
+            var host = document.getElementById('chapterList');
+            if (host && !authKnown) {
+                host.innerHTML = '<div class="sl-msgr" id="slGroupChat" data-sl-skel="1">' +
+                    '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div></div>';
+                return;
+            }
+            if (origRender) origRender();
+            return;
+        }
         var list = document.getElementById('chapterList');
         if (!list) return;
-        if (!mounted || !$('slGroupChat')) {
+        var existing = $('slGroupChat');
+        if (!mounted || !existing || existing.getAttribute('data-sl-skel')) {
             ctxOpen = window.innerWidth >= 1360;
             list.innerHTML = skeleton();
             var root = $('slGroupChat');
@@ -11294,6 +11500,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* uid -> { champ, weeks, study, week } read from the parked weekly table */
     var weekly = {};
     var weeklyText = '';
+    var readCrowns = '';
     function readWeekly(card) {
         var map = {}, texts = [];
         if (!card) return { map: map, text: '' };
@@ -11313,15 +11520,15 @@ var LEAGUE_FIREBASE_CONFIG = {
                 week: firstLine || (td[5].textContent || '').trim().split(/\s{2,}/)[0]
             };
         });
-        var body = card.querySelector('#challengeBody');
+        var body = card.querySelector('#challengeBody'), crowns = '';
         if (body) {
             var pair = body.querySelector('.card .league-status');
-            if (pair && pair.textContent.trim()) texts.push(pair.textContent.trim());
+            if (pair && pair.textContent.trim() && !/Subject Crowns/i.test(pair.textContent)) texts.push(pair.textContent.trim());
             Array.prototype.forEach.call(body.querySelectorAll('.league-status'), function (el) {
-                if (/Subject Crowns/i.test(el.textContent) && el.textContent.trim()) texts.push(el.textContent.trim());
+                if (/Subject Crowns/i.test(el.textContent) && el.textContent.trim()) crowns = el.textContent.trim();
             });
         }
-        return { map: map, text: texts.join(' ') };
+        return { map: map, text: texts.join(' '), crowns: crowns };
     }
 
 
@@ -11337,12 +11544,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         var n = String(v == null ? '' : v).match(/-?\d+/);
         return n ? parseInt(n[0], 10) : 0;
     }
-    /* rebuild the "You vs X" sentence from real members only */
+    /* The weekly sentence is rebuilt from the players who are actually on the
+       board. It used to be echoed from the app's own text, so a member who was
+       removed from the standings (or never joined the members list) could still
+       be named in "You vs …" — and the "Subject Crowns … (0.9 WC)" tail was
+       appended to the same sentence as jargon. */
     function cleanWeeklyText(text) {
-        var ghosts = ghostNames();
-        if (!ghosts.length) return text;
-        var dirty = ghosts.some(function (n) { return n && text.indexOf(n) !== -1; });
-        if (!dirty) return text;
         var real = realMembers(), me = window.__slMe;
         var myUid = (firebase && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : '';
         var mine = weekly[myUid] || {};
@@ -11360,6 +11567,12 @@ var LEAGUE_FIREBASE_CONFIG = {
             return head + '. Higher Study Score on Sunday wins: winner gets 2 Champion Points, a tie gives 1 each.';
         }
         return head + '. No challenger yet — invite a classmate to make the challenge real.';
+    }
+    function crownsLine(raw) {
+        if (!raw) return '';
+        var body = String(raw).replace(/^\s*Subject Crowns?:?\s*/i, '').replace(/\([^)]*\)/g, '').trim();
+        if (!body) return '';
+        return 'Crowns · ' + body.replace(/\s*[,;]\s*/g, ' · ');
     }
 
     function ensureHeader(table) {
@@ -11415,7 +11628,12 @@ var LEAGUE_FIREBASE_CONFIG = {
             else card.appendChild(foot);
         }
         var line2 = $('slWeeklyText');
-        var shown = weeklyText ? cleanWeeklyText(weeklyText) : '';
+        var shown = '';
+        if (Object.keys(weekly).length) {
+            var rebuilt = cleanWeeklyText(weeklyText);
+            var crowns = crownsLine(readCrowns);
+            shown = rebuilt + (crowns ? ' ' + crowns : '');
+        }
         if (line2 && shown && line2.textContent !== shown) line2.textContent = shown;
         if (!weeklyText && foot.classList.contains('is-empty')) { /* keep */ }
         if (foot) foot.classList.toggle('has-text', !!shown);
@@ -11447,6 +11665,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var read = readWeekly(ch);
             weekly = read.map;
             weeklyText = read.text;
+            readCrowns = read.crowns || '';
 
             var table = list.querySelector('table.league-table');
             if (!table) return;
@@ -11482,5 +11701,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56a3c1eabd4dae0',t:'MTc5NDAzMjQ1NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56a3c1eabd4dae0',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56aa8eefb63352f',t:'MTc5NDAzNjkxMg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56aa8eefb63352f',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
