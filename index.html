@@ -3434,6 +3434,363 @@ tr.sl-ghost{ display:none !important; }
     .sl-table-wrap .league-table .league-avatar, .sl-table-wrap .league-table .league-avatar-img{ width:30px !important; height:30px !important; font-size:15px !important; }
     .sl-table-wrap .league-table .league-bio{ display:none; }
 }
+/* ============================================================================
+   V6.4 — MESSAGES: one surface, two panes
+   The tab used to be two stacked cards (a chat box inside a card, a DM grid
+   inside another card) with voids between them. This is one messenger surface:
+   a conversation rail, a height-locked thread and an optional context panel.
+   Colours come from the app's own tokens so light/dark both work untouched.
+   ========================================================================== */
+
+.sl-msgr{
+    --sl-accent:#5E6AD2;
+    --sl-accent-soft:rgba(94,106,210,.10);
+    --sl-accent-line:rgba(94,106,210,.32);
+    position:relative;
+    display:grid;
+    grid-template-columns:288px minmax(0,1fr);
+    height:clamp(440px, calc(100vh - 322px), 800px);
+    background:var(--c-bg);
+    border:1px solid var(--c-line);
+    border-radius:14px;
+    overflow:hidden;
+}
+.sl-msgr.has-ctx{ grid-template-columns:288px minmax(0,1fr) 300px; }
+@media (max-width:1279px){
+    .sl-msgr.has-ctx{ grid-template-columns:288px minmax(0,1fr); }
+    .sl-msgr .sl-ctx{ display:none; }
+}
+
+/* ------------------------------------------------------------------ rail */
+.sl-rail{ display:flex; flex-direction:column; min-width:0; min-height:0; border-right:1px solid var(--c-line); }
+.sl-rail-head{ padding:12px 12px 10px; border-bottom:1px solid var(--c-line); flex:none; }
+.sl-search{
+    display:flex; align-items:center; gap:8px; height:36px; padding:0 10px;
+    border:1px solid var(--c-line); border-radius:10px; background:var(--c-fill); color:var(--c-ink-3);
+}
+.sl-search input{
+    border:0; outline:0; background:transparent; width:100%;
+    font-family:inherit; font-size:.82rem; color:var(--c-ink);
+}
+.sl-search input::placeholder{ color:var(--c-ink-3); }
+.sl-tabs{ display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; }
+.sl-tab{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:inherit; font-size:.72rem; font-weight:700; letter-spacing:.01em;
+    color:var(--c-ink-2); background:transparent; border:1px solid var(--c-line);
+    border-radius:999px; padding:5px 10px; cursor:pointer;
+}
+.sl-tab:hover{ background:var(--c-hover); }
+.sl-tab.on{ background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink); }
+.sl-tab i{ font-style:normal; font-size:.66rem; opacity:.6; }
+.sl-tab.on i{ opacity:.75; }
+.sl-convos{ overflow-y:auto; min-height:0; padding:8px; display:flex; flex-direction:column; gap:2px; }
+.sl-convo{
+    display:grid; grid-template-columns:38px minmax(0,1fr) auto; gap:10px; align-items:center;
+    width:100%; padding:9px 10px; border:0; border-radius:11px; background:transparent;
+    font-family:inherit; text-align:left; color:inherit; cursor:pointer;
+}
+.sl-convo:hover{ background:var(--c-hover); }
+.sl-convo.on{ background:var(--sl-accent-soft); }
+.sl-cav{
+    width:38px; height:38px; border-radius:11px; display:grid; place-items:center;
+    font-size:1rem; line-height:1; color:#fff; position:relative; overflow:hidden;
+}
+.sl-cav.grp{ background:linear-gradient(145deg,#2b2d33,#101114); }
+.sl-cav.is-on::after{
+    content:""; position:absolute; right:-1px; bottom:-1px; width:10px; height:10px; border-radius:50%;
+    background:#1F9D55; border:2px solid var(--c-bg);
+}
+.sl-cn{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.sl-cn b{ font-size:.845rem; font-weight:700; letter-spacing:-.012em; color:var(--c-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sl-cn small{ font-size:.755rem; color:var(--c-ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sl-cn small b{ display:inline; font-size:inherit; font-weight:650; color:var(--c-ink-2); }
+.sl-cmeta{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.sl-ctime{ font-size:.66rem; font-weight:650; color:var(--c-ink-3); white-space:nowrap; }
+.sl-unread{
+    min-width:17px; height:17px; padding:0 5px; border-radius:9px;
+    background:var(--sl-accent); color:#fff; font-size:.64rem; font-weight:800;
+    display:grid; place-items:center; line-height:1;
+}
+.sl-rail-foot{
+    flex:none; display:flex; align-items:center; gap:7px;
+    padding:10px 14px; border-top:1px solid var(--c-line);
+    font-size:.72rem; color:var(--c-ink-3);
+}
+.sl-live{ width:7px; height:7px; border-radius:50%; background:#1F9D55; flex:none; }
+.sl-rail-empty{ padding:18px 14px; font-size:.78rem; color:var(--c-ink-3); line-height:1.5; }
+
+/* ---------------------------------------------------------------- thread */
+.sl-thr{ display:flex; flex-direction:column; min-width:0; min-height:0; }
+.sl-thr-head{
+    flex:none; display:flex; align-items:center; gap:11px;
+    padding:11px 16px; border-bottom:1px solid var(--c-line);
+}
+.sl-thr-head .sl-cav{ width:34px; height:34px; border-radius:10px; font-size:.92rem; }
+.sl-thr-id{ min-width:0; }
+.sl-thr-id h2{ font-size:.925rem; font-weight:750; letter-spacing:-.015em; line-height:1.25; color:var(--c-ink); }
+.sl-thr-id p{ font-size:.735rem; color:var(--c-ink-3); display:flex; align-items:center; gap:5px; }
+.sl-thr-acts{ margin-left:auto; display:flex; gap:6px; flex:none; }
+.sl-ib{
+    width:32px; height:32px; border-radius:9px; border:1px solid var(--c-line); background:var(--c-bg);
+    color:var(--c-ink-2); display:grid; place-items:center; cursor:pointer; padding:0;
+}
+.sl-ib:hover{ background:var(--c-hover); color:var(--c-ink); }
+.sl-ib .material-symbols-rounded{ font-size:18px; }
+.sl-back{ display:none; }
+.sl-pinbar{
+    flex:none; display:flex; align-items:center; gap:8px; padding:8px 16px;
+    background:var(--sl-accent-soft); border-bottom:1px solid var(--c-line);
+    font-size:.755rem; color:var(--c-ink-2); min-width:0;
+}
+.sl-pinbar b{ font-weight:750; color:var(--c-ink); }
+.sl-pinbar span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sl-pinbar button{
+    margin-left:auto; border:0; background:transparent; color:var(--c-ink-3);
+    cursor:pointer; font-size:.8rem; padding:2px 4px; flex:none;
+}
+
+.sl-thread-msgs{
+    flex:1 1 auto; min-height:0; overflow-y:auto;
+    padding:14px 18px 10px; display:flex; flex-direction:column;
+}
+.sl-day{ display:flex; align-items:center; gap:10px; margin:6px 0 12px; }
+.sl-day::before, .sl-day::after{ content:""; height:1px; background:var(--c-line); flex:1; }
+.sl-day span{
+    font-size:.63rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:var(--c-ink-3);
+}
+.sl-newdiv{ display:flex; align-items:center; gap:10px; margin:14px 0 4px; }
+.sl-newdiv::before, .sl-newdiv::after{ content:""; height:1px; background:var(--sl-accent-line); flex:1; }
+.sl-newdiv span{ font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--sl-accent); }
+
+.sl-mrow{ display:grid; grid-template-columns:28px minmax(0,1fr); gap:9px; margin-top:13px; align-items:start; }
+.sl-mrow.tight{ margin-top:3px; }
+.sl-mrow.tight .sl-mav{ visibility:hidden; }
+.sl-mrow.tight .sl-mhead{ display:none; }
+.sl-mav{
+    width:28px; height:28px; border-radius:8px; display:grid; place-items:center;
+    font-size:.76rem; line-height:1; color:#fff; font-weight:700;
+}
+.sl-mhead{ display:flex; align-items:baseline; gap:7px; margin-bottom:3px; }
+.sl-mhead b{ font-size:.785rem; font-weight:750; color:var(--c-ink); }
+.sl-mhead time{ font-size:.675rem; font-weight:650; color:var(--c-ink-3); }
+.sl-mhead .sl-edited{ font-size:.63rem; font-style:italic; color:var(--c-ink-3); }
+.sl-bub{
+    display:inline-block; max-width:min(540px,88%);
+    background:var(--c-bg); border:1px solid var(--c-line);
+    border-radius:12px 12px 12px 4px; padding:8px 12px;
+    font-size:.85rem; line-height:1.5; color:var(--c-ink);
+    white-space:pre-wrap; word-break:break-word; text-align:left;
+}
+.sl-mrow.tight .sl-bub{ border-radius:12px; }
+.sl-quote{
+    display:flex; flex-direction:column; gap:1px; margin-bottom:6px; padding:5px 8px;
+    border-left:3px solid var(--sl-accent); border-radius:6px; background:var(--c-fill);
+}
+.sl-quote b{ font-size:.66rem; font-weight:800; color:var(--sl-accent); letter-spacing:.02em; }
+.sl-quote span{ font-size:.735rem; color:var(--c-ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:320px; }
+.sl-mine{ align-self:flex-end; display:flex; flex-direction:column; align-items:flex-end; margin-top:13px; max-width:88%; }
+.sl-mine .sl-bub{
+    background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink);
+    border-radius:12px 12px 4px 12px;
+}
+.sl-mine .sl-quote{ background:rgba(255,255,255,.14); border-left-color:currentColor; }
+.sl-mine .sl-quote b, .sl-mine .sl-quote span{ color:inherit; opacity:.85; }
+.sl-stamp{
+    display:flex; align-items:center; gap:5px; margin-top:4px;
+    font-size:.665rem; font-weight:600; color:var(--c-ink-3);
+}
+.sl-stamp .material-symbols-rounded{ font-size:13px; }
+.sl-rx{ display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
+.sl-rx button{
+    font-family:inherit; font-size:.7rem; font-weight:700; color:var(--c-ink-2);
+    background:var(--c-bg); border:1px solid var(--c-line); border-radius:999px;
+    padding:1px 7px; cursor:pointer; line-height:1.6;
+}
+.sl-rx button.mine{ background:var(--sl-accent-soft); border-color:var(--sl-accent-line); color:#3f49a8; }
+[data-theme="dark"] .sl-rx button.mine{ color:#aab2ff; }
+.sl-mrow .sl-hoveracts{ opacity:0; transition:opacity .12s ease; }
+.sl-mrow:hover .sl-hoveracts, .sl-mrow:focus-within .sl-hoveracts{ opacity:1; }
+
+.sl-jump{
+    position:absolute; right:22px; bottom:104px; z-index:2;
+    display:none; align-items:center; gap:6px;
+    border:1px solid var(--c-line); background:var(--c-bg); color:var(--c-ink-2);
+    border-radius:999px; padding:6px 11px; font-family:inherit; font-size:.72rem; font-weight:700;
+    cursor:pointer; box-shadow:0 6px 18px -8px rgba(17,17,17,.35);
+}
+.sl-jump.show{ display:inline-flex; }
+
+/* -------------------------------------------------------------- composer */
+.sl-typing{
+    flex:none; height:18px; padding:0 18px; font-size:.7rem; color:var(--c-ink-3);
+    display:flex; align-items:center; gap:6px;
+}
+.sl-typing i{ display:inline-flex; gap:2px; }
+.sl-typing i b{
+    width:4px; height:4px; border-radius:50%; background:var(--c-ink-3); display:block;
+    animation:sl-typing 1.2s infinite;
+}
+.sl-typing i b:nth-child(2){ animation-delay:.15s; }
+.sl-typing i b:nth-child(3){ animation-delay:.3s; }
+@keyframes sl-typing{ 0%,60%,100%{ opacity:.25; } 30%{ opacity:1; } }
+
+.sl-cmp{ flex:none; padding:8px 14px 12px; border-top:1px solid var(--c-line); }
+.sl-cmp-row{
+    display:flex; align-items:flex-end; gap:8px; padding:5px 5px 5px 11px;
+    border:1px solid var(--c-line); border-radius:12px; background:var(--c-bg);
+}
+.sl-cmp-row:focus-within{ border-color:var(--c-line-strong); }
+.sl-cmp textarea{
+    flex:1 1 auto; min-width:0; border:0; outline:0; resize:none; background:transparent;
+    font-family:inherit; font-size:.85rem; line-height:1.45; color:var(--c-ink);
+    padding:6px 0; max-height:112px;
+}
+.sl-cmp textarea::placeholder{ color:var(--c-ink-3); }
+.sl-cmp .sl-ib{ border:0; width:28px; height:28px; }
+.sl-send{
+    height:32px; padding:0 13px; border-radius:9px; border:0; cursor:pointer;
+    background:var(--c-active); color:var(--c-active-ink);
+    font-family:inherit; font-size:.795rem; font-weight:700; letter-spacing:-.005em;
+}
+.sl-send:disabled{ opacity:.45; cursor:default; }
+.sl-hint{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-top:6px; font-size:.655rem; color:var(--c-ink-3);
+}
+.sl-cmp-status{ color:var(--c-danger); font-weight:650; }
+
+/* --------------------------------------------------------- context panel */
+.sl-ctx{ border-left:1px solid var(--c-line); display:flex; flex-direction:column; min-width:0; }
+.sl-ctx-head{
+    display:flex; align-items:center; padding:13px 16px; border-bottom:1px solid var(--c-line);
+    font-size:.8rem; font-weight:750; color:var(--c-ink);
+}
+.sl-ctx-head button{ margin-left:auto; border:0; background:transparent; color:var(--c-ink-3); cursor:pointer; font-size:.8rem; }
+.sl-ctx-sec{ padding:13px 16px; border-bottom:1px solid var(--c-line); }
+.sl-ctx-lab{
+    display:flex; justify-content:space-between; margin-bottom:9px;
+    font-size:.63rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:var(--c-ink-3);
+}
+.sl-ctx-p{ display:grid; grid-template-columns:28px minmax(0,1fr) 24px; gap:9px; align-items:center; padding:5px 0; }
+.sl-ctx-p .sl-mav{ width:28px; height:28px; border-radius:8px; }
+.sl-ctx-p b{ display:block; font-size:.775rem; font-weight:700; color:var(--c-ink); line-height:1.3; }
+.sl-ctx-p small{ display:block; font-size:.685rem; color:var(--c-ink-3); }
+.sl-ctx-dm{
+    width:24px; height:24px; border-radius:7px; border:1px solid var(--c-line); background:var(--c-bg);
+    color:var(--c-ink-3); cursor:pointer; display:grid; place-items:center; padding:0;
+}
+.sl-ctx-dm:hover{ border-color:var(--sl-accent-line); color:var(--sl-accent); }
+.sl-board-row{
+    display:grid; grid-template-columns:14px minmax(0,1fr) auto; gap:8px; padding:3px 0;
+    font-size:.755rem; color:var(--c-ink-2);
+}
+.sl-board-row span{ font-weight:700; color:var(--c-ink-3); }
+.sl-board-row em{ font-style:normal; font-weight:750; font-variant-numeric:tabular-nums; color:var(--c-ink); }
+.sl-board-row.me{ color:var(--c-ink); font-weight:750; }
+.sl-ctx-foot{ margin-top:auto; padding:13px 16px; }
+.sl-ctx-foot .sl-send{ width:100%; height:36px; }
+
+/* ------------------------------------------------------------ event card */
+.sl-evt{
+    display:grid; grid-template-columns:36px minmax(0,1fr); gap:11px; align-items:start;
+    margin:12px 0 4px; padding:11px 13px; border:1px solid var(--c-line); border-radius:13px;
+    background:var(--c-fill);
+}
+.sl-evt-i{ width:36px; height:36px; border-radius:10px; background:var(--c-bg); display:grid; place-items:center; font-size:1rem; border:1px solid var(--c-line); }
+.sl-evt b{ display:block; font-size:.8rem; font-weight:750; color:var(--c-ink); }
+.sl-evt p{ font-size:.755rem; color:var(--c-ink-3); margin:2px 0 7px; line-height:1.45; }
+.sl-evt-btn{
+    font-family:inherit; font-size:.72rem; font-weight:750; color:#3f49a8;
+    background:var(--sl-accent-soft); border:1px solid var(--sl-accent-line);
+    border-radius:8px; padding:4px 9px; cursor:pointer;
+}
+[data-theme="dark"] .sl-evt-btn{ color:#aab2ff; }
+.sl-evt-btn:hover{ filter:brightness(.97); }
+
+/* --------------------------------------------------------- action sheet */
+.sl-sheet-wrap{ position:fixed; inset:0; z-index:13000; display:none; }
+.sl-sheet-wrap.is-open{ display:block; }
+.sl-sheet-scrim{ position:absolute; inset:0; background:rgba(17,17,17,.32); }
+[data-theme="dark"] .sl-sheet-scrim{ background:rgba(0,0,0,.55); }
+.sl-sheet{
+    position:absolute; background:var(--c-bg); border:1px solid var(--c-line);
+    border-radius:14px; padding:8px; width:232px;
+    box-shadow:0 24px 60px -28px rgba(17,17,17,.5);
+}
+.sl-sheet-reacts{ display:flex; gap:4px; padding:2px 2px 8px; border-bottom:1px solid var(--c-line); margin-bottom:4px; }
+.sl-sheet-reacts button{
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--c-line); background:var(--c-bg);
+    font-size:.95rem; line-height:1; cursor:pointer; display:grid; place-items:center; padding:0;
+}
+.sl-sheet-reacts button:hover{ background:var(--c-hover); }
+.sl-sheet-reacts button.mine{ background:var(--sl-accent-soft); border-color:var(--sl-accent-line); }
+.sl-sheet-row{
+    display:flex; align-items:center; gap:9px; width:100%; padding:8px 9px;
+    border:0; border-radius:8px; background:transparent; cursor:pointer;
+    font-family:inherit; font-size:.8rem; font-weight:650; color:var(--c-ink); text-align:left;
+}
+.sl-sheet-row:hover{ background:var(--c-hover); }
+.sl-sheet-row .material-symbols-rounded{ font-size:17px; color:var(--c-ink-3); }
+.sl-sheet-row.danger{ color:var(--c-danger); }
+.sl-sheet-row.danger .material-symbols-rounded{ color:var(--c-danger); }
+.sl-sheet-note{ padding:2px 9px 6px; font-size:.68rem; color:var(--c-ink-3); }
+
+.sl-toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    background:var(--c-active); color:var(--c-active-ink); border-radius:10px;
+    padding:9px 14px; font-size:.78rem; font-weight:650; z-index:13100;
+    box-shadow:0 18px 40px -20px rgba(17,17,17,.6); opacity:0; transition:opacity .15s ease;
+    pointer-events:none;
+}
+.sl-toast.show{ opacity:1; }
+
+/* ------------------------------------------------------------ small screens */
+@media (max-width:900px){
+    .sl-msgr{ grid-template-columns:1fr; height:calc(100vh - 300px); height:calc(100dvh - 300px); min-height:340px; }
+    .sl-msgr .sl-thr{ display:none; }
+    .sl-msgr.mob-open .sl-rail{ display:none; }
+    .sl-msgr.mob-open .sl-thr{ display:flex; }
+    .sl-back{ display:grid; }
+    .sl-thread-msgs{ padding:12px 14px 8px; }
+    .sl-mrow{ grid-template-columns:26px minmax(0,1fr); gap:8px; }
+    .sl-mav{ width:26px; height:26px; border-radius:8px; font-size:.72rem; }
+    .sl-bub{ max-width:92%; font-size:.845rem; }
+    .sl-mine{ max-width:92%; }
+    .sl-rail-foot{ display:none; }
+    .sl-cmp{ padding:8px 10px 10px; }
+    .sl-hint{ display:none; }
+    .sl-jump{ bottom:92px; right:14px; }
+    .sl-evt{ margin-left:0; }
+    .sl-sheet{ left:10px; right:10px; width:auto; bottom:10px; }
+}
+@media (max-width:560px){
+    .sl-thr-head{ padding:10px 12px; gap:9px; }
+    .sl-thr-id p{ font-size:.7rem; }
+    .sl-thr-acts .sl-ib{ width:30px; height:30px; }
+}
+
+/* ---- bits referenced by the module ---- */
+.sl-thr-search{ display:none; padding:8px 16px; border-bottom:1px solid var(--c-line); background:var(--c-bg); }
+.sl-thr-search.on{ display:block; }
+.sl-thr-search input{
+    width:100%; height:32px; padding:0 10px; border-radius:9px;
+    border:1px solid var(--c-line); background:var(--c-fill);
+    font-family:inherit; font-size:.8rem; color:var(--c-ink); outline:0;
+}
+.sl-convo .sl-cav, .sl-convo .sl-mav{ width:38px; height:38px; border-radius:11px; font-size:1rem; }
+.sl-msgr .sl-mav{ font-weight:800; letter-spacing:-.01em; }
+.sl-msgr .sl-pinbar .material-symbols-rounded{ font-size:15px; }
+[data-theme="dark"] .sl-cav.grp{ background:linear-gradient(145deg,#2f3238,#161719); }
+[data-theme="dark"] .sl-msgr .sl-bub{ background:var(--c-bg); }
+[data-theme="dark"] .sl-mine .sl-bub{ background:var(--c-active); color:var(--c-active-ink); }
+[data-theme="dark"] .sl-sheet{ background:var(--c-bg); }
+
+.sl-push{ flex:1 1 auto; min-height:0; }
+
+/* header action cluster injected into the shell's #header-actions */
+.sl-ha{ display:flex; gap:8px; }
+@media (max-width:700px){ .sl-ha{ display:none; } }
 
     </style>
 </head>
@@ -9497,6 +9854,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 window.__slMembers = allMembers;
                 membersLoaded = true;
                 applyGhostFilter();
+                filterWeekly();
                 autoClean();
                 if (page === 'messages') { renderPeople(); updateCounts(); }
             }, function () { /* rules not published yet — silent */ });
@@ -9528,6 +9886,11 @@ var LEAGUE_FIREBASE_CONFIG = {
         return out;
     }
     window.__slRealMembers = realUids;
+    window.__slGhostNames = function () {
+        return ghostUids().map(function (u) {
+            return (allMembers[u] && allMembers[u].displayName) || '';
+        }).filter(Boolean);
+    };
     window.__slGhostCount = function () { return ghostUids().length; };
 
     /* hide the anonymous rows on the app's standings table, then re-rank */
@@ -9538,7 +9901,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var real = realUids();
         applying = true;
         if (boardWatch) boardWatch.disconnect();          // never react to our own writes
-        try { filterBoard(body, real); } finally {
+        try { filterBoard(body, real); filterWeekly(); } finally {
             applying = false;
             if (boardWatch && body.parentNode) boardWatch.observe(document.getElementById('chapterList') || body.parentNode, { childList: true, subtree: true });
         }
@@ -9569,6 +9932,26 @@ var LEAGUE_FIREBASE_CONFIG = {
         }
     }
 
+
+    /* the weekly challenge card is parked in the stash but still rendered by the
+       app: its rows and its "You vs someone" line name old accounts, so hide the
+       rows here and let the leaderboard module rebuild the sentence */
+    function filterWeekly() {
+        var card = document.getElementById('challengeCard') ||
+                   (stashEl() && stashEl().querySelector('#challengeCard'));
+        if (!card) return;
+        var real = realUids();
+        card.querySelectorAll('table.league-table tbody tr').forEach(function (tr) {
+            var n = tr.querySelector('[data-uid]') || tr.querySelector('[data-profile-uid]');
+            var uid = n ? (n.getAttribute('data-uid') || n.getAttribute('data-profile-uid')) : '';
+            if (!uid) return;
+            var hide = !real[uid];
+            var want = hide ? 'none' : '';
+            if (tr.style.display !== want) tr.style.display = want;
+        });
+    }
+    function stashEl() { return document.getElementById('v2Stash'); }
+
     function watchBoard() {
         var list = $('chapterList');
         if (!list || boardWatch) return;
@@ -9578,6 +9961,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         boardWatch = new MutationObserver(function () { applyGhostFilter(); setTimeout(applyGhostFilter, 60); });
         boardWatch.observe(list, { childList: true, subtree: true });
         setInterval(applyGhostFilter, 2500);
+    setInterval(filterWeekly, 2500);
     }
 
     /* ------------------------------------------------ clean-up (settings) */
@@ -9856,6 +10240,1034 @@ var LEAGUE_FIREBASE_CONFIG = {
 
 <script>
 /* ============================================================================
+   V6.4 — MESSAGES, REBUILT
+   One surface, two panes: a conversation rail, a height-locked thread, and an
+   optional context panel. Replaces the old two-card layout (chat box inside a
+   card, DM grid inside another card).
+
+   Data stays exactly where it already was:
+     leagues/{code}/messages            group thread
+     leagues/{code}/dms/{a_b}/messages  one private thread per pair
+     leagues/{code}/notifications       unread DMs + the bell
+     leagues/{code}/members             presence, typing, read stamps
+   Nothing new has to be published for the core to work: presence, typing and
+   read receipts ride on your own member row (which you are always allowed to
+   write). Reply/quote needs the V7 rules and quietly falls back without them.
+   ========================================================================== */
+(function () {
+    'use strict';
+    if (window.__slMsg) return;
+
+    var STORE = 'slChatV2';
+    var EMOJIS = ['👍', '🔥', '❤️', '😂', '🏆', '😮'];
+
+    /* ------------------------------------------------------------- helpers */
+    function $(id) { return document.getElementById(id); }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function nowCode() {
+        try { return (localStorage.getItem('leagueCode') || '').trim().toUpperCase() || 'STUDY1'; }
+        catch (e) { return 'STUDY1'; }
+    }
+    function store(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(STORE + ':' + key)) || fallback; }
+        catch (e) { return fallback; }
+    }
+    function save(key, val) {
+        try { localStorage.setItem(STORE + ':' + key, JSON.stringify(val)); } catch (e) {}
+    }
+    function millis(ts) {
+        if (!ts) return Date.now();
+        if (typeof ts === 'number') return ts;
+        if (ts.toMillis) { try { return ts.toMillis() || Date.now(); } catch (e) { return Date.now(); } }
+        if (ts.seconds) return ts.seconds * 1000;
+        return Date.now();
+    }
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function hm(ms) { var d = new Date(ms); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+    function dayKey(ms) { var d = new Date(ms); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+    function dayLabel(ms) {
+        var d = new Date(ms), now = new Date();
+        var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        var t = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        var diff = Math.round((t0 - t) / 86400000);
+        if (diff === 0) return 'Today';
+        if (diff === 1) return 'Yesterday';
+        if (diff < 7) return d.toLocaleDateString(undefined, { weekday: 'long' });
+        return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    }
+    function ago(ms) {
+        var s = Math.max(1, Math.round((Date.now() - ms) / 1000));
+        if (s < 60) return 'now';
+        if (s < 3600) return Math.round(s / 60) + 'm';
+        if (s < 86400) return Math.round(s / 3600) + 'h';
+        if (s < 604800) return Math.round(s / 86400) + 'd';
+        return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    }
+    function initials(name) {
+        var parts = String(name || '?').trim().split(/\s+/).slice(0, 2);
+        return parts.map(function (p) { return (p[0] || '').toUpperCase(); }).join('') || '?';
+    }
+    var TINTS = ['#E8734A', '#2E9E5B', '#7C5CFF', '#2F80ED', '#C9407A', '#B4762A', '#0E8A8A'];
+    function tint(seed) {
+        var h = 0, s = String(seed || '');
+        for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973;
+        return TINTS[h % TINTS.length];
+    }
+    function avatarHtml(m, uid, extraClass) {
+        var emoji = m && m.emoji;
+        var colour = (m && m.avatarColor) || tint(uid || (m && m.displayName));
+        var inner = emoji ? esc(emoji) : esc(initials(m && m.displayName));
+        return '<span class="sl-mav' + (extraClass ? ' ' + extraClass : '') + '" style="background:' + esc(colour) + '">' + inner + '</span>';
+    }
+
+    /* --------------------------------------------------------------- state */
+    var db = null, me = null, code = '', signed = false, origRender = null;
+    var members = {};              // uid -> member data (ghosts already removed)
+    var groupMsgs = [], dmMsgs = [], bell = [];
+    var conv = { type: 'group', uid: '' };
+    var filter = 'all', railQ = '', threadQ = '', searching = false;
+    var replyTo = null;
+    var ctxOpen = false;
+    var mounted = false, booted = false;
+    var subs = [];
+    var readMap = store('read', {});
+    var draftMap = store('draft', {});
+    var pinMap = store('pin', {});
+    var lastTypingWrite = 0, typingTimer = null;
+    var myReads = {};
+
+    function convKey() { return conv.type === 'group' ? 'group' : 'dm:' + conv.uid; }
+    function dmId(a, b) { return [a, b].sort().join('_'); }
+    function live(u) {
+        var m = members[u];
+        if (!m) return false;
+        var t = m.lastSeen ? millis(m.lastSeen) : (m.updatedAt ? millis(m.updatedAt) : 0);
+        return t && (Date.now() - t) < 5 * 60000;
+    }
+    function onlineCount() {
+        var n = 0;
+        Object.keys(members).forEach(function (u) { if (u !== (me && me.uid) && live(u)) n++; });
+        return n;
+    }
+    function memberCount() { return Object.keys(members).length; }
+    function myName() {
+        var m = members[me && me.uid] || {};
+        if (m.displayName) return m.displayName;
+        try { var p = JSON.parse(localStorage.getItem('leagueProfile') || '{}'); if (p.name) return p.name; } catch (e) {}
+        return (me && me.displayName) || 'Student';
+    }
+    function myEmoji() {
+        var m = members[me && me.uid] || {};
+        if (m.emoji) return m.emoji;
+        try { var p = JSON.parse(localStorage.getItem('leagueProfile') || '{}'); if (p.emoji) return p.emoji; } catch (e) {}
+        return '';
+    }
+    function isOnlineText() { var n = onlineCount(); return n ? n + ' online' : 'no one else online'; }
+
+    /* --------------------------------------------------------------- boot */
+    function ensure() {
+        if (booted) return signed;
+        booted = true;
+        try {
+            if (!window.firebase || !firebase.auth || !firebase.firestore) return false;
+            me = firebase.auth().currentUser;
+            db = firebase.firestore();
+            code = nowCode();
+            signed = !!me;
+        } catch (e) { signed = false; }
+        return signed;
+    }
+
+    function teardown() {
+        subs.forEach(function (u) { try { u(); } catch (e) {} });
+        subs = [];
+        mounted = false;
+    }
+    function alive() {
+        var root = $('slGroupChat');
+        if (!root || !document.body.contains(root)) { teardown(); return false; }
+        return true;
+    }
+
+    /* ------------------------------------------------------------ subscribe */
+    function subscribe() {
+        if (subs.length) return;
+        // members: presence, typing, read stamps, names
+        subs.push(db.collection('leagues').doc(code).collection('members')
+            .onSnapshot(function (snap) {
+                var next = {};
+                snap.forEach(function (d) {
+                    var m = d.data() || {};
+                    m.uid = d.id;
+                    // rows created by the old anonymous builds have no provider stamp
+                    if (d.id !== me.uid && m.authProvider !== 'google') return;
+                    next[d.id] = m;
+                });
+                members = next;
+                myReads = (members[me.uid] && members[me.uid].reads) || {};
+                if (!alive()) return;
+                renderRail(); renderThreadHead(); renderCtx(); renderTyping();
+                // read receipts change what my stamps say, so repaint the tail
+                paintMessages();
+            }, function () {}));
+
+        // group thread
+        subs.push(db.collection('leagues').doc(code).collection('messages')
+            .orderBy('createdAt', 'desc').limit(60)
+            .onSnapshot(function (snap) {
+                var list = [];
+                snap.forEach(function (d) { list.push(Object.assign({ id: d.id }, d.data())); });
+                groupMsgs = list.sort(function (a, b) { return millis(a.createdAt) - millis(b.createdAt); });
+                if (!alive()) return;
+                if (conv.type === 'group') { paintMessages(); renderRail(); }
+                else renderRail();
+                maybeMarkRead();
+            }, function (e) { status('Chat unavailable — ' + msg(e)); }));
+
+        // my notifications: DM unread counts + the bell
+        subs.push(db.collection('leagues').doc(code).collection('notifications')
+            .where('recipientUid', '==', me.uid).limit(60)
+            .onSnapshot(function (snap) {
+                bell = [];
+                snap.forEach(function (d) { bell.push(Object.assign({ id: d.id }, d.data())); });
+                if (!alive()) return;
+                renderRail();
+                if (conv.type === 'dm') renderThreadHead();
+            }, function () {}));
+
+        startDmSub();
+        heartbeat();
+    }
+
+    function startDmSub() {
+        // drop the previous dm listener only
+        if (subs.__dm) { try { subs.__dm(); } catch (e) {} subs.__dm = null; }
+        dmMsgs = [];
+        if (conv.type !== 'dm' || !conv.uid) return;
+        subs.__dm = db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, conv.uid))
+            .collection('messages').orderBy('createdAt', 'desc').limit(60)
+            .onSnapshot(function (snap) {
+                var list = [];
+                snap.forEach(function (d) { list.push(Object.assign({ id: d.id }, d.data())); });
+                dmMsgs = list.sort(function (a, b) { return millis(a.createdAt) - millis(b.createdAt); });
+                if (!alive()) return;
+                if (conv.type === 'dm') { paintMessages(); renderRail(); }
+                maybeMarkRead();
+            }, function (e) { status('Direct messages need latest.rules published — ' + msg(e)); });
+    }
+
+    function msg(e) { return (e && (e.code || e.message)) ? String(e.code || e.message).slice(0, 90) : 'unknown error'; }
+
+    /* ------------------------------------------------ presence + my own row */
+    function stamp(fields) {
+        if (!db || !me) return Promise.resolve();
+        return db.collection('leagues').doc(code).collection('members').doc(me.uid)
+            .set(fields, { merge: true }).catch(function () {});
+    }
+    function heartbeat() {
+        stamp({ lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
+        setInterval(function () {
+            if (document.hidden) return;
+            stamp({ lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
+        }, 60000);
+    }
+    function markRead(ts) {
+        var key = convKey();
+        readMap[key] = Math.max(readMap[key] || 0, ts || Date.now());
+        save('read', readMap);
+        var upd = {};
+        upd['reads.' + key] = readMap[key];
+        stamp(upd);
+        if (conv.type === 'dm' && bell.length) {
+            var batch = db.batch(), n = 0;
+            bell.forEach(function (b) {
+                if (b.actorUid === conv.uid && b.type === 'dm' && !b.read) {
+                    batch.update(db.collection('leagues').doc(code).collection('notifications').doc(b.id), { read: true });
+                    n++;
+                }
+            });
+            if (n) batch.commit().catch(function () {});
+        }
+    }
+    function maybeMarkRead() {
+        if (!me) return;
+        var list = conv.type === 'group' ? groupMsgs : dmMsgs;
+        if (!list.length) return;
+        var last = millis(list[list.length - 1].createdAt);
+        if (!readMap[convKey()] || last > readMap[convKey()] + 500) markRead(last);
+    }
+
+    /* ------------------------------------------------------------- unread */
+    function groupUnread() {
+        var last = readMap.group || 0;
+        var n = 0;
+        groupMsgs.forEach(function (m) {
+            if (millis(m.createdAt) > last && m.senderUid !== me.uid) n++;
+        });
+        return n;
+    }
+    function dmUnread(uid) {
+        var n = 0;
+        bell.forEach(function (b) {
+            if (b.type === 'dm' && b.actorUid === uid && !b.read) n++;
+        });
+        return n;
+    }
+    function convos() {
+        var out = [{
+            type: 'group', uid: '',
+            name: 'Class 12 — League',
+            avatar: '',
+            preview: groupMsgs.length ? (groupMsgs[groupMsgs.length - 1].senderUid === me.uid ? 'You: ' : '') + (groupMsgs[groupMsgs.length - 1].text || '') : 'No messages yet',
+            ts: groupMsgs.length ? millis(groupMsgs[groupMsgs.length - 1].createdAt) : 0,
+            unread: groupUnread()
+        }];
+        Object.keys(members).forEach(function (u) {
+            if (u === me.uid) return;
+            var m = members[u];
+            var lastDm = (conv.type === 'dm' && conv.uid === u && dmMsgs.length) ? dmMsgs[dmMsgs.length - 1] : null;
+            out.push({
+                type: 'dm', uid: u,
+                name: m.displayName || 'Student',
+                member: m,
+                preview: lastDm ? (lastDm.senderUid === me.uid ? 'You: ' : '') + (lastDm.text || '') : (live(u) ? 'online now' : 'Tap to start a chat'),
+                ts: lastDm ? millis(lastDm.createdAt) : 0,
+                unread: dmUnread(u)
+            });
+        });
+        out.sort(function (a, b) {
+            if (a.type !== b.type) return a.type === 'group' ? -1 : 1;
+            return b.ts - a.ts;
+        });
+        return out;
+    }
+
+    /* --------------------------------------------------------------- paint */
+    function renderRail() {
+        if (!alive()) return;
+        var list = $('slConvos');
+        if (!list) return;
+        var all = convos();
+        var unreadTotal = all.reduce(function (n, c) { return n + c.unread; }, 0);
+        var dmTotal = all.filter(function (c) { return c.type === 'dm' && c.unread; }).length;
+        $('slTabAll').innerHTML = 'All <i>' + all.length + '</i>';
+        $('slTabDirect').innerHTML = 'Direct <i>' + (all.length - 1) + '</i>';
+        $('slTabUnread').innerHTML = 'Unread <i>' + (unreadTotal || 0) + '</i>';
+        [['slTabAll', 'all'], ['slTabDirect', 'direct'], ['slTabUnread', 'unread']].forEach(function (p) {
+            $(p[0]).classList.toggle('on', filter === p[1]);
+        });
+        var shown = all.filter(function (c) {
+            if (filter === 'direct' && c.type !== 'dm') return false;
+            if (filter === 'unread' && !c.unread) return false;
+            if (railQ && c.name.toLowerCase().indexOf(railQ.toLowerCase()) === -1) return false;
+            return true;
+        });
+        if (!shown.length) {
+            list.innerHTML = '<div class="sl-rail-empty">' +
+                (railQ ? 'No conversation matches “' + esc(railQ) + '”.'
+                    : all.length === 1 ? 'No classmates yet — invite someone from My Profile and this rail fills up.'
+                        : 'Nothing unread. Nice.') + '</div>';
+            return;
+        }
+        list.innerHTML = shown.map(function (c) {
+            var on = (c.type === conv.type && c.uid === conv.uid);
+            var av = c.type === 'group'
+                ? '<span class="sl-cav grp">👥</span>'
+                : avatarHtml(c.member, c.uid, 'sl-cav' + (live(c.uid) ? ' is-on' : ''));
+            if (c.type !== 'group') av = av.replace('class="sl-mav', 'class="sl-cav sl-mav');
+            return '<button type="button" class="sl-convo' + (on ? ' on' : '') + '" data-conv="' + c.type + ':' + esc(c.uid) + '">' +
+                av +
+                '<span class="sl-cn"><b>' + esc(c.name) + '</b>' +
+                    '<small>' + (c.type === 'group' && c.preview.indexOf('You: ') !== 0 && c.ts ? '<b>' + esc(firstName(c)) + ':</b> ' : '') + esc(c.preview.slice(0, 90)) + '</small></span>' +
+                '<span class="sl-cmeta"><span class="sl-ctime">' + (c.ts ? ago(c.ts) : '') + '</span>' +
+                    (c.unread ? '<span class="sl-unread">' + c.unread + '</span>' : '') + '</span>' +
+                '</button>';
+        }).join('');
+        list.querySelectorAll('[data-conv]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var parts = b.getAttribute('data-conv').split(':');
+                openConvo(parts[0], parts[1]);
+            });
+        });
+        var foot = $('slRailFoot');
+        if (foot) {
+            var others = memberCount() - 1;
+            foot.innerHTML = '<span class="sl-live"></span>' + (others > 0
+                ? onlineCount() + ' of ' + others + ' classmates online'
+                : 'just you so far');
+        }
+    }
+    function firstName(c) {
+        var last = groupPreviewAuthor();
+        return last || 'Class';
+    }
+    function groupPreviewAuthor() {
+        if (!groupMsgs.length) return '';
+        var m = groupMsgs[groupMsgs.length - 1];
+        return m.senderUid === me.uid ? 'You' : (m.senderName || 'Student');
+    }
+
+    function renderThreadHead() {
+        if (!alive()) return;
+        var head = $('slThrHead');
+        if (!head) return;
+        if (conv.type === 'group') {
+            head.innerHTML =
+                '<button type="button" class="sl-ib sl-back" id="slBack" title="Back"><span class="material-symbols-rounded">arrow_back</span></button>' +
+                '<span class="sl-cav grp" style="background:linear-gradient(145deg,#2b2d33,#101114)">👥</span>' +
+                '<span class="sl-thr-id"><h2>Class 12 — League</h2><p>' +
+                    memberCount() + ' member' + (memberCount() === 1 ? '' : 's') + ' · ' + isOnlineText() + '</p></span>' +
+                '<span class="sl-thr-acts">' +
+                    '<button type="button" class="sl-ib" id="slFind" title="Search in this chat"><span class="material-symbols-rounded">search</span></button>' +
+                    '<button type="button" class="sl-ib" id="slCtxBtn" title="League details"><span class="material-symbols-rounded">info</span></button>' +
+                '</span>';
+        } else {
+            var m = members[conv.uid] || {};
+            var seenN = dmUnread(conv.uid);
+            head.innerHTML =
+                '<button type="button" class="sl-ib sl-back" id="slBack" title="Back"><span class="material-symbols-rounded">arrow_back</span></button>' +
+                avatarHtml(m, conv.uid, 'sl-cav sl-mav') +
+                '<span class="sl-thr-id"><h2>' + esc(m.displayName || 'Student') + '</h2><p>' +
+                    (live(conv.uid) ? '<span class="sl-live" style="width:6px;height:6px"></span> online now'
+                        : (m.lastSeen ? 'last seen ' + ago(millis(m.lastSeen)) + ' ago' : 'private chat')) + '</p></span>' +
+                '<span class="sl-thr-acts">' +
+                    '<button type="button" class="sl-ib" id="slFind" title="Search in this chat"><span class="material-symbols-rounded">search</span></button>' +
+                    (seenN ? '<button type="button" class="sl-ib" id="slMarkRead" title="Mark as read"><span class="material-symbols-rounded">check</span></button>' : '') +
+                '</span>';
+        }
+        var back = $('slBack');
+        if (back) back.addEventListener('click', function () {
+            var root = $('slGroupChat');
+            if (root) root.classList.remove('mob-open');
+        });
+        var find = $('slFind');
+        if (find) find.addEventListener('click', toggleSearch);
+        var ctxBtn = $('slCtxBtn');
+        if (ctxBtn) ctxBtn.addEventListener('click', function () {
+            ctxOpen = !ctxOpen;
+            $('slGroupChat').classList.toggle('has-ctx', ctxOpen);
+            renderCtx();
+        });
+        var mr = $('slMarkRead');
+        if (mr) mr.addEventListener('click', function () { markRead(Date.now()); renderRail(); paintMessages(); });
+        renderPin();
+    }
+
+    function renderPin() {
+        var bar = $('slPinBar');
+        if (!bar) return;
+        var p = pinMap[convKey()];
+        if (!p) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        bar.style.display = 'flex';
+        bar.innerHTML = '<span class="material-symbols-rounded" style="font-size:15px">push_pin</span>' +
+            '<b>Pinned</b> <span>' + esc(p.text) + '</span>' +
+            '<button type="button" id="slUnpin" title="Unpin">✕</button>';
+        $('slUnpin').addEventListener('click', function () {
+            delete pinMap[convKey()]; save('pin', pinMap); renderPin();
+        });
+    }
+
+    function renderTyping() {
+        var el = $('slTyping');
+        if (!el) return;
+        var key = convKey(), names = [];
+        Object.keys(members).forEach(function (u) {
+            if (u === me.uid) return;
+            var m = members[u];
+            if (!m.typingAt || m.typingConv !== key) return;
+            if (Date.now() - millis(m.typingAt) > 6000) return;
+            names.push((m.displayName || 'Someone').split(' ')[0]);
+        });
+        el.innerHTML = names.length
+            ? '<i><b></b><b></b><b></b></i> ' + esc(names.slice(0, 2).join(', ')) + (names.length > 2 ? ' and others' : '') + ' typing…'
+            : '';
+    }
+
+    function renderCtx() {
+        var box = $('slCtx');
+        if (!box) return;
+        var online = Object.keys(members).filter(function (u) { return u !== me.uid && live(u); });
+        var all = Object.keys(members).filter(function (u) { return u !== me.uid; })
+            .sort(function (a, b) { return (members[b].xp || 0) - (members[a].xp || 0); });
+        var meXp = (members[me.uid] && members[me.uid].xp) || 0;
+        var rows = all.slice();
+        if (members[me.uid]) rows.push(me.uid);
+        rows = rows.sort(function (a, b) { return ((members[b] || {}).xp || 0) - ((members[a] || {}).xp || 0); });
+        var board = rows.slice(0, 4);
+        box.innerHTML =
+            '<div class="sl-ctx-head">In this league<button type="button" id="slCtxClose">✕</button></div>' +
+            '<div class="sl-ctx-sec"><div class="sl-ctx-lab"><span>Online now</span><span>' + online.length + '</span></div>' +
+                (online.length ? online.map(function (u) {
+                    var m = members[u];
+                    return '<div class="sl-ctx-p">' + avatarHtml(m, u) +
+                        '<span><b>' + esc(m.displayName || 'Student') + '</b><small>' + (m.xp || 0) + ' XP</small></span>' +
+                        '<button type="button" class="sl-ctx-dm" data-dm="' + esc(u) + '" title="Message"><span class="material-symbols-rounded" style="font-size:14px">mail</span></button></div>';
+                }).join('') : '<div class="sl-rail-empty" style="padding:0">Nobody else is online right now.</div>') +
+            '</div>' +
+            '<div class="sl-ctx-sec"><div class="sl-ctx-lab"><span>Top of the board</span><span>XP</span></div>' +
+                (board.length ? board.map(function (u, i) {
+                    var m = members[u] || {};
+                    return '<div class="sl-board-row' + (u === me.uid ? ' me' : '') + '"><span>' + (i + 1) + '</span>' +
+                        '<b style="font-weight:inherit">' + esc(u === me.uid ? 'You' : (m.displayName || 'Student')) + '</b>' +
+                        '<em>' + (m.xp || 0) + '</em></div>';
+                }).join('')
+                    : '<div class="sl-rail-empty" style="padding:0">The board is empty until someone joins.</div>') +
+            '</div>' +
+            '<div class="sl-ctx-foot"><button type="button" class="sl-send" id="slGoBoard">Open the leaderboard</button></div>';
+        var close = $('slCtxClose');
+        if (close) close.addEventListener('click', function () {
+            ctxOpen = false; $('slGroupChat').classList.remove('has-ctx');
+        });
+        box.querySelectorAll('[data-dm]').forEach(function (b) {
+            b.addEventListener('click', function () { openConvo('dm', b.getAttribute('data-dm')); });
+        });
+        var go = $('slGoBoard');
+        if (go) go.addEventListener('click', function () {
+            var nav = document.querySelector('.v2-nav-item[data-v2go="league"]');
+            if (nav) nav.click();
+        });
+    }
+
+    /* -------------------------------------------------------- message list */
+    function currentList() {
+        var list = conv.type === 'group' ? groupMsgs : dmMsgs;
+        return list.filter(function (m) { return m.id.indexOf('tmp') !== 0; });
+    }
+    function paintMessages() {
+        if (!alive()) return;
+        var box = $('slMsgs');
+        if (!box) return;
+        var list = currentList();
+        var q = threadQ.trim().toLowerCase();
+        if (q) list = list.filter(function (m) { return (m.text || '').toLowerCase().indexOf(q) !== -1; });
+
+        var html = ['<div class="sl-push"></div>'];
+        var readTs = readMap[convKey()] || 0;
+        var newDivDone = !!q;
+        var prev = null;
+
+        if (conv.type === 'group' && !q) html.push(eventCard());
+
+        list.forEach(function (m) {
+            var ts = millis(m.createdAt);
+            var dk = dayKey(ts);
+            if (!prev || prev.day !== dk) {
+                html.push('<div class="sl-day"><span>' + dayLabel(ts) + '</span></div>');
+                prev = { day: dk, ts: ts, sender: '' };
+            }
+            if (!newDivDone && readTs && ts > readTs && m.senderUid !== me.uid) {
+                html.push('<div class="sl-newdiv"><span>New messages</span></div>');
+                newDivDone = true;
+            }
+            var mine = m.senderUid === me.uid;
+            var tight = prev && prev.sender === m.senderUid && (ts - prev.ts) < 5 * 60000;
+            prev.sender = m.senderUid; prev.ts = ts;
+
+            var member = members[m.senderUid] || {};
+            var reactions = m.reactions || {};
+            var counts = {};
+            Object.keys(reactions).forEach(function (u) {
+                var e = reactions[u];
+                if (e) { counts[e] = (counts[e] || 0) + 1; }
+            });
+            var rxKeys = Object.keys(counts);
+            var rx = rxKeys.length ? '<div class="sl-rx">' + rxKeys.map(function (e) {
+                var mineReacted = reactions[me.uid] === e;
+                return '<button type="button" class="' + (mineReacted ? 'mine' : '') + '" data-react="' + esc(m.id) + '|' + esc(e) + '">' +
+                    esc(e) + ' ' + counts[e] + '</button>';
+            }).join('') + '</div>' : '';
+
+            var body = (m.replyTo ? '<span class="sl-quote"><b>' + esc(m.replyTo.name || 'Reply') + '</b><span>' + esc(m.replyTo.text || '') + '</span></span>' : '') +
+                esc(m.text || '');
+
+            if (mine) {
+                html.push('<div class="sl-mine" data-msg="' + esc(m.id) + '">' +
+                    '<span class="sl-bub">' + body + '</span>' + rx +
+                    '<span class="sl-stamp">' + hm(ts) + ' · ' + (m.pending ? 'sending…' : seenLabel(m)) + '</span></div>');
+            } else {
+                html.push('<div class="sl-mrow' + (tight ? ' tight' : '') + '" data-msg="' + esc(m.id) + '">' +
+                    avatarHtml(member, m.senderUid) +
+                    '<div><div class="sl-mhead"><b>' + esc(m.senderName || (member.displayName || 'Student')) + '</b>' +
+                        '<time>' + hm(ts) + '</time>' +
+                        (m.editedAt ? '<span class="sl-edited">edited</span>' : '') + '</div>' +
+                    '<span class="sl-bub">' + body + '</span>' + rx + '</div></div>');
+            }
+        });
+
+        if (!list.length) {
+            html.push('<div class="sl-rail-empty" style="text-align:center;padding:40px 16px">' +
+                (q ? 'No message matches “' + esc(threadQ) + '”.'
+                    : conv.type === 'group' ? 'No messages yet — say hello 👋' : 'No messages yet. Say hi 👋') + '</div>');
+        }
+
+        var nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 160;
+        box.innerHTML = html.join('');
+        if (nearBottom || !box.dataset.painted) { box.scrollTop = box.scrollHeight; box.dataset.painted = '1'; }
+
+        box.querySelectorAll('[data-react]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var p = b.getAttribute('data-react').split('|');
+                react(p[0], p[1]);
+            });
+        });
+        box.querySelectorAll('[data-msg]').forEach(function (el) {
+            el.addEventListener('contextmenu', function (e) { e.preventDefault(); openSheet(el.getAttribute('data-msg'), el); });
+            var press = null;
+            el.addEventListener('touchstart', function (e) {
+                press = setTimeout(function () { openSheet(el.getAttribute('data-msg'), el); }, 450);
+            }, { passive: true });
+            ['touchend', 'touchmove', 'touchcancel'].forEach(function (ev) {
+                el.addEventListener(ev, function () { clearTimeout(press); }, { passive: true });
+            });
+            el.addEventListener('dblclick', function () { openSheet(el.getAttribute('data-msg'), el); });
+        });
+        updateJump();
+    }
+
+    function seenLabel(m) {
+        var ts = millis(m.createdAt);
+        var names = [];
+        Object.keys(members).forEach(function (u) {
+            if (u === me.uid) return;
+            var r = (members[u].reads || {})[convKey()];
+            if (r && r >= ts - 1500) names.push((members[u].displayName || 'Student').split(' ')[0]);
+        });
+        if (!names.length) return 'sent';
+        if (conv.type === 'group') return names.length > 2 ? 'seen by ' + names.length : 'seen by ' + names.join(', ');
+        return 'seen';
+    }
+
+    function eventCard() {
+        var others = Object.keys(members).filter(function (u) { return u !== me.uid; });
+        if (!others.length) return '';
+        var sorted = others.sort(function (a, b) { return (members[b].xp || 0) - (members[a].xp || 0); });
+        var lead = members[sorted[0]];
+        var meXp = (members[me.uid] && members[me.uid].xp) || 0;
+        var gap = (lead.xp || 0) - meXp;
+        var line = gap > 0
+            ? lead.displayName.split(' ')[0] + ' is ' + gap + ' XP ahead of you.'
+            : gap < 0 ? 'You are ' + Math.abs(gap) + ' XP ahead of ' + lead.displayName.split(' ')[0] + '.'
+                : 'You and ' + lead.displayName.split(' ')[0] + ' are level on XP.';
+        return '<div class="sl-evt"><span class="sl-evt-i">🏆</span><div>' +
+            '<b>This week on the board</b><p>' + esc(line) + '</p>' +
+            '<button type="button" class="sl-evt-btn" id="slEvtBoard">View the board →</button></div></div>';
+    }
+
+    function updateJump() {
+        var box = $('slMsgs'), jump = $('slJump');
+        if (!box || !jump) return;
+        var far = box.scrollHeight - box.scrollTop - box.clientHeight > 240;
+        jump.classList.toggle('show', far);
+    }
+
+    /* ------------------------------------------------------------- actions */
+    function openConvo(type, uid) {
+        conv = { type: type, uid: type === 'dm' ? uid : '' };
+        replyTo = null;
+        searching = false; threadQ = '';
+        var s = $('slThrSearch');
+        if (s) { s.classList.remove('on'); s.querySelector('input').value = ''; }
+        var root = $('slGroupChat');
+        if (root) root.classList.add('mob-open');
+        renderThreadHead(); renderPin(); paintMessages(); renderRail(); renderTyping();
+        var ta = $('slMsgInput');
+        if (ta) ta.placeholder = type === 'group' ? 'Message your class…'
+            : 'Message ' + (((members[uid] || {}).displayName || 'your classmate').split(' ')[0]) + '…';
+        restoreDraft();
+        startDmSub();
+        markRead(Date.now());
+        var box = $('slMsgs');
+        if (box) box.dataset.painted = '';
+    }
+
+    function toggleSearch() {
+        searching = !searching;
+        var s = $('slThrSearch');
+        if (!s) return;
+        s.classList.toggle('on', searching);
+        if (searching) { s.querySelector('input').focus(); }
+        else { threadQ = ''; s.querySelector('input').value = ''; paintMessages(); }
+    }
+
+    function draftKey() { return convKey(); }
+    function restoreDraft() {
+        var ta = $('slMsgInput'), hint = $('slCharCount');
+        if (!ta) return;
+        ta.value = draftMap[draftKey()] || '';
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(112, ta.scrollHeight) + 'px';
+        if (hint) hint.textContent = ta.value.length + ' / 500';
+    }
+    function status(text) {
+        var el = $('slCmpStatus');
+        if (el) { el.textContent = text || ''; setTimeout(function () { if (el.textContent === text) el.textContent = ''; }, 6000); }
+    }
+    function toast(text) {
+        var t = $('slToast');
+        if (!t) { t = document.createElement('div'); t.id = 'slToast'; t.className = 'sl-toast'; document.body.appendChild(t); }
+        t.textContent = text;
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 2200);
+    }
+
+    function send() {
+        if (!db || !me) return;
+        var ta = $('slMsgInput');
+        var text = (ta.value || '').replace(/\s+$/, '');
+        if (!text.trim()) return;
+        var payload = {
+            text: text.slice(0, 500),
+            senderUid: me.uid,
+            senderName: myName(),
+            senderEmoji: myEmoji(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        var quoted = replyTo ? { id: replyTo.id, name: replyTo.senderName || 'Student', text: (replyTo.text || '').slice(0, 120) } : null;
+        if (quoted) payload.replyTo = quoted;
+        if (conv.type === 'group') payload.reactions = {};
+
+        // optimistic bubble
+        var tmp = Object.assign({}, payload, {
+            id: 'tmp' + Date.now(), createdAt: Date.now(), pending: true
+        });
+        if (conv.type === 'group') groupMsgs.push(tmp); else dmMsgs.push(tmp);
+        ta.value = ''; ta.style.height = 'auto';
+        delete draftMap[draftKey()]; save('draft', draftMap);
+        replyTo = null; renderReply();
+        status('');
+        paintMessages();
+        renderRail();
+
+        var coll = conv.type === 'group'
+            ? db.collection('leagues').doc(code).collection('messages')
+            : db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, conv.uid)).collection('messages');
+
+        var sent = conv.type === 'dm' && payload.reactions ? Object.assign({}, payload) : payload;
+        if (conv.type === 'dm') delete sent.reactions;   // the DM rules do not allow reaction maps
+
+        coll.add(sent).catch(function (e) {
+            // reply/quote is the only field the current rules may reject — retry plain
+            if (quoted && (e.code === 'permission-denied' || e.code === 'invalid-argument')) {
+                var plain = Object.assign({}, sent);
+                delete plain.replyTo;
+                return coll.add(plain).then(function () { markPending(false, tmp.id); })
+                    .catch(function (e2) { markPending(true, tmp.id, e2); });
+            }
+            markPending(true, tmp.id, e);
+        }).then(function (r) {
+            if (r) { markPending(false, tmp.id); }
+            if (conv.type === 'dm') notifyDm();
+        }).catch(function () {});
+    }
+    function markPending(failed, id, e) {
+        var list = conv.type === 'group' ? groupMsgs : dmMsgs;
+        var i = list.map(function (m) { return m.id; }).indexOf(id);
+        if (i === -1) return;
+        if (failed) {
+            list[i].pending = false;
+            list[i].failed = true;
+            status('Could not send — ' + msg(e));
+        } else {
+            list[i].pending = false;
+        }
+        paintMessages();
+    }
+    function notifyDm() {
+        var p = { name: myName(), emoji: myEmoji() };
+        db.collection('leagues').doc(code).collection('notifications').add({
+            recipientUid: conv.uid, actorUid: me.uid, actorName: p.name, actorEmoji: p.emoji,
+            type: 'dm', text: 'sent you a direct message', read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function () {});
+    }
+    function react(id, emoji) {
+        if (!db || !me) return;
+        if (conv.type !== 'group') return;                    // DM rules keep messages immutable
+        var cur = null;
+        groupMsgs.forEach(function (m) { if (m.id === id) cur = (m.reactions || {})[me.uid]; });
+        var upd = {};
+        upd['reactions.' + me.uid] = cur === emoji ? firebase.firestore.FieldValue.delete() : emoji;
+        db.collection('leagues').doc(code).collection('messages').doc(id).update(upd).catch(function (e) {
+            status('Reactions are unavailable — publish latest.rules (' + msg(e) + ')');
+        });
+    }
+    function remove(id) {
+        if (!db || !me) return;
+        var coll = conv.type === 'group'
+            ? db.collection('leagues').doc(code).collection('messages')
+            : db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, conv.uid)).collection('messages');
+        coll.doc(id).delete().catch(function (e) { status('Could not delete — ' + msg(e)); });
+    }
+
+    function renderReply() {
+        var bar = $('slReplyBar');
+        if (!bar) return;
+        if (!replyTo) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        bar.style.display = 'flex';
+        bar.innerHTML = '<span class="material-symbols-rounded" style="font-size:15px">reply</span>' +
+            '<b>' + esc((replyTo.senderName || 'Message').split(' ')[0]) + '</b>' +
+            '<span>' + esc((replyTo.text || '').slice(0, 90)) + '</span>' +
+            '<button type="button" id="slReplyX">✕</button>';
+        $('slReplyX').addEventListener('click', function () {
+            replyTo = null; renderReply(); var ta = $('slMsgInput'); if (ta) ta.focus();
+        });
+    }
+
+    function findMsg(id) {
+        var all = groupMsgs.concat(dmMsgs);
+        for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
+        return null;
+    }
+
+    /* --------------------------------------------------------- action sheet */
+    function openSheet(id, anchorEl) {
+        var m = findMsg(id);
+        if (!m) return;
+        var mine = m.senderUid === me.uid;
+        var wrap = $('slSheetWrap');
+        var canPin = true;
+        var canReact = conv.type === 'group';
+        var cur = (m.reactions || {})[me.uid];
+        wrap.innerHTML =
+            '<div class="sl-sheet-scrim" data-close="1"></div>' +
+            '<div class="sl-sheet" role="dialog" aria-label="Message actions">' +
+                (canReact ? '<div class="sl-sheet-reacts">' + EMOJIS.map(function (e) {
+                    return '<button type="button" class="' + (cur === e ? 'mine' : '') + '" data-emo="' + e + '">' + e + '</button>';
+                }).join('') + '</div>' : '') +
+                '<button type="button" class="sl-sheet-row" data-act="reply"><span class="material-symbols-rounded">reply</span> Reply</button>' +
+                '<button type="button" class="sl-sheet-row" data-act="copy"><span class="material-symbols-rounded">content_copy</span> Copy text</button>' +
+                (canPin ? '<button type="button" class="sl-sheet-row" data-act="pin"><span class="material-symbols-rounded">push_pin</span> Pin in this chat</button>' : '') +
+                (mine ? '<button type="button" class="sl-sheet-row danger" data-act="delete"><span class="material-symbols-rounded">delete</span> Delete</button>' : '') +
+                '<div class="sl-sheet-note">' + (canReact ? 'Tap an emoji to react.' : 'Private chats stay plain — no reactions here.') + '</div>' +
+            '</div>';
+        wrap.classList.add('is-open');
+
+        var sheet = wrap.querySelector('.sl-sheet');
+        if (window.innerWidth <= 900) {
+            sheet.style.left = '10px'; sheet.style.right = '10px'; sheet.style.width = 'auto'; sheet.style.bottom = '10px'; sheet.style.top = 'auto';
+        } else {
+            var r = anchorEl ? anchorEl.getBoundingClientRect() : { left: 300, top: 200, bottom: 240, width: 200 };
+            var w = 232, h = sheet.offsetHeight || 260;
+            var left = Math.min(window.innerWidth - w - 12, Math.max(12, r.left + Math.min(120, r.width / 2)));
+            var top = r.bottom + 8;
+            if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 8);
+            sheet.style.left = left + 'px'; sheet.style.top = top + 'px'; sheet.style.bottom = 'auto'; sheet.style.right = 'auto';
+        }
+
+        wrap.querySelector('[data-close]').addEventListener('click', closeSheet);
+        wrap.querySelectorAll('[data-emo]').forEach(function (b) {
+            b.addEventListener('click', function () { react(m.id, b.getAttribute('data-emo')); closeSheet(); });
+        });
+        wrap.querySelectorAll('[data-act]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var act = b.getAttribute('data-act');
+                if (act === 'reply') {
+                    replyTo = m; renderReply(); closeSheet();
+                    var ta = $('slMsgInput'); if (ta) ta.focus();
+                } else if (act === 'copy') {
+                    var text = m.text || '';
+                    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast('Copied'); }).catch(function () { toast('Copy failed'); });
+                    else toast('Copy is not available here');
+                    closeSheet();
+                } else if (act === 'pin') {
+                    pinMap[convKey()] = { id: m.id, text: (m.text || '').slice(0, 110) };
+                    save('pin', pinMap); renderPin(); closeSheet(); toast('Pinned');
+                } else if (act === 'delete') {
+                    remove(m.id); closeSheet(); toast('Deleted');
+                }
+            });
+        });
+    }
+    function closeSheet() { var w = $('slSheetWrap'); if (w) { w.classList.remove('is-open'); w.innerHTML = ''; } }
+
+    /* ------------------------------------------------------- new message */
+    function openNewMessage() {
+        var others = Object.keys(members).filter(function (u) { return u !== me.uid; });
+        var wrap = $('slSheetWrap');
+        wrap.innerHTML = '<div class="sl-sheet-scrim" data-close="1"></div>' +
+            '<div class="sl-sheet" role="dialog" aria-label="New message">' +
+            '<div class="sl-sheet-note" style="padding:6px 9px 8px;font-weight:750;color:var(--c-ink);font-size:.8rem">Message a classmate</div>' +
+            (others.length ? others.map(function (u) {
+                var m = members[u];
+                return '<button type="button" class="sl-sheet-row" data-new="' + esc(u) + '">' +
+                    '<span class="sl-mav" style="width:22px;height:22px;border-radius:6px;font-size:.65rem;background:' + esc(m.avatarColor || tint(u)) + '">' +
+                    esc(m.emoji || initials(m.displayName)) + '</span> ' + esc(m.displayName || 'Student') + '</button>';
+            }).join('') : '<div class="sl-sheet-note">No classmates yet — invite someone from My Profile.</div>') +
+            '</div>';
+        wrap.classList.add('is-open');
+        var sheet = wrap.querySelector('.sl-sheet');
+        sheet.style.left = '50%'; sheet.style.top = '50%'; sheet.style.transform = 'translate(-50%,-50%)';
+        wrap.querySelector('[data-close]').addEventListener('click', closeSheet);
+        wrap.querySelectorAll('[data-new]').forEach(function (b) {
+            b.addEventListener('click', function () { closeSheet(); openConvo('dm', b.getAttribute('data-new')); });
+        });
+    }
+
+    /* ------------------------------------------------------------- skeleton */
+    function skeleton() {
+        return '<div class="sl-msgr' + (ctxOpen ? ' has-ctx' : '') + '" id="slGroupChat">' +
+            '<aside class="sl-rail">' +
+                '<div class="sl-rail-head">' +
+                    '<label class="sl-search"><span class="material-symbols-rounded" style="font-size:16px">search</span>' +
+                        '<input id="slRailQ" type="text" placeholder="Search people or messages" autocomplete="off"></label>' +
+                    '<div class="sl-tabs">' +
+                        '<button type="button" class="sl-tab on" id="slTabAll">All</button>' +
+                        '<button type="button" class="sl-tab" id="slTabDirect">Direct</button>' +
+                        '<button type="button" class="sl-tab" id="slTabUnread">Unread</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="sl-convos" id="slConvos"></div>' +
+                '<div class="sl-rail-foot" id="slRailFoot"></div>' +
+            '</aside>' +
+            '<section class="sl-thr">' +
+                '<div class="sl-thr-head" id="slThrHead"></div>' +
+                '<div class="sl-pinbar" id="slPinBar" style="display:none"></div>' +
+                '<div class="sl-thr-search" id="slThrSearch"><input type="text" placeholder="Search in this chat" autocomplete="off"></div>' +
+                '<div class="sl-thread-msgs" id="slMsgs"></div>' +
+                '<button type="button" class="sl-jump" id="slJump"><span class="material-symbols-rounded" style="font-size:15px">arrow_downward</span> Jump to latest</button>' +
+                '<div class="sl-typing" id="slTyping"></div>' +
+                '<div class="sl-pinbar" id="slReplyBar" style="display:none;background:var(--c-fill)"></div>' +
+                '<div class="sl-cmp">' +
+                    '<div class="sl-cmp-row">' +
+                        '<textarea id="slMsgInput" rows="1" maxlength="500" placeholder="Message your class…" autocomplete="off"></textarea>' +
+                        '<button type="button" class="sl-ib" id="slEmoji" title="React quickly"><span class="material-symbols-rounded">add_reaction</span></button>' +
+                        '<button type="button" class="sl-send" id="slSend">Send</button>' +
+                    '</div>' +
+                    '<div class="sl-hint"><span>Enter sends · Shift + Enter for a new line</span>' +
+                        '<span><span id="slCharCount">0 / 500</span> <span class="sl-cmp-status" id="slCmpStatus"></span></span></div>' +
+                '</div>' +
+            '</section>' +
+            '<aside class="sl-ctx" id="slCtx"></aside>' +
+            '</div>' +
+            '<div class="sl-sheet-wrap" id="slSheetWrap"></div>';
+    }
+
+    function bind() {
+        $('slRailQ').addEventListener('input', function (e) { railQ = e.target.value; renderRail(); });
+        $('slTabAll').addEventListener('click', function () { filter = 'all'; renderRail(); });
+        $('slTabDirect').addEventListener('click', function () { filter = 'direct'; renderRail(); });
+        $('slTabUnread').addEventListener('click', function () { filter = 'unread'; renderRail(); });
+
+        var ta = $('slMsgInput');
+        ta.addEventListener('input', function () {
+            ta.style.height = 'auto';
+            ta.style.height = Math.min(112, ta.scrollHeight) + 'px';
+            $('slCharCount').textContent = ta.value.length + ' / 500';
+            draftMap[draftKey()] = ta.value; save('draft', draftMap);
+            var now = Date.now();
+            if (now - lastTypingWrite > 3000) {
+                lastTypingWrite = now;
+                var upd = { typingAt: firebase.firestore.FieldValue.serverTimestamp(), typingConv: convKey() };
+                stamp(upd);
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(function () {
+                    stamp({ typingAt: null, typingConv: null });
+                }, 5000);
+            }
+        });
+        ta.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+        });
+        $('slSend').addEventListener('click', send);
+        $('slEmoji').addEventListener('click', function () {
+            var wrap = $('slSheetWrap');
+            wrap.innerHTML = '<div class="sl-sheet-scrim" data-close="1"></div>' +
+                '<div class="sl-sheet"><div class="sl-sheet-reacts" style="border:0;margin:0">' +
+                EMOJIS.map(function (e) { return '<button type="button" data-ins="' + e + '">' + e + '</button>'; }).join('') +
+                '</div><div class="sl-sheet-note">Emoji are inserted into your message.</div></div>';
+            wrap.classList.add('is-open');
+            var sheet = wrap.querySelector('.sl-sheet');
+            sheet.style.left = '50%'; sheet.style.top = '50%'; sheet.style.transform = 'translate(-50%,-50%)';
+            wrap.querySelector('[data-close]').addEventListener('click', closeSheet);
+            wrap.querySelectorAll('[data-ins]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    ta.value += b.getAttribute('data-ins');
+                    ta.dispatchEvent(new Event('input'));
+                    closeSheet(); ta.focus();
+                });
+            });
+        });
+        $('slThrSearch').querySelector('input').addEventListener('input', function (e) {
+            threadQ = e.target.value; paintMessages();
+        });
+        $('slJump').addEventListener('click', function () {
+            var box = $('slMsgs'); box.scrollTop = box.scrollHeight; updateJump();
+        });
+        $('slMsgs').addEventListener('scroll', updateJump);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeSheet();
+        });
+
+        // header actions the shell leaves empty on this tab
+        var ha = $('header-actions');
+        if (ha) {
+            ha.innerHTML = '<span class="sl-ha">' +
+                '<button type="button" class="btn secondary" id="slNewMsg">New message</button>' +
+                '<button type="button" class="btn secondary" id="slReadAll">Mark all read</button></span>';
+            var nm = $('slNewMsg');
+            if (nm) nm.addEventListener('click', openNewMessage);
+            var ra = $('slReadAll');
+            if (ra) ra.addEventListener('click', function () {
+                markRead(Date.now());
+                bell.forEach(function (b) {
+                    if (!b.read) db.collection('leagues').doc(code).collection('notifications').doc(b.id).update({ read: true }).catch(function () {});
+                });
+                renderRail(); paintMessages(); toast('All caught up');
+            });
+        }
+    }
+
+    /* --------------------------------------------------------------- mount */
+    function render() {
+        if (!ensure()) { if (origRender) origRender(); return; }
+        var list = document.getElementById('chapterList');
+        if (!list) return;
+        if (!mounted || !$('slGroupChat')) {
+            ctxOpen = window.innerWidth >= 1360;
+            list.innerHTML = skeleton();
+            var root = $('slGroupChat');
+            if (window.innerWidth <= 900) root.classList.remove('mob-open');
+            mounted = true;
+            bind();
+            subscribe();
+        }
+        renderRail(); renderThreadHead(); renderCtx(); renderTyping(); renderReply(); paintMessages();
+        restoreDraft();
+        markRead(Date.now());
+    }
+
+    /* ----------------------------------------------------- take over the tab */
+    function arm(tries) {
+        var S = window.__slSocial;
+        if (!S || typeof S.renderMessages !== 'function') {
+            if ((tries || 0) < 60) setTimeout(function () { arm((tries || 0) + 1); }, 200);
+            return;
+        }
+        if (S.__msgPatched) return;
+        origRender = S.renderMessages;
+        S.renderMessages = render;
+        S.__msgPatched = true;
+
+        var prevClean = S.cleanGhosts;
+        // the old refresh hook re-rendered the DM grid; keep it harmless
+        S.refresh = function () { if (mounted) { renderRail(); paintMessages(); } };
+    }
+    arm(0);
+
+    window.__slMsg = {
+        render: render,
+        open: openConvo,
+        state: function () { return { conv: conv, members: Object.keys(members).length, group: groupMsgs.length, dm: dmMsgs.length }; }
+    };
+})();
+</script>
+
+<script>
+/* ============================================================================
    V6 — ONE BOARD
    The Leaderboard tab had two tables saying almost the same thing and an info
    card with two buttons nobody needs. This module:
@@ -9912,6 +11324,44 @@ var LEAGUE_FIREBASE_CONFIG = {
         return { map: map, text: texts.join(' ') };
     }
 
+
+    /* names of purged rows — the weekly card still mentions them until the
+       member document is actually deleted, so scrub the sentence ourselves */
+    function ghostNames() {
+        try { return (window.__slGhostNames && window.__slGhostNames()) || []; } catch (e) { return []; }
+    }
+    function realMembers() {
+        try { return (window.__slRealMembers && window.__slRealMembers()) || {}; } catch (e) { return {}; }
+    }
+    function ptsOf(v) {
+        var n = String(v == null ? '' : v).match(/-?\d+/);
+        return n ? parseInt(n[0], 10) : 0;
+    }
+    /* rebuild the "You vs X" sentence from real members only */
+    function cleanWeeklyText(text) {
+        var ghosts = ghostNames();
+        if (!ghosts.length) return text;
+        var dirty = ghosts.some(function (n) { return n && text.indexOf(n) !== -1; });
+        if (!dirty) return text;
+        var real = realMembers(), me = window.__slMe;
+        var myUid = (firebase && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : '';
+        var mine = weekly[myUid] || {};
+        var others = Object.keys(weekly).filter(function (u) {
+            return u !== myUid && real[u];
+        }).sort(function (a, b) { return ptsOf(weekly[b].week) - ptsOf(weekly[a].week); });
+        function wrap(v) {
+            var n = String(v == null ? '' : v).match(/-?\d+/);
+            return '(' + (n ? n[0] : '0') + ' pts)';
+        }
+        var head = 'You ' + wrap(mine.week);
+        if (others.length) {
+            var o = others[0];
+            head += ' vs ' + ((real[o].displayName || 'a classmate').split(' ')[0]) + ' ' + wrap(weekly[o].week);
+            return head + '. Higher Study Score on Sunday wins: winner gets 2 Champion Points, a tie gives 1 each.';
+        }
+        return head + '. No challenger yet — invite a classmate to make the challenge real.';
+    }
+
     function ensureHeader(table) {
         var head = table.querySelector('thead tr');
         if (!head || head.getAttribute('data-sl-merged') === '1') return;
@@ -9965,9 +11415,10 @@ var LEAGUE_FIREBASE_CONFIG = {
             else card.appendChild(foot);
         }
         var line2 = $('slWeeklyText');
-        if (line2 && weeklyText && line2.textContent !== weeklyText) line2.textContent = weeklyText;
+        var shown = weeklyText ? cleanWeeklyText(weeklyText) : '';
+        if (line2 && shown && line2.textContent !== shown) line2.textContent = shown;
         if (!weeklyText && foot.classList.contains('is-empty')) { /* keep */ }
-        if (foot) foot.classList.toggle('has-text', !!weeklyText);
+        if (foot) foot.classList.toggle('has-text', !!shown);
         return foot;
     }
 
@@ -10031,5 +11482,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a569de531dc8c27b',t:'MTc5NDAyODYxMw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a569de531dc8c27b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56a3c1eabd4dae0',t:'MTc5NDAzMjQ1NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56a3c1eabd4dae0',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
