@@ -3466,6 +3466,100 @@ tr.sl-ghost{ display:none !important; }
     #chapterList table.league-table tr:hover .nudge-btn{ opacity:1; }
 }
 
+/* Studying now: pill row, one pill opens the full detail underneath. */
+.sl-now{ display:block; width:100%; flex:0 0 100%; align-self:stretch; min-width:0; margin: 2px 0 6px; }
+.sl-now-head{
+    display:flex; align-items:center; gap:7px; margin-bottom:7px;
+    font-size:.68rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--c-ink-3, #8b919b);
+}
+.sl-now-dot{
+    width:7px; height:7px; border-radius:50%; background:#e0475b; box-shadow:0 0 0 3px rgba(224,71,91,.13);
+    animation: slLivePulse 1.9s ease-in-out infinite;
+}
+@keyframes slLivePulse{ 0%,100%{ box-shadow:0 0 0 3px rgba(224,71,91,.13);} 50%{ box-shadow:0 0 0 6px rgba(224,71,91,.04);} }
+.sl-now-pills{ display:flex; flex-wrap:wrap; gap:7px; }
+.sl-now-pill{
+    display:inline-flex; align-items:center; gap:7px; max-width:100%;
+    padding:5px 11px 5px 7px; border-radius:999px; cursor:pointer; font:inherit; font-size:.8rem;
+    background:var(--c-card, #fff); border:1px solid var(--c-line, #e6e8ee); color:var(--c-ink, #14161a);
+    transition: border-color .14s ease, background .14s ease;
+}
+.sl-now-pill:hover{ border-color:var(--c-line-strong, #d6dae2); }
+.sl-now-pill.is-open{ border-color:#c9cff5; background:var(--c-hover, #f7f8ff); }
+.sl-now-pill b{ font-weight:800; }
+.sl-now-av{
+    width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:11px;
+    background:var(--v2-soft, #eef0ff); flex:none; box-shadow:0 0 0 2px rgba(224,71,91,.22);
+}
+.sl-now-av.lg{ width:34px; height:34px; font-size:16px; box-shadow:0 0 0 2px rgba(224,71,91,.22); }
+.sl-now-tg{ color:var(--c-ink-3, #7c828d); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sl-now-left{ font-weight:750; color:#b3243a; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.sl-now-detail{
+    display:flex; gap:11px; align-items:center; margin-top:9px; padding:11px 12px;
+    border:1px solid var(--c-line, #e6e8ee); border-radius:13px; background:var(--c-hover, #fafbfc);
+}
+.sl-now-dbody{ flex:1; min-width:0; }
+.sl-now-dt{ display:block; font-size:.9rem; line-height:1.3; }
+.sl-now-dt b{ font-weight:800; }
+.sl-now-dsub{ display:block; font-size:.76rem; color:var(--c-ink-3, #7c828d); margin-top:2px; }
+.sl-now-bar{ display:block; height:6px; border-radius:99px; background:var(--c-line, #eceef2); margin-top:8px; overflow:hidden; }
+.sl-now-bar > i{ display:block; height:100%; border-radius:99px; background:#e0475b; transition:width .6s linear; }
+.sl-now-chip{
+    font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap;
+    padding:2px 8px; border-radius:999px; background:#fdecee; color:#b3243a; font-variant-numeric:tabular-nums;
+}
+[data-theme="dark"] .sl-now-pill{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.1); color:#e8eaee; }
+[data-theme="dark"] .sl-now-pill.is-open{ background:rgba(94,106,210,.18); border-color:rgba(94,106,210,.45); }
+[data-theme="dark"] .sl-now-detail{ background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.1); }
+[data-theme="dark"] .sl-now-bar{ background:rgba(255,255,255,.1); }
+[data-theme="dark"] .sl-now-av{ background:rgba(94,106,210,.22); }
+[data-theme="dark"] .sl-now-chip{ background:rgba(224,71,91,.18); color:#ff9aa8; }
+[data-theme="dark"] .sl-now-left{ color:#ff9aa8; }
+@media (max-width:520px){
+    .sl-now-tg{ max-width:120px; }
+    .sl-now-pill{ font-size:.76rem; }
+}
+
+/* Activity feed v2: grouped chapter rows, expandable task chips. */
+.sl-feed-group{ border-top:1px solid var(--c-line, #eceef2); }
+.sl-feed-group:first-of-type{ border-top:0; }
+.sl-feed-group > summary{
+    display:flex; gap:11px; align-items:flex-start; cursor:pointer; list-style:none;
+    padding:11px 2px; border-radius:10px;
+}
+.sl-feed-group > summary::-webkit-details-marker{ display:none; }
+.sl-feed-group > summary:hover{ background:var(--c-hover, #f7f8fa); }
+.sl-feed-group > summary::after{
+    content:'›'; margin-left:auto; padding-left:10px; font-size:1.15rem; line-height:1.1;
+    color:var(--c-ink-3, #b3b8c1); transition:transform .15s ease;
+}
+.sl-feed-group[open] > summary::after{ transform:rotate(90deg); }
+.sl-feed-group > summary:focus-visible{ outline:2px solid var(--c-accent, #5e6ad2); outline-offset:2px; }
+.sl-feed-group > summary[aria-expanded="true"]{ background:var(--c-hover, #f7f8fa); }
+@media (max-width:520px){
+    .sl-feed-tasks{ padding-left:2px; }
+    .sl-feed-line{ font-size:.88rem; }
+    .sl-feed-count{ margin-left:6px; font-size:.68rem; padding:1px 7px; }
+}
+.sl-feed-line{ display:block; min-width:0; font-size:.9rem; line-height:1.35; color:var(--c-ink, #1b1d21); }
+.sl-feed-count{
+    display:inline-block; margin-left:8px; padding:1px 8px; border-radius:999px; font-size:.72rem;
+    font-weight:700; background:var(--c-fill, #f1f3f6); color:var(--c-ink-3, #6b7280); vertical-align:1px;
+}
+.sl-feed-count.done{ background:#e8f4ea; color:#2f7a45; }
+.sl-feed-tasks{ display:flex; flex-wrap:wrap; gap:6px; padding:0 2px 12px 41px; }
+.sl-feed-t{
+    font-size:.76rem; font-weight:650; padding:3px 9px; border-radius:999px;
+    background:var(--c-fill, #f4f5f7); color:var(--c-ink-3, #9aa0aa); border:1px solid transparent;
+}
+.sl-feed-t.on{ background:#eef2ff; color:#3b46a8; border-color:#dfe3ff; }
+[data-theme="dark"] .sl-feed-t{ background:rgba(255,255,255,.06); color:#98a0ab; }
+[data-theme="dark"] .sl-feed-t.on{ background:rgba(94,106,210,.22); color:#c6cbff; border-color:rgba(94,106,210,.4); }
+[data-theme="dark"] .sl-feed-count{ background:rgba(255,255,255,.07); color:#98a0ab; }
+[data-theme="dark"] .sl-feed-count.done{ background:rgba(74,169,108,.2); color:#82d79f; }
+[data-theme="dark"] .sl-feed-group > summary:hover,
+[data-theme="dark"] .sl-feed-group > summary[aria-expanded="true"]{ background:rgba(255,255,255,.04); }
+
 /* Activity feed rows: readable, one icon per event type, quiet day dividers. */
 .sl-feed-ic{
     width:30px; height:30px; border-radius:9px; flex:none; display:grid; place-items:center;
@@ -4074,7 +4168,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="settings-section">
                 <h4>Leaderboard &amp; Privacy</h4>
-                <label class="settings-check"><span>Share my presence <small>League members see Online / Focusing</small></span><input type="checkbox" id="cfgPresence" checked></label>
+                <label class="settings-check"><span>Share my presence <small>League members see Online / Focusing / Studying now</small></span><input type="checkbox" id="cfgPresence" checked></label>
                 <label class="settings-check"><span>Show what I am focusing on <small>Off by default — only “Focusing” is shown</small></span><input type="checkbox" id="cfgShareChapter"></label>
                 <label class="settings-check"><span>Show my focus minutes <small>Visible in standings &amp; profile</small></span><input type="checkbox" id="cfgShowFocus" checked></label>
                 <label class="settings-check"><span>Notification alerts <small>Bell badge for nudges &amp; reactions</small></span><input type="checkbox" id="cfgInboxAlerts" checked></label>
@@ -4617,9 +4711,11 @@ tr.sl-ghost{ display:none !important; }
       runTick();
       if (!timerInterval) timerInterval = setInterval(runTick, 250);
       updateFocusUI();
+      try { if (window.slLive) window.slLive.publish(); } catch (e) {}
     }
 
     function pauseTimer() {
+      try { if (window.slLive) window.slLive.stop(); } catch (e) {}
       if (!timerState.running) return;
       var now = Date.now();
       var seg = Math.max(0, now - (timerState.startTime || now));
@@ -4634,6 +4730,7 @@ tr.sl-ghost{ display:none !important; }
     }
 
     function resetTimer() {
+      try { if (window.slLive) window.slLive.stop(); } catch (e) {}
       timerState.running = false;
       timerState.startTime = null;
       timerState.endTime = null;
@@ -4757,6 +4854,7 @@ tr.sl-ghost{ display:none !important; }
 
       saveTimerState();
       if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      try { if (window.slLive) window.slLive.stop(); } catch (e) {}
 
       if (focusSettings.autoStartNext) {
         startTimer();
@@ -6627,6 +6725,13 @@ tr.sl-ghost{ display:none !important; }
             item.done = !!cb.checked;
             saveExamData();
             renderList();
+            try {
+                if (typeof publishFeed === 'function') {
+                    var examText = 'ticked "' + item.title + '" · ' + subjectName(subjKey);
+                    if (item.done) publishFeed('exam', examText, { kind: 'exam' });
+                    else retractFeed('exam', examText);
+                }
+            } catch (e) {}
           });
 
           var textWrap = document.createElement('div');
@@ -7215,7 +7320,12 @@ var LEAGUE_FIREBASE_CONFIG = {
      ['cfgPresence', 'sharePresence'], ['cfgShareChapter', 'shareFocusChapter'],
      ['cfgShowFocus', 'showFocusOnLeaderboard'], ['cfgInboxAlerts', 'inboxAlerts']].forEach(function (pair) {
         var el = document.getElementById(pair[0]);
-        if (el) el.addEventListener('change', function () { settings[pair[1]] = el.checked; saveSettings(); applySettings(); settingsStatus('Saved ✓'); });
+        if (el) el.addEventListener('change', function () {
+            settings[pair[1]] = el.checked; saveSettings(); applySettings(); settingsStatus('Saved ✓');
+            if (pair[1] === 'sharePresence' && window.slLive) {
+                try { if (el.checked) window.slLive.publish(); else window.slLive.stop(); } catch (e) {}
+            }
+        });
     });
     [['cfgGoal', 'dailyGoalMinutes', 10, 600], ['cfgFocusMin', 'focusMinutes', 5, 180],
      ['cfgShort', 'shortBreakMinutes', 1, 60], ['cfgLong', 'longBreakMinutes', 5, 90],
@@ -7935,14 +8045,18 @@ var LEAGUE_FIREBASE_CONFIG = {
             saveEvents(events);
             var label = (window.getActivityTypes().filter(function(a){return a.key===input.dataset.type;})[0] || {}).label || input.dataset.type;
             var subjName = subjectName(currentSubject);
+            var taskText = 'ticked ' + label + ' · ' + chapter + ' · ' + subjName;
             var startedText = 'started ' + chapter + ' · ' + subjName;
             var finishedText = 'finished ' + chapter + ' · ' + subjName + ' 🏆';
             var where = { subjectKey: currentSubject, subKey: currentSubSubject, chapter: chapter };
             var otherTicks = Object.keys(rec || {}).some(function (k) { return k !== input.dataset.type && rec[k]; });
             if (input.checked) {
+                publishFeed('task', taskText, Object.assign({ kind: 'task', activity: input.dataset.type }, where));
                 if (!otherTicks) publishFeed('chapter', startedText, Object.assign({ kind: 'started' }, where));
                 if (window.__activityAllDone(rec)) publishFeed('chapter', finishedText, Object.assign({ kind: 'finished' }, where));
+                maybeMilestones();
             } else {
+                retractFeed('task', taskText);
                 retractFeed('chapter', finishedText);
                 retractFeed('chapter', startedText);
                 paintFeed();
@@ -7956,7 +8070,10 @@ var LEAGUE_FIREBASE_CONFIG = {
             var ids = focusSessions.map(function(x){return x.id;});
             if (known) {
                 focusSessions.forEach(function(sess){
-                    if (known.indexOf(sess.id) < 0 && sess.type === 'focus') publishFeed('focus', 'focused for ' + Math.round((sess.durationMs||0)/60000) + ' min' + (sess.targetDisplay ? ' — ' + sess.targetDisplay : ''));
+                    if (known.indexOf(sess.id) < 0 && sess.type === 'focus') {
+                        publishFeed('focus', 'focused for ' + Math.round((sess.durationMs||0)/60000) + ' min' + (sess.targetDisplay ? ' — ' + sess.targetDisplay : ''));
+                        maybeMilestones();
+                    }
                 });
             }
             localStorage.setItem('knownFocusSessions', JSON.stringify(ids));
@@ -7971,7 +8088,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var code = leagueCode(); if (!db || !code) return;
         if (feedUnsub) { try { feedUnsub(); } catch (e) {} feedUnsub = null; }
         feedCode = code;
-        feedUnsub = db.collection('leagues').doc(code).collection('feed').orderBy('createdAt','desc').limit(30)
+        feedUnsub = db.collection('leagues').doc(code).collection('feed').orderBy('createdAt','desc').limit(60)
             .onSnapshot(function(snap){
                 var items=[]; snap.forEach(function(d){ items.push(Object.assign({id:d.id}, d.data())); });
                 window.__slFeed.items = items;
@@ -8041,6 +8158,99 @@ var LEAGUE_FIREBASE_CONFIG = {
         }
         return found;
     }
+    /* Has this browser ever loaded this section? If yes, a missing tick is real
+       information; if no, we only hide the row and never touch the database. */
+
+    /* ---------- feed v2: grouped rows, today + yesterday, all study actions ---------- */
+    function feedMs(it) {
+        var t = it && it.createdAt;
+        if (!t) return 0;
+        if (t.toMillis) return t.toMillis();
+        if (t.toDate) return t.toDate().getTime();
+        if (typeof t === 'number') return t;
+        return 0;
+    }
+    function isChapterEvent(it) {
+        if (it.chapter && it.subjectKey) return true;
+        if (it.type === 'chapter' || it.type === 'task') return true;
+        return /started|finished|completed|ticked|done/i.test(it.text || '');
+    }
+    function chapterOf(it) {
+        if (it.chapter && it.subjectKey) return { s: it.subjectKey, ss: it.subKey, c: it.chapter };
+        return findChapterByText(it.text || '');
+    }
+    function feedTypes() {
+        var t = null;
+        try { t = (typeof window.getActivityTypes === 'function') ? window.getActivityTypes() : null; } catch (e) {}
+        if (t && t.length) return t;
+        return [{ key: 'Done', label: 'Done' }, { key: 'Revised', label: 'Revised' },
+                { key: 'Notes', label: 'Notes' }, { key: 'Questions', label: 'Questions' }];
+    }
+    function chapterRowHtml(g, types) {
+        var count = 0;
+        var chips = types.map(function (t) {
+            var on = !!g.acts[t.key];
+            if (on) count++;
+            return '<span class="sl-feed-t' + (on ? ' on' : '') + '">' + (on ? '✓ ' : '') + escapeHtml(t.label || t.key) + '</span>';
+        }).join('');
+        var total = types.length || 4;
+        var complete = g.done || count >= total;
+        return '<details class="sl-feed-group">' +
+            '<summary><span class="sl-feed-ic">' + (complete ? '🏆' : '📖') + '</span>' +
+            '<span class="sl-feed-line"><b>' + escapeHtml(g.name) + '</b> · ' +
+            escapeHtml(g.ss && g.ss !== subjectName(g.s) ? g.ss : subjectName(g.s)) + ' · ' + escapeHtml(g.c) +
+            (count > 0 || complete
+                ? '<span class="sl-feed-count' + (complete ? ' done' : '') + '">' + count + ' of ' + total + ' tasks</span>'
+                : '<span class="sl-feed-count">worked on this chapter</span>') +
+            '<span class="league-updated">' + relTime(g.ms) + '</span></span></summary>' +
+            '<div class="sl-feed-tasks">' + chips + '</div></details>';
+    }
+    function simpleRowHtml(g) {
+        var kind = g.type || 'task';
+        var glyph = kind === 'focus' ? '⏱️' : kind === 'note' ? '📝' : kind === 'exam' ? '🎓'
+                  : kind === 'milestone' ? '⭐' : kind === 'chapter' ? '🏆' : '✅';
+        return '<div class="feed-item"><span class="sl-feed-ic">' + glyph + '</span>' +
+            '<div><b>' + escapeHtml(g.name) + '</b> ' + escapeHtml(g.text) +
+            '<div class="league-updated">' + relTime(g.ms) + '</div></div></div>';
+    }
+    /* a streak day or reaching today's focus goal deserves its own line, once a day */
+    function maybeMilestones() {
+        try {
+            var streak = 0;
+            try { streak = computeStreak() || 0; } catch (e) {}
+            if (streak >= 2) publishFeed('milestone', 'is on a ' + streak + '-day streak 🔥', { kind: 'streak', streak: streak });
+        } catch (e) {}
+        try {
+            var goal = 120;
+            try { goal = (JSON.parse(localStorage.getItem('focusSettings') || '{}') || {}).dailyGoalMinutes || 120; } catch (e) {}
+            var mins = 0;
+            try { mins = getTotalMinutesForDay(new Date()) || 0; } catch (e) {}
+            if (mins >= goal) publishFeed('milestone', 'reached today\'s ' + goal + ' min focus goal ⏱️', { kind: 'goal' });
+        } catch (e) {}
+    }
+    function chapterKnown(s, ss) {
+        try { return !!(savedProgress && savedProgress[s] && savedProgress[s][ss]); } catch (e) { return false; }
+    }
+
+    /* Rows that should not exist any more are deleted for real, once each, so the
+       database cleans itself — including entries left by older versions. */
+    var feedDeleteTried = {};
+    function queueFeedDelete(ids) {
+        if (!db || !me) return;
+        var code = (typeof leagueCode === 'function') ? leagueCode() : '';
+        if (!code) return;
+        ids.forEach(function (id) {
+            if (!id || feedDeleteTried[id]) return;
+            feedDeleteTried[id] = true;
+            try {
+                db.collection('leagues').doc(code).collection('feed').doc(id).delete()
+                    .then(function () {
+                        window.__slFeed.items = (window.__slFeed.items || []).filter(function (x) { return x.id !== id; });
+                    })
+                    .catch(function () { /* rules not published yet — stays hidden for me */ });
+            } catch (e) {}
+        });
+    }
     function retractFeed(type, text) {
         var key = type + '|' + text + '|' + feedDay();
         var ids = {};
@@ -8062,54 +8272,235 @@ var LEAGUE_FIREBASE_CONFIG = {
         }
     }
 
+
+    /* ---------- live “studying now”: pills, tap one for the full detail ---------- */
+    var liveUnsub = null, liveCode = '', liveOpen = '', liveBeatTimer = null, liveTickTimer = null, livePaintTimer = null;
+
+    function liveSettings() {
+        try { return JSON.parse(localStorage.getItem('appSettings') || '{}') || {}; } catch (e) { return {}; }
+    }
+    function liveRoom() { return document.getElementById('slLiveStrip'); }
+
+    function livePublish() {
+        try {
+            if (!db || !me) return;
+            var code = leagueCode(); if (!code) return;
+            if (liveSettings().sharePresence === false) return;          // opted out of presence
+            if (typeof timerState === 'undefined' || !timerState) return;
+            if (timerState.mode !== 'focus' || !timerState.running) return;
+            var endAt = Number(timerState.endTime || 0);
+            if (!endAt || endAt <= Date.now()) return;
+            var p = myProfile();
+            var t = timerState.target || {};
+            var elapsed = Number(timerState.accumulatedMs || 0);
+            var startedAt = Number(timerState.startTime || Date.now()) - elapsed;
+            db.collection('leagues').doc(code).collection('live').doc(me.uid).set({
+                uid: me.uid,
+                name: (p.name || 'Student').slice(0, 30),
+                emoji: p.emoji || '📚',
+                target: (t.display || t.customText || '').slice(0, 60),
+                subjectKey: t.subjectKey || '',
+                subKey: t.subSubjectKey || '',
+                chapter: t.chapter || '',
+                startedAt: startedAt,
+                endAt: endAt,
+                minutes: Math.max(1, Math.round((elapsed + (endAt - Date.now())) / 60000)),
+                updatedAt: Date.now()
+            }, { merge: true }).catch(function () {});
+            if (!liveBeatTimer) liveBeatTimer = setInterval(liveBeat, 60000);
+        } catch (e) {}
+    }
+
+    function liveBeat() {
+        try {
+            if (typeof timerState === 'undefined' || !timerState || !timerState.running || timerState.mode !== 'focus') { liveStop(); return; }
+            livePublish();
+        } catch (e) {}
+    }
+
+    function liveStop() {
+        if (liveBeatTimer) { clearInterval(liveBeatTimer); liveBeatTimer = null; }
+        try {
+            if (!db || !me) return;
+            var code = leagueCode(); if (!code) return;
+            db.collection('leagues').doc(code).collection('live').doc(me.uid).delete().catch(function () {});
+        } catch (e) {}
+    }
+
+    function liveLeftMs(it) { return Math.max(0, Number(it && it.endAt || 0) - Date.now()); }
+    function liveFresh(it) {
+        if (!it || !it.endAt) return false;
+        if (liveLeftMs(it) <= 0) return false;                       // timer finished
+        if (Date.now() - Number(it.updatedAt || 0) > 120000) return false;  // app went quiet
+        return true;
+    }
+    function liveClock(ms) {
+        try { return new Date(Number(ms)).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
+        catch (e) { return ''; }
+    }
+    function liveItems() {
+        var all = (window.__slLive && window.__slLive.items) ? window.__slLive.items : [];
+        return all.filter(liveFresh).sort(function (a, b) { return Number(a.endAt) - Number(b.endAt); });
+    }
+
+    function paintLive() {
+        var host = liveRoom();
+        if (!host) return;
+        var items = liveItems();
+        if (!items.length) { host.innerHTML = ''; host.style.display = 'none'; liveOpen = ''; return; }
+        host.style.display = '';
+        var now = Date.now();
+        var pills = items.map(function (it) {
+            var mine = (me && it.uid === me.uid);
+            var mins = Math.max(0, Math.round((Number(it.endAt) - now) / 60000));
+            return '<button type="button" class="sl-now-pill' + (liveOpen === it.uid ? ' is-open' : '') + '" data-live="' + escapeHtml(it.uid) + '" aria-expanded="' + (liveOpen === it.uid ? 'true' : 'false') + '">' +
+                '<span class="sl-now-av">' + escapeHtml(it.emoji || '📚') + '</span>' +
+                '<b>' + escapeHtml(it.name || 'Student') + (mine ? ' (you)' : '') + '</b>' +
+                (it.target ? '<span class="sl-now-tg">' + escapeHtml(it.target) + '</span>' : '') +
+                '<span class="sl-now-left" data-end="' + Number(it.endAt) + '">' + mins + 'm left</span>' +
+            '</button>';
+        }).join('');
+        var d = items.filter(function (x) { return x.uid === liveOpen; })[0];
+        var detail = '';
+        if (d) {
+            var total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
+            var doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            var pct = Math.max(4, Math.min(100, Math.round(doneM / total * 100)));
+            detail = '<div class="sl-now-detail">' +
+                '<span class="sl-now-av lg">' + escapeHtml(d.emoji || '📚') + '</span>' +
+                '<span class="sl-now-dbody">' +
+                    '<span class="sl-now-dt"><b>' + escapeHtml(d.name || 'Student') + '</b> is ' + (d.target ? 'studying' : 'in a focus session') +
+                        (d.target ? ' <b>' + escapeHtml(d.target) + '</b>' : '') + '</span>' +
+                    '<span class="sl-now-dsub">' + Math.floor(doneM) + ' min in · <b>' + Math.ceil(Math.max(0, total - doneM)) + ' min to go</b> · started ' + liveClock(d.startedAt) + ' · ends ' + liveClock(d.endAt) + '</span>' +
+                    '<span class="sl-now-bar"><i style="width:' + pct + '%"></i></span>' +
+                '</span>' +
+                '<span class="sl-now-chip" data-end="' + Number(d.endAt) + '">' + Math.max(0, Math.round((Number(d.endAt) - now) / 60000)) + 'm left</span>' +
+            '</div>';
+        }
+        host.innerHTML = '<div class="sl-now-head"><span class="sl-now-dot"></span>Studying now · ' + items.length + '</div>' +
+            '<div class="sl-now-pills">' + pills + '</div>' + detail;
+        if (!liveTickTimer) liveTickTimer = setInterval(liveTickText, 1000);
+        if (!livePaintTimer) livePaintTimer = setInterval(function () { if (liveRoom() && liveItems().length) paintLive(); }, 20000);
+    }
+
+    function liveTickText() {
+        var host = liveRoom(); if (!host) return;
+        var items = liveItems();
+        if (!items.length) { if (host.style.display !== 'none') paintLive(); return; }
+        var now = Date.now();
+        Array.prototype.forEach.call(host.querySelectorAll('[data-end]'), function (el) {
+            var end = Number(el.getAttribute('data-end')) || 0;
+            var mins = Math.max(0, Math.round((end - now) / 60000));
+            var txt = mins + 'm left';
+            if (el.textContent !== txt) el.textContent = txt;      // no reflow unless the minute changed
+        });
+        var bar = host.querySelector('.sl-now-bar > i');
+        var d = items.filter(function (x) { return x.uid === liveOpen; })[0];
+        if (bar && d) {
+            var total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
+            var doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            bar.style.width = Math.max(4, Math.min(100, Math.round(doneM / total * 100))) + '%';
+        }
+    }
+
+    function startLiveListener() {
+        try {
+            var code = leagueCode();
+            if (!db || !code) return;
+            if (liveUnsub && liveCode === code) return;
+            if (liveUnsub) { try { liveUnsub(); } catch (e) {} liveUnsub = null; }
+            liveCode = code;
+            liveUnsub = db.collection('leagues').doc(code).collection('live').onSnapshot(function (snap) {
+                var items = [];
+                snap.forEach(function (d) { items.push(Object.assign({ id: d.id }, d.data())); });
+                window.__slLive = { items: items };
+                paintLive();
+            }, function () { window.__slLive = { items: [] }; paintLive(); });
+        } catch (e) {}
+    }
+
+    try { window.slLive = { publish: livePublish, stop: liveStop, paint: paintLive, start: startLiveListener }; } catch (e) {}
+
+    document.addEventListener('click', function (e) {
+        var pill = e.target && e.target.closest ? e.target.closest('[data-live]') : null;
+        if (!pill) return;
+        var uid = pill.getAttribute('data-live');
+        liveOpen = (liveOpen === uid) ? '' : uid;      // one open at a time, tap again to close
+        paintLive();
+    });
+
     function paintFeed() {
         var list = document.getElementById('activityFeedList');
         if (!list) return;
-        var items = (window.__slFeed.items || []).slice();
+        try { startLiveListener(); } catch (e) {}    // the strip lives with the feed
         var myUid = (me && me.uid) || '';
-        items = items.filter(function (it) {
+        var staleIds = [];
+        var items = (window.__slFeed.items || []).slice().filter(function (it) {
             var actor = it.actorUid || it.uid || '';
             if (!myUid || actor !== myUid) return true;         // other people's events stand
-            var isChapterEvent = it.type === 'chapter' || /\b(started|finished)\b/.test(it.text || '');
-            if (!isChapterEvent) return true;                   // focus / join / nudge lines
-            var found = it.chapter
-                ? { s: it.subjectKey, ss: it.subKey, c: it.chapter }
-                : findChapterByText(it.text || '');
-            if (!found) return false;                           // can't verify my own claim
-            return chapterLive(found.s, found.ss, found.c);
+            if (!isChapterEvent(it)) return true;               // focus / note / milestone lines stay
+            var found = chapterOf(it);
+            if (!found) { if (it.id) staleIds.push(it.id); return false; }
+            var live = chapterLive(found.s, found.ss, found.c);
+            var legacyRow = !it.chapter && !it.kind;            // written before this version
+            if (!live && it.id && (chapterKnown(found.s, found.ss) || legacyRow)) staleIds.push(it.id);
+            return live;
         });
-        if (!items.length) {
-            list.innerHTML = '<div class="todo-empty">Nothing here yet. When you tick a chapter or finish a focus ' +
-                'session, it shows up here for your league.</div>';
+        if (staleIds.length) queueFeedDelete(staleIds);
+
+        var now = new Date();
+        var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        var since = midnight - 86400000;                          // today + yesterday
+        items = items.filter(function (it) { var ms = feedMs(it); return !ms || ms >= since; });
+
+        var groups = [], index = {};
+        items.forEach(function (it) {
+            var actor = it.actorUid || it.uid || '';
+            var found = isChapterEvent(it) ? chapterOf(it) : null;
+            var key, g;
+            if (found) {
+                key = 'c|' + actor + '|' + found.s + '|' + found.ss + '|' + found.c;
+                g = index[key];
+                if (!g) {
+                    g = index[key] = { chapter: true, actor: actor, name: it.actorName || it.name || 'Student',
+                                       s: found.s, ss: found.ss, c: found.c, acts: {}, done: false, ms: 0 };
+                    groups.push(g);
+                }
+                if (it.activity) g.acts[it.activity] = true;
+                if (it.kind === 'finished') g.done = true;
+            } else {
+                key = 'e|' + actor + '|' + (it.type || 'task') + '|' + (it.text || '');
+                g = index[key];
+                if (!g) {
+                    g = index[key] = { chapter: false, actor: actor, name: it.actorName || it.name || 'Student',
+                                       type: it.type || 'task', text: it.text || '', ms: 0 };
+                    groups.push(g);
+                }
+            }
+            g.ms = Math.max(g.ms, feedMs(it));
+        });
+        groups.sort(function (a, b) { return (b.ms || 0) - (a.ms || 0); });
+        if (!groups.length) {
+            list.innerHTML = '<div class="todo-empty">Nothing yet today. Tick a task or finish a focus session ' +
+                'and your league sees it here.</div>';
             return;
         }
-        var seen = {}, out = [], lastDay = '';
-        items.forEach(function (it) {
-            var k = (it.actorUid || it.uid || '') + '|' + (it.text || '');
-            if (seen[k]) return;                       // legacy duplicate rows
-            seen[k] = 1;
-            var ms = it.createdAt && it.createdAt.toMillis ? it.createdAt.toMillis()
-                   : (it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().getTime() : 0);
-            var dayLabel = '';
+        var types = feedTypes();
+        var out = [], lastDay = '';
+        groups.forEach(function (g) {
+            var ms = g.ms || 0, dayLabel = '';
             if (ms) {
-                var d = new Date(ms), today = new Date();
-                var t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-                var t1 = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-                dayLabel = t1 === t0 ? 'Today' : (t0 - t1 === 86400000 ? 'Yesterday'
-                    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
+                var d = new Date(ms), t = new Date();
+                var a = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+                var b = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                dayLabel = b === a ? 'Today' : ((a - b === 86400000) ? 'Yesterday' : '');
             }
-            if (dayLabel && dayLabel !== lastDay) { lastDay = dayLabel; out.push({ day: dayLabel }); }
-            out.push({ it: it, ms: ms });
+            if (dayLabel && dayLabel !== lastDay) { lastDay = dayLabel; out.push('<div class="sl-feed-day">' + dayLabel + '</div>'); }
+            out.push(g.chapter ? chapterRowHtml(g, types) : simpleRowHtml(g));
         });
-        list.innerHTML = out.map(function (row) {
-            if (row.day) return '<div class="sl-feed-day">' + escapeHtml(row.day) + '</div>';
-            var it = row.it, kind = it.type || 'task';
-            var glyph = kind === 'chapter' ? '🏆' : kind === 'focus' ? '⏱️' : kind === 'note' ? '📝' : '✅';
-            return '<div class="feed-item"><span class="sl-feed-ic">' + glyph + '</span>' +
-                '<div><b>' + escapeHtml(it.actorName || it.name || 'Student') + '</b> ' + escapeHtml(it.text || '') +
-                '<div class="league-updated">' + relTime(row.ms) + '</div></div></div>';
-        }).join('');
+        list.innerHTML = out.join('');
     }
+
 
     function injectFeedCard() {
         var list = document.getElementById('chapterList'); if (!list || document.getElementById('activityFeedCard')) return;
@@ -8119,6 +8510,11 @@ var LEAGUE_FIREBASE_CONFIG = {
         card.className='card fade-in'; card.id='activityFeedCard'; card.style.marginTop='14px';
         card.innerHTML='<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">rss_feed</span> Activity Feed</div><div class="feed-list" id="activityFeedList"><div class="todo-empty">Loading activity…</div></div>';
         list.appendChild(card); startFeedListener(); paintFeed();
+        var lv = document.createElement('div');
+        lv.id = 'slLiveStrip'; lv.className = 'sl-now'; lv.style.display = 'none';
+        var fl = card.querySelector('#activityFeedList');
+        if (fl && fl.parentNode) fl.parentNode.insertBefore(lv, fl);
+        startLiveListener(); try { paintLive(); } catch (e) {}
     }
 
     /* ---------- Weekly Challenge ---------- */
@@ -8452,6 +8848,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             ev.preventDefault();
             if (!db || !me) { document.getElementById('snStatus').textContent = 'Connecting… try again in a second.'; ensureFB(); return; }
             var p = profile();
+            var feedNoteTitle = document.getElementById('snTitle').value.trim().slice(0, 90);
             db.collection('leagues').doc(code()).collection('sharedNotes').add({
                 title: document.getElementById('snTitle').value.trim().slice(0,90),
                 content: document.getElementById('snContent').value.trim().slice(0,12000),
@@ -8462,6 +8859,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function(){
                 document.getElementById('snStatus').textContent = 'Published ✓';
+                try { publishFeed('note', 'shared a note: "' + feedNoteTitle + '"', { kind: 'note' }); } catch (e) {}
                 form.reset(); fillBooks();
             }).catch(function(e){ document.getElementById('snStatus').textContent = 'Could not publish: ' + e.message + ' (rules v3 published?)'; });
         });
@@ -11824,5 +12222,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56ae540af8854c2',t:'MTc5NDAzOTM4Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56ae540af8854c2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56cf1b1df945a11',t:'MTc5NDA2MDg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56cf1b1df945a11',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
