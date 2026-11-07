@@ -1,5 +1,5 @@
 // StudyLeague service worker — offline app shell (host all files together)
-const CACHE = 'studyleague-v7';
+const CACHE = 'studyleague-v8';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './studyleague-logo.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
