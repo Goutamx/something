@@ -2065,6 +2065,9 @@ body{ display: flex; flex-direction: column; height: 100vh; }
     display: grid; place-items: center; transition: background .15s ease, color .15s ease;
 }
 .v2-avatar-btn .v2-i{ width: 18px; height: 18px; }
+.v2-avatar-btn .v2-av-glyph{ font-size: 15px; line-height: 1; font-weight: 700; letter-spacing: 0; }
+.v2-avatar-btn.sl-has-glyph{ font-size: 15px; }
+.v2-avatar-btn:focus-visible{ outline: 2px solid var(--v2-accent); outline-offset: 2px; }
 .v2-avatar-btn:hover{ background: var(--v2-soft-2); }
 .v2-avatar-btn.is-active{ background: var(--v2-accent); color: #fff; border-color: transparent; }
 .v2-top-right{ margin-left: auto; display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
@@ -3275,9 +3278,14 @@ body.sl-gate-open{ overflow:hidden; }
 .sl-sign-chip:hover{ background:var(--c-hover); border-color:var(--c-line-strong); }
 .sl-sign-chip .sl-g{ width:15px; height:15px; }
 
+body.sl-hold #main h1,
+body.sl-hold #subject-subtitle{ color: transparent !important; }
+
 /* google avatar inside the round top-bar button */
 .v2-avatar-btn.sl-has-photo{ padding:0 !important; overflow:hidden; border-color:var(--c-line-strong) !important; }
 .v2-avatar-btn .sl-av-img{ width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block; }
+
+#chapterList #socialProfileCard .card-title{ display:none !important; }
 
 /* ---------- 4. profile card: read-only once filled ---------- */
 #socialProfileCard .sl-pf-edit{ height:32px !important; padding:0 12px !important; font-size:.8rem !important; }
@@ -6907,7 +6915,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         var memberRef = db.collection('leagues').doc(code).collection('members').doc(currentUser.uid);
         memberRef.get().then(function (snap) {
             var cur = (snap && snap.exists) ? (snap.data() || {}) : {};
-            var stale = (Number(stats.xp) || 0) === 0 && (Number(cur.xp) || 0) > 0;
+            // a device that has synced this account before is allowed to publish
+            // zeros (that is an honest "I removed my ticks"); a brand-new device
+            // with nothing loaded yet is not, so it cannot wipe the real numbers
+            var seenUid = '';
+            try { seenUid = localStorage.getItem('slSyncedUid') || ''; } catch (e) {}
+            var stale = (Number(stats.xp) || 0) === 0 && (Number(cur.xp) || 0) > 0 && seenUid !== currentUser.uid;
             if (!stale) return payload;
             var out = Object.assign({}, payload);
             ['xp', 'percent', 'tasksCompleted', 'tasksTotal', 'chaptersDone', 'chaptersTotal',
@@ -6915,7 +6928,10 @@ var LEAGUE_FIREBASE_CONFIG = {
             return out;
         }).catch(function () { return payload; }).then(function (out) {
             return memberRef.set(out, { merge: true });
-        }).then(function () { setStatus('Synced just now ✓', 'ok'); })
+        }).then(function () {
+            if ((Number(stats.xp) || 0) > 0) { try { localStorage.setItem('slSyncedUid', currentUser.uid); } catch (e) {} }
+            setStatus('Synced just now ✓', 'ok');
+        })
             .catch(function (e) { lastSyncHash = ''; setStatus('Sync failed: ' + e.message, 'err'); });
     }
     function attachLeaderboard(code) {
@@ -7891,12 +7907,19 @@ var LEAGUE_FIREBASE_CONFIG = {
     function saveEvents(list) { localStorage.setItem('studyEvents', JSON.stringify(list.slice(-2000))); }
     function publishFeed(type, text, extra) {
         var code = leagueCode(); if (!db || !me || !code) return;
-        if (feedSeen(type + '|' + text + '|' + feedDay())) return;
+        var feedKey = type + '|' + text + '|' + feedDay();
+        if (feedSeen(feedKey)) return;
         var p = myProfile();
         db.collection('leagues').doc(code).collection('feed').add(Object.assign({
             actorUid: me.uid, actorName: p.name || 'Student', actorEmoji: p.emoji || '📚',
             type: type, text: text, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, extra || {})).catch(function(){});
+        }, extra || {})).then(function (ref) {
+            try {
+                var ids = JSON.parse(localStorage.getItem('feedIds') || '{}') || {};
+                ids[feedKey] = ref.id;
+                localStorage.setItem('feedIds', JSON.stringify(ids));
+            } catch (e) {}
+        }).catch(function(){});
     }
     document.addEventListener('change', function(e){
         var input = e.target;
@@ -7911,9 +7934,19 @@ var LEAGUE_FIREBASE_CONFIG = {
             events.push({id:Date.now()+'-'+Math.random(), ts:Date.now(), subject:currentSubject, sub:currentSubSubject, chapter:chapter, activity:input.dataset.type, checked:!!input.checked, credit:credit});
             saveEvents(events);
             var label = (window.getActivityTypes().filter(function(a){return a.key===input.dataset.type;})[0] || {}).label || input.dataset.type;
+            var subjName = subjectName(currentSubject);
+            var startedText = 'started ' + chapter + ' · ' + subjName;
+            var finishedText = 'finished ' + chapter + ' · ' + subjName + ' 🏆';
+            var where = { subjectKey: currentSubject, subKey: currentSubSubject, chapter: chapter };
             var otherTicks = Object.keys(rec || {}).some(function (k) { return k !== input.dataset.type && rec[k]; });
-            if (input.checked && !otherTicks) publishFeed('chapter', 'started ' + chapter + ' · ' + subjectName(currentSubject));
-            if (input.checked && window.__activityAllDone(rec)) publishFeed('chapter', 'finished ' + chapter + ' · ' + subjectName(currentSubject) + ' 🏆');
+            if (input.checked) {
+                if (!otherTicks) publishFeed('chapter', startedText, Object.assign({ kind: 'started' }, where));
+                if (window.__activityAllDone(rec)) publishFeed('chapter', finishedText, Object.assign({ kind: 'finished' }, where));
+            } else {
+                retractFeed('chapter', finishedText);
+                retractFeed('chapter', startedText);
+                paintFeed();
+            }
             publishScore();
         } catch(err) {}
     });
@@ -7976,10 +8009,75 @@ var LEAGUE_FIREBASE_CONFIG = {
         return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
     }
     window.__slFeed = { items: [], icon: {} };
+    /* Was this chapter ever ticked? Used to hide feed rows for work that was
+       later undone (feed documents themselves are create-only server-side). */
+    function chapterLive(s, ss, c) {
+        try {
+            var rec = (savedProgress[s] && savedProgress[s][ss] && savedProgress[s][ss][c]) || {};
+            return Object.keys(rec).some(function (k) { return rec[k]; });
+        } catch (e) { return true; }
+    }
+    function findChapterByText(text) {
+        var found = null;
+        function scan(list, s, ss) {
+            (list || []).forEach(function (c) {
+                if (!found && c && text.indexOf(c) >= 0) found = { s: s, ss: ss, c: c };
+            });
+        }
+        try {
+            Object.keys(savedProgress || {}).forEach(function (s) {
+                Object.keys(savedProgress[s] || {}).forEach(function (ss) {
+                    scan(Object.keys(savedProgress[s][ss] || {}), s, ss);
+                });
+            });
+        } catch (e) {}
+        if (!found) {
+            // nothing ticked yet in this browser: still know the chapter names
+            try {
+                Object.keys(syllabus || {}).forEach(function (s) {
+                    Object.keys(syllabus[s] || {}).forEach(function (ss) { scan(syllabus[s][ss], s, ss); });
+                });
+            } catch (e) {}
+        }
+        return found;
+    }
+    function retractFeed(type, text) {
+        var key = type + '|' + text + '|' + feedDay();
+        var ids = {};
+        try { ids = JSON.parse(localStorage.getItem('feedIds') || '{}') || {}; } catch (e) {}
+        try {
+            var seen = JSON.parse(localStorage.getItem('feedPublished') || '{}') || {};
+            delete seen[key];
+            localStorage.setItem('feedPublished', JSON.stringify(seen));
+        } catch (e) {}
+        var id = ids[key];
+        if (id) {
+            try { delete ids[key]; localStorage.setItem('feedIds', JSON.stringify(ids)); } catch (e) {}
+            var code = leagueCode();
+            if (db && me && code) {
+                db.collection('leagues').doc(code).collection('feed').doc(id).delete().catch(function () {});
+            }
+            window.__slFeed.items = (window.__slFeed.items || []).filter(function (it) { return it.id !== id; });
+            paintFeed();
+        }
+    }
+
     function paintFeed() {
         var list = document.getElementById('activityFeedList');
         if (!list) return;
         var items = (window.__slFeed.items || []).slice();
+        var myUid = (me && me.uid) || '';
+        items = items.filter(function (it) {
+            var actor = it.actorUid || it.uid || '';
+            if (!myUid || actor !== myUid) return true;         // other people's events stand
+            var isChapterEvent = it.type === 'chapter' || /\b(started|finished)\b/.test(it.text || '');
+            if (!isChapterEvent) return true;                   // focus / join / nudge lines
+            var found = it.chapter
+                ? { s: it.subjectKey, ss: it.subKey, c: it.chapter }
+                : findChapterByText(it.text || '');
+            if (!found) return false;                           // can't verify my own claim
+            return chapterLive(found.s, found.ss, found.c);
+        });
         if (!items.length) {
             list.innerHTML = '<div class="todo-empty">Nothing here yet. When you tick a chapter or finish a focus ' +
                 'session, it shows up here for your league.</div>';
@@ -8040,12 +8138,18 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     function computeWPS() {
         var lock = getLock(); var start = weekStartTs(lock.weekId);
-        var events = loadEvents().filter(function(e){ return e.ts >= start; });
+        var allEvents = loadEvents().filter(function(e){ return e.ts >= start; });
+        var latestEvent = {};
+        allEvents.forEach(function(e){
+            latestEvent[[e.subject, e.sub, e.chapter, e.activity].join('|')] = e;
+        });
+        var events = Object.keys(latestEvent).map(function(k){ return latestEvent[k]; });
         var earned = 0, bySubject = {}, fullChapters = {};
         events.forEach(function(e){
+            if (!e.checked) return;                 // unticked = it never counted
             earned += e.credit || 0;
             bySubject[e.subject] = (bySubject[e.subject] || 0) + Math.max(0, e.credit || 0);
-            if (e.checked) fullChapters[e.subject+'|'+e.sub+'|'+e.chapter] = e;
+            fullChapters[e.subject+'|'+e.sub+'|'+e.chapter] = e;
         });
         earned = Math.max(0, earned);
         var progress = 40 * Math.min(earned / (lock.targetWC || 10), 1);
@@ -8668,10 +8772,10 @@ var LEAGUE_FIREBASE_CONFIG = {
         notes:     { engine: 'sharedNotesBtn', group: 'League', label: 'Shared Notes',  icon: 'notebook',   nav: 'Notes' },
         profile:   { group: 'You',    label: 'My Profile',     icon: 'user',       nav: 'Profile' }
     };
+    /* no Profile entry: the account avatar in the top bar is the one door */
     var NAV = [
         { group: 'Study',  items: ['overview', 'subjects', 'focus', 'exams'] },
-        { group: 'League', items: ['league', 'activity', 'messages', 'notes'] },
-        { group: 'You',    items: ['profile'] }
+        { group: 'League', items: ['league', 'activity', 'messages', 'notes'] }
     ];
 
     /* ---------- helpers ---------- */
@@ -9217,6 +9321,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var liveCard = $('socialProfileCard');
         if (liveCard && liveCard.parentNode === list) stash.appendChild(liveCard);
         setTab('profile');
+        S.profileAt = Date.now();
         syncNav('My Profile');
         if (h1El()) h1El().textContent = 'My Profile';
         var sub = $('subject-subtitle');
@@ -9263,7 +9368,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         }
 
         var stats = el('div', 'v2-stat-row');
-        [['xp', 'XP'], ['percent', '% complete'], ['chapters', 'Chapters'], ['focus', 'Focus this week'], ['streak', 'Day streak']].forEach(function (s) {
+        [['xp', 'XP'], ['percent', 'complete'], ['chapters', 'Chapters'], ['focus', 'Focus this week'], ['streak', 'Day streak']].forEach(function (s) {
             var d = el('div', 'v2-stat', '<b id="v2p_' + s[0] + '">–</b><span>' + s[1] + '</span>');
             stats.appendChild(d);
         });
@@ -9317,7 +9422,9 @@ var LEAGUE_FIREBASE_CONFIG = {
                 var m = snap.exists ? snap.data() : {};
                 put('v2p_xp', m.xp || 0);
                 put('v2p_percent', (m.percent || 0) + '%');
-                put('v2p_chapters', (m.chaptersDone || 0) + '/' + (m.chaptersTotal || 0));
+                put('v2p_chapters', (m.chaptersTotal || 0) > 0
+                    ? (m.chaptersDone || 0) + '/' + m.chaptersTotal
+                    : String(m.chaptersDone || 0));
                 put('v2p_focus', m.focusHidden ? 'private' : (m.focusWeekMin || 0) + 'm');
                 put('v2p_streak', '🔥 ' + (m.streak || 0));
             }).catch(function () {});
@@ -9370,6 +9477,13 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     function applyLayout() {
+        // the profile page is reached from the avatar, not the app nav, so the app
+        // tries to keep its old heading ("Leaderboard") while it builds the card
+        if (S.tab === 'profile' && !document.body.classList.contains('sl-hold')) {
+            var pfl = cl();
+            var onProfile = pfl && (pfl.querySelector('.v2-profile-head') || pfl.querySelector('.v2-stand-in-h1') || pfl.querySelector('#socialProfileCard'));
+            if (onProfile && h1El() && h1Text() !== 'My Profile') h1El().textContent = 'My Profile';
+        }
         if (document.body.classList.contains('sl-hold')) return;   // heading borrowed
         if (pageGuard()) return;
         var list = cl(); if (!list) return;
@@ -9682,12 +9796,21 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (av) {
             var pr = {};
             try { pr = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {}; } catch (e) {}
-            av.classList.toggle('sl-has-photo', !!(user && user.photoURL && !pr.photo));
-            if (user && user.photoURL && !pr.photo) {
-                if (!av.querySelector('img.sl-av-img')) av.innerHTML = '<img class="sl-av-img" src="' + user.photoURL + '" alt="">';
-                av.title = user.displayName || 'My Profile';
-            } else if (av.querySelector('img.sl-av-img')) {
-                av.innerHTML = '<svg class="v2-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.4" r="3.8"/><path d="M4.6 20.6c1.7-3.7 4.4-5.5 7.4-5.5s5.7 1.8 7.4 5.5"/></svg>';
+            var nm = String(pr.name || (user && user.displayName) || '').trim();
+            var photo = (user && user.photoURL && !pr.photo) ? user.photoURL : '';
+            var glyph = !photo ? String(pr.emoji || nm.charAt(0) || '').trim() : '';
+            var mark = photo ? 'p:' + photo : (glyph ? 'g:' + glyph : 'i');
+            av.title = (nm || 'My profile') + ' — open my profile';
+            av.setAttribute('aria-label', 'My profile');
+            av.classList.toggle('sl-has-photo', !!photo);
+            av.classList.toggle('sl-has-glyph', !photo && !!glyph);
+            if (av.getAttribute('data-av') !== mark) {
+                av.setAttribute('data-av', mark);
+                if (photo) av.innerHTML = '<img class="sl-av-img" src="' + photo + '" alt="">';
+                else if (glyph) av.innerHTML = '<span class="v2-av-glyph">' + glyph.replace(/[&<>"]/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+                }) + '</span>';
+                else av.innerHTML = '<svg class="v2-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.4" r="3.8"/><path d="M4.6 20.6c1.7-3.7 4.4-5.5 7.4-5.5s5.7 1.8 7.4 5.5"/></svg>';
             }
         }
     }
@@ -11701,5 +11824,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56aa8eefb63352f',t:'MTc5NDAzNjkxMg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56aa8eefb63352f',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56ae540af8854c2',t:'MTc5NDAzOTM4Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56ae540af8854c2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
