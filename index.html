@@ -3748,7 +3748,7 @@ tr.sl-ghost{ display:none !important; }
 .sl-mhead time{ font-size:.675rem; font-weight:650; color:var(--c-ink-3); }
 .sl-mhead .sl-edited{ font-size:.63rem; font-style:italic; color:var(--c-ink-3); }
 .sl-bub{
-    display:inline-block; max-width:min(540px,88%);
+    display:block; width:fit-content; max-width:min(540px,92%);
     background:var(--c-bg); border:1px solid var(--c-line);
     border-radius:12px 12px 12px 4px; padding:8px 12px;
     font-size:.85rem; line-height:1.5; color:var(--c-ink);
@@ -3766,6 +3766,10 @@ tr.sl-ghost{ display:none !important; }
     background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink);
     border-radius:12px 12px 4px 12px;
 }
+/* a percentage max-width inside a shrink-to-fit flex column collapsed short
+   messages to one syllable per line (“hol / a”); size to the text instead */
+.sl-mine .sl-bub{ width:fit-content; min-width:0; max-width:min(540px,86vw); }
+.sl-mine{ min-width:0; }
 .sl-mine .sl-quote{ background:rgba(255,255,255,.14); border-left-color:currentColor; }
 .sl-mine .sl-quote b, .sl-mine .sl-quote span{ color:inherit; opacity:.85; }
 .sl-stamp{
@@ -4093,7 +4097,7 @@ tr.sl-ghost{ display:none !important; }
 <div class="modal app-modal" id="regModal">
     <div class="modal-content settings-content">
         <div class="modal-header"><div class="modal-title">Welcome to StudyLeague</div></div>
-        <p class="league-status" style="margin-bottom:12px;">Choose your stream — your subjects are selected automatically. You can add or remove subjects, and change everything later in Settings.</p>
+        <p class="league-status" style="margin-bottom:12px;">Choose your stream, then tick the subjects you actually study. <b>Nothing is ticked for you</b> — only ticked subjects appear in the app and count in your profile. You can change this later in Settings.</p>
         <label style="display:grid;gap:6px;font-weight:600;font-size:.9rem;">Your Stream
             <select class="input" id="regStream">
                 <option value="Humanities">Humanities (Arts)</option>
@@ -7877,7 +7881,10 @@ var LEAGUE_FIREBASE_CONFIG = {
         var reg = getRegistration() || defaultRegistration();
         var stream = streamEl.value;
         var all = (STREAMS[stream].subjects.concat(STREAMS[stream].optional)).filter(function(v,i,a){return a.indexOf(v)===i;});
-        var checked = stream === reg.stream ? reg.subjects : STREAMS[stream].subjects;
+        // only subjects the student actually saved come back ticked; changing
+        // the stream starts from nothing instead of pre-selecting the stream's
+        // whole default set (that used to add the defaults on top of their picks)
+        var checked = (stream === (reg.stream || '') && reg.completed) ? (reg.subjects || []) : [];
         box.innerHTML = all.map(function(k){
             return '<label class="reg-subject"><input type="checkbox" class="reg-subject-check" value="' + k + '"' + (checked.indexOf(k)>=0?' checked':'') + '> ' + subjectName(k) + '</label>';
         }).join('');
@@ -7926,7 +7933,8 @@ var LEAGUE_FIREBASE_CONFIG = {
         function renderCfgSubjects() {
             var stream = document.getElementById('cfgStream').value;
             var all = (STREAMS[stream].subjects.concat(STREAMS[stream].optional)).filter(function(v,i,a){return a.indexOf(v)===i;});
-            var current = (stream === (getRegistration()||{}).stream) ? (getRegistration()||defaultRegistration()).subjects : STREAMS[stream].subjects;
+            var regNow = getRegistration() || {};
+            var current = (stream === (regNow.stream || '') && regNow.completed) ? (regNow.subjects || []) : [];
             document.getElementById('cfgSubjects').innerHTML = all.map(function(k){
                 return '<label class="reg-subject"><input type="checkbox" class="cfg-subject-check" value="'+k+'"'+(current.indexOf(k)>=0?' checked':'')+'> '+subjectName(k)+'</label>';
             }).join('');
@@ -8234,22 +8242,58 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     /* Rows that should not exist any more are deleted for real, once each, so the
        database cleans itself — including entries left by older versions. */
-    var feedDeleteTried = {};
+    var feedDeleteTried = {}, feedDeleteAt = {};
+    /* Taking an entry back must reach the other students, not just this screen.
+       So a retraction is two writes: a `retracted` flag (every client listens to
+       it, so the row vanishes league-wide even if the delete is refused) and
+       then the delete itself. A failed attempt is retried, never abandoned. */
     function queueFeedDelete(ids) {
         if (!db || !me) return;
         var code = (typeof leagueCode === 'function') ? leagueCode() : '';
         if (!code) return;
+        var col = db.collection('leagues').doc(code).collection('feed');
         ids.forEach(function (id) {
-            if (!id || feedDeleteTried[id]) return;
-            feedDeleteTried[id] = true;
+            if (!id) return;
+            var tries = feedDeleteTried[id] || 0;
+            if (tries >= 10) return;
+            if (tries && Date.now() - (feedDeleteAt[id] || 0) < 20000) return;   // retry every 20s
+            feedDeleteTried[id] = tries + 1;
+            feedDeleteAt[id] = Date.now();
             try {
-                db.collection('leagues').doc(code).collection('feed').doc(id).delete()
-                    .then(function () {
-                        window.__slFeed.items = (window.__slFeed.items || []).filter(function (x) { return x.id !== id; });
-                    })
-                    .catch(function () { /* rules not published yet — stays hidden for me */ });
+                var ref = col.doc(id);
+                ref.update({ retracted: true, retractedAt: Date.now() }).catch(function () {}).then(function () {
+                    return ref.delete();
+                }).then(function () {
+                    window.__slFeed.items = (window.__slFeed.items || []).filter(function (x) { return x.id !== id; });
+                    if (typeof paintFeed === 'function') paintFeed();
+                }).catch(function () {});
             } catch (e) {}
         });
+    }
+
+    /* entries written by another session/device are not in this browser's feedIds
+       map, so a plain key lookup missed them — sweep the league for our own docs
+       with the same type + text and retract those too */
+    var pendingRetract = {}, retractSweepTimer = null;
+    function scheduleRetractSweep(type, text) {
+        pendingRetract[type + '|' + text] = true;
+        if (retractSweepTimer) return;
+        retractSweepTimer = setTimeout(function () {
+            retractSweepTimer = null;
+            var wanted = Object.keys(pendingRetract); pendingRetract = {};
+            var code = leagueCode();
+            if (!db || !me || !code || !wanted.length) return;
+            db.collection('leagues').doc(code).collection('feed')
+                .where('actorUid', '==', me.uid).limit(200).get()
+                .then(function (snap) {
+                    var kill = [];
+                    snap.forEach(function (d) {
+                        var v = d.data() || {};
+                        if (wanted.indexOf((v.type || '') + '|' + (v.text || '')) >= 0) kill.push(d.id);
+                    });
+                    if (kill.length) queueFeedDelete(kill);
+                }).catch(function () {});
+        }, 300);
     }
     function retractFeed(type, text) {
         var key = type + '|' + text + '|' + feedDay();
@@ -8260,6 +8304,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             delete seen[key];
             localStorage.setItem('feedPublished', JSON.stringify(seen));
         } catch (e) {}
+        scheduleRetractSweep(type, text);
         var id = ids[key];
         if (id) {
             try { delete ids[key]; localStorage.setItem('feedIds', JSON.stringify(ids)); } catch (e) {}
@@ -8436,6 +8481,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var myUid = (me && me.uid) || '';
         var staleIds = [];
         var items = (window.__slFeed.items || []).slice().filter(function (it) {
+            if (it.retracted) return false;                    // author took it back — hidden for the whole league
             var actor = it.actorUid || it.uid || '';
             if (!myUid || actor !== myUid) return true;         // other people's events stand
             if (!isChapterEvent(it)) return true;               // focus / note / milestone lines stay
@@ -12222,5 +12268,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56cf1b1df945a11',t:'MTc5NDA2MDg2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56cf1b1df945a11',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56d93f14c2fe9c4',t:'MTc5NDA2NzUwOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56d93f14c2fe9c4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
