@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="7.12">
+<html lang="en" data-sl-build="7.13">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4284,7 +4284,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.12</b> · offline cache studyleague-v18 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.13</b> · offline cache studyleague-v19 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -7176,7 +7176,16 @@ var LEAGUE_FIREBASE_CONFIG = {
             classLabel: (pr.classLabel || '').slice(0, 30),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, stats);
-        var hash = JSON.stringify([payload.displayName, payload.emoji, payload.avatarColor, payload.photo, payload.bio, payload.school, payload.classLabel, stats.xp, stats.percent, stats.focusWeekMin, stats.tasksCompleted]);
+        /* V7.13: a device is trusted to publish zeros when it has synced this
+           account before OR the student has just unticked something here. A
+           brand-new device that has done neither is not trusted, so it still
+           cannot wipe real numbers it has never loaded. The flag must sit in
+           the hash as well — otherwise the run right after an untick looks
+           identical to the one before it and gets skipped as "nothing changed",
+           which is exactly how the old numbers stayed frozen. */
+        var didUntick = false;
+        try { didUntick = (localStorage.getItem('slDidUntick') || '') === currentUser.uid; } catch (e) {}
+        var hash = JSON.stringify([payload.displayName, payload.emoji, payload.avatarColor, payload.photo, payload.bio, payload.school, payload.classLabel, stats.xp, stats.percent, stats.focusWeekMin, stats.tasksCompleted, didUntick]);
         if (hash === lastSyncHash) return;
         lastSyncHash = hash;
         var memberRef = db.collection('leagues').doc(code).collection('members').doc(currentUser.uid);
@@ -7187,7 +7196,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             // with nothing loaded yet is not, so it cannot wipe the real numbers
             var seenUid = '';
             try { seenUid = localStorage.getItem('slSyncedUid') || ''; } catch (e) {}
-            var stale = (Number(stats.xp) || 0) === 0 && (Number(cur.xp) || 0) > 0 && seenUid !== currentUser.uid;
+            var stale = (Number(stats.xp) || 0) === 0 && (Number(cur.xp) || 0) > 0
+                        && seenUid !== currentUser.uid && !didUntick;
             if (!stale) return payload;
             var out = Object.assign({}, payload);
             ['xp', 'percent', 'tasksCompleted', 'tasksTotal', 'chaptersDone', 'chaptersTotal',
@@ -8319,6 +8329,10 @@ var LEAGUE_FIREBASE_CONFIG = {
                 if (window.__activityAllDone(rec)) publishFeed('chapter', finishedText, Object.assign({ kind: 'finished' }, where));
                 maybeMilestones();
             } else {
+                /* V7.13: taking a tick off is a deliberate act. Remember it, so
+                   this device is trusted to publish honest zeros instead of
+                   leaving the old numbers frozen on the leaderboard. */
+                try { if (me && me.uid) localStorage.setItem('slDidUntick', me.uid); } catch (e) {}
                 retractFeed('task', taskText);
                 retractFeed('chapter', finishedText);
                 retractFeed('chapter', startedText);
@@ -8879,6 +8893,13 @@ var LEAGUE_FIREBASE_CONFIG = {
         var earned = 0, bySubject = {}, fullChapters = {};
         events.forEach(function(e){
             if (!e.checked) return;                 // unticked = it never counted
+            /* V7.13: studyEvents is append-only, so it can keep ticks that no
+               longer exist (progress reset, another device, a missed untick).
+               Score what is genuinely ticked right now, never what the log
+               merely remembers — otherwise ghost ticks score forever. */
+            var rec0 = (savedProgress[e.subject] && savedProgress[e.subject][e.sub]
+                        && savedProgress[e.subject][e.sub][e.chapter]) || {};
+            if (!rec0[e.activity]) return;
             earned += e.credit || 0;
             bySubject[e.subject] = (bySubject[e.subject] || 0) + Math.max(0, e.credit || 0);
             fullChapters[e.subject+'|'+e.sub+'|'+e.chapter] = e;
@@ -8895,7 +8916,13 @@ var LEAGUE_FIREBASE_CONFIG = {
                 if (mins >= 20) activeDays[day.toDateString()] = true;
             }
         } catch(e) {}
-        events.forEach(function(e){ if (e.checked) activeDays[new Date(e.ts).toDateString()] = true; });
+        events.forEach(function(e){
+            if (!e.checked) return;
+            var rec1 = (savedProgress[e.subject] && savedProgress[e.subject][e.sub]
+                        && savedProgress[e.subject][e.sub][e.chapter]) || {};
+            if (!rec1[e.activity]) return;
+            activeDays[new Date(e.ts).toDateString()] = true;
+        });
         var focusTotal = Object.keys(focusByDay).reduce(function(a,k){return a+focusByDay[k];},0);
         var focusScore = 25 * Math.min(focusTotal / Math.max(1, (lock.dailyGoal || 120) * 5), 1);
         var consistency = 20 * Math.min(Object.keys(activeDays).length / 6, 1);
@@ -12591,5 +12618,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a573d52f697fd27b',t:'MTc5NDEzMzA5Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a573d52f697fd27b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a57658811e275924',t:'MTc5NDE1OTQ0Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a57658811e275924',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
