@@ -4190,7 +4190,8 @@ tr.sl-ghost{ display:none !important; }
                 <div class="settings-row"><span>Reset all data <small style="display:block;">Erases progress, notes, to-dos, focus sessions &amp; exams on this device</small></span><button id="resetAllBtn" class="btn danger" type="button">Reset All Data</button></div>
             </div>
             <div class="league-status" id="settingsStatus"></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.7</b> · offline cache studyleague-v13 · if this line is missing you are on an older copy</div>
+            <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.8</b> · offline cache studyleague-v14 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -8515,6 +8516,34 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     try { window.slLive = { publish: livePublish, stop: liveStop, paint: paintLive, start: startLiveListener }; } catch (e) {}
 
+    /* Settings → Force update: unregister the service worker, drop every cached
+       copy of the page, reload. Study data is untouched — it lives in Firestore
+       and localStorage, not in the HTTP cache. */
+    document.addEventListener('click', function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest('#slForceUpdate') : null;
+        if (!btn) return;
+        btn.textContent = 'Updating…';
+        var jobs = [];
+        try {
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) {
+                    return Promise.all(rs.map(function (r) { return r.unregister().catch(function () {}); }));
+                }));
+            }
+        } catch (err) {}
+        try {
+            if (window.caches && caches.keys) {
+                jobs.push(caches.keys().then(function (keys) {
+                    return Promise.all(keys.map(function (k) { return caches.delete(k).catch(function () {}); }));
+                }));
+            }
+        } catch (err) {}
+        Promise.all(jobs).catch(function () {}).then(function () {
+            try { localStorage.removeItem('slBuildSeen'); } catch (err) {}
+            location.reload();
+        });
+    });
+
     document.addEventListener('click', function (e) {
         var pill = e.target && e.target.closest ? e.target.closest('[data-live]') : null;
         if (!pill) return;
@@ -8531,6 +8560,13 @@ var LEAGUE_FIREBASE_CONFIG = {
         var staleIds = [];
         var items = (window.__slFeed.items || []).slice().filter(function (it) {
             if (it.retracted) return false;                    // author took it back — hidden for the whole league
+            // rows written before V7.3 carry no chapter/kind fields, so their author's
+            // app can no longer match them to a tick and never retracts them. They are
+            // leftovers: hide them everywhere once they are more than ten minutes old.
+            if (!it.chapter && !it.kind && isChapterEvent(it)) {
+                var age = Date.now() - (feedMs(it) || Date.now());
+                if (age > 600000) return false;
+            }
             var actor = it.actorUid || it.uid || '';
             if (!myUid || actor !== myUid) return true;         // other people's events stand
             if (!isChapterEvent(it)) return true;               // focus / note / milestone lines stay
@@ -9695,7 +9731,17 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* ---------- subjects ---------- */
     function subjectRows() {
         var out = [];
+        // the page used to read every .subject element in the document, including
+        // cards that registration had merely hidden — so unregistered subjects
+        // (Geography, Chemistry, …) kept showing up here no matter what you picked
+        var regSubjects = null;
+        try {
+            var reg = JSON.parse(localStorage.getItem('appRegistration') || 'null');
+            if (reg && reg.subjects && reg.subjects.length) regSubjects = reg.subjects;
+        } catch (e) {}
         Array.prototype.slice.call(document.querySelectorAll('#v2Engine .subject')).forEach(function (subEl) {
+            if (regSubjects && regSubjects.indexOf(subEl.dataset.subject || '') < 0) return;
+            if (!regSubjects && subEl.style.display === 'none') return;
             var key = subEl.dataset.subject || '';
             var pctEl = subEl.querySelector('.subject-progress');
             var pct = pctEl ? parseInt(pctEl.textContent, 10) || 0 : 0;
@@ -12317,5 +12363,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a571b0f9dc5f54c2',t:'MTc5NDExMDY0Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a571b0f9dc5f54c2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
