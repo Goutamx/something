@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="7.7">
+<html lang="en" data-sl-build="7.11">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3983,6 +3983,87 @@ tr.sl-ghost{ display:none !important; }
 @media (max-width:700px){ .sl-ha{ display:none; } }
 
     </style>
+    <style id="v711-mono">
+    /* V7.11 - monogram avatars: first letter on the person's own colour */
+    .league-avatar, .sl-person-av, .sl-mav{
+        font-weight:800; letter-spacing:0; color:#fff;
+        text-shadow:0 1px 2px rgba(0,0,0,.20);
+    }
+    .sl-cav{ font-weight:800; letter-spacing:0; text-shadow:0 1px 2px rgba(0,0,0,.20); }
+    .sl-cav.grp{ text-shadow:none; font-weight:700; }
+    .sl-mono-chip.sm{
+        width:15px; height:15px; font-size:9px; border-radius:4px;
+        margin-right:4px; vertical-align:-3px;
+    }
+    .v2-avatar-btn.sl-has-glyph{
+        background:var(--sl-mono, var(--v2-soft-2)) !important;
+        color:#fff !important;
+        border-color:transparent !important;
+    }
+    .v2-avatar-btn.sl-has-glyph:hover{
+        background:var(--sl-mono, var(--v2-soft-2)) !important; filter:brightness(1.10);
+    }
+    .v2-avatar-btn.sl-has-glyph.is-active{
+        background:var(--sl-mono, var(--v2-soft-2)) !important;
+        color:#fff !important;
+        box-shadow:0 0 0 2px var(--c-active, #5E6AD2) !important;
+    }
+    .v2-avatar-btn .v2-av-glyph{ font-weight:800; text-shadow:0 1px 2px rgba(0,0,0,.22); }
+    .sl-mono-chip{
+        display:inline-grid; place-items:center; width:20px; height:20px;
+        border-radius:6px; font-size:11px; font-weight:800; color:#fff;
+        margin-right:6px; vertical-align:-5px; flex:none;
+        text-shadow:0 1px 2px rgba(0,0,0,.20);
+    }
+    </style>
+    <script>
+    /* V7.11 - monogram avatars. One letter, on the person's own colour. */
+    (function () {
+        function clamp(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+        function shade(hex, amt) {
+            var h = String(hex == null ? '' : hex).replace('#', '').trim();
+            if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+            if (!/^[0-9a-fA-F]{6}$/.test(h)) h = '5E6AD2';
+            var v = parseInt(h, 16), r = (v>>16)&255, g = (v>>8)&255, b = v&255;
+            if (amt > 0) { r += (255-r)*amt; g += (255-g)*amt; b += (255-b)*amt; }
+            else { r *= (1+amt); g *= (1+amt); b *= (1+amt); }
+            return '#' + [r,g,b].map(function (x) {
+                return ('0' + clamp(x).toString(16)).slice(-2);
+            }).join('');
+        }
+        window.SL_COLORS = ['#5E6AD2','#2563EB','#16A34A','#9333EA','#EA580C','#DB2777','#0F766E','#111111'];
+        var TINTS = ['#E8734A','#2E9E5B','#7C5CFF','#2F80ED','#C9407A','#B4762A','#0E8A8A'];
+        /* the first letter of a display name */
+        window.slLetter = function (name) {
+            var t = String(name == null ? '' : name).replace(/^\s+/, '');
+            if (!t) return '?';
+            return t.charAt(0).toUpperCase();
+        };
+        /* the person's own colour, as a soft diagonal gradient */
+        window.slMonoBg = function (colour) {
+            var c = String(colour == null || colour === '' ? '#5E6AD2' : colour);
+            return 'linear-gradient(150deg,' + shade(c, 0.20) + ' 0%,' + c + ' 30%,' + shade(c, -0.34) + ' 100%)';
+        };
+        /* stable fallback colour for members who have not picked one */
+        window.slTint = function (seed) {
+            var h = 0, t = String(seed == null ? '' : seed);
+            for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 9973;
+            return TINTS[h % TINTS.length];
+        };
+        /* the colour dots inside the join-league card */
+        document.addEventListener('click', function (ev) {
+            var el = ev.target || null;
+            var b = el && el.closest ? el.closest('.lg-color') : null;
+            if (!b) return;
+            var hid = document.getElementById('leagueColor');
+            if (hid) hid.value = b.dataset.color;
+            var row = document.getElementById('lgColorRow');
+            if (row) row.querySelectorAll('.lg-color').forEach(function (x) {
+                x.classList.toggle('is-active', x === b);
+            });
+        });
+    })();
+    </script>
 </head>
 <body>
 
@@ -4203,7 +4284,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.10</b> · offline cache studyleague-v16 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.11</b> · offline cache studyleague-v17 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -7140,7 +7221,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var me = currentUser && m.uid === currentUser.uid;
             var avatar = m.photo
                 ? '<img class="league-avatar-img" src="' + m.photo + '" alt="">'
-                : '<span class="league-avatar" style="background:' + escapeHtml(m.avatarColor || '#5E6AD2') + '">' + (m.emoji || '📚') + '</span>';
+                : '<span class="league-avatar" style="background:' + escapeHtml(window.slMonoBg(m.avatarColor)) + ';font-size:19px">' + escapeHtml(window.slLetter(m.displayName)) + '</span>';
             var presence = '<div class="league-presence" data-uid="' + m.uid + '"></div>';
             var bio = (m.bio || m.school) ? '<div class="league-bio">' + escapeHtml([m.bio, m.school].filter(Boolean).join(' · ')) + '</div>' : '';
             var nudge = me ? '' : '<button class="btn secondary nudge-btn" data-uid="' + m.uid + '" data-name="' + escapeHtml(m.displayName || 'Student') + '" type="button" title="Send a nudge">👋 Nudge</button>';
@@ -7162,8 +7243,10 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     function readProfileInputs() {
         var nameEl = document.getElementById('leagueName');
-        var emojiEl = document.getElementById('leagueEmoji');
-        var pr = { name: (nameEl.value || '').trim() || 'Student', emoji: emojiEl.value };
+        var colourEl = document.getElementById('leagueColor');
+        var pr = {}; try { pr = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {}; } catch (e) { pr = {}; }
+        pr.name = (nameEl.value || '').trim() || 'Student';
+        if (colourEl && colourEl.value) pr.avatarColor = colourEl.value;
         saveProfile(pr); return pr;
     }
     function ensureSignedIn() {
@@ -7275,9 +7358,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     '<div class="league-status" style="margin-bottom:12px;">This app has <b>one league for the whole class</b> — no codes and no separate groups. Everyone who joins lands in the same standings.</div>' +
                     '<div class="league-row">' +
                         '<input id="leagueName" class="input" type="text" maxlength="30" placeholder="Your display name" value="' + escapeHtml(pr.name || '') + '">' +
-                        '<select id="leagueEmoji" class="input" style="flex:0 1 110px;">' +
-                            ['📚','🔥','🚀','🎯','🧠','⚡','🏆','😎'].map(function (e) { return '<option value="' + e + '"' + ((pr.emoji || '📚') === e ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
-                        '</select>' +
+                        '<div class="profile-colors" id="lgColorRow" style="margin-top:0;flex:0 1 auto">' + (window.SL_COLORS || []).map(function (c) { return '<button class="accent-dot lg-color' + ((pr.avatarColor || '#5E6AD2') === c ? ' is-active' : '') + '" data-color="' + c + '" style="background:' + window.slMonoBg(c) + '" type="button" title="Use this colour"></button>'; }).join('') + '</div><input type="hidden" id="leagueColor" value="' + escapeHtml(pr.avatarColor || '#5E6AD2') + '">' +
                     '</div>' +
                     '<div class="league-row" style="margin-top:12px;">' +
                         '<button class="btn" id="leagueJoinBtn" type="button">Join the Class League →</button>' +
@@ -7503,39 +7584,42 @@ var LEAGUE_FIREBASE_CONFIG = {
         card.className = 'card fade-in'; card.id = 'socialProfileCard'; card.style.marginBottom = '14px';
         var preview = pr.photo
             ? '<img class="league-avatar-img" id="pfPreview" src="' + pr.photo + '" style="width:52px;height:52px;" alt="">'
-            : '<span class="league-avatar" id="pfPreview" style="background:' + (pr.avatarColor || '#5E6AD2') + ';width:52px;height:52px;font-size:24px;">' + (pr.emoji || '📚') + '</span>';
+            : '<span class="league-avatar" id="pfPreview" style="background:' + window.slMonoBg(pr.avatarColor) + ';width:52px;height:52px;font-size:28px;">' + escapeHtml(window.slLetter(pr.name)) + '</span>';
         card.innerHTML =
             '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">account_circle</span> My Profile</div>' +
             '<div style="display:flex;gap:14px;align-items:center;margin-bottom:12px;">' + preview +
                 '<div><b id="pfPreviewName">' + escapeHtml(pr.name || 'Student') + '</b><div class="league-bio">' + escapeHtml([pr.bio, pr.school, pr.classLabel].filter(Boolean).join(' · ') || 'Add a bio so your league knows you') + '</div></div></div>' +
             '<div class="profile-grid">' +
                 '<label>Display name<input class="input" id="pfName" maxlength="30" value="' + escapeHtml(pr.name || '') + '" placeholder="e.g. Aarav"></label>' +
-                '<label>Avatar emoji<div class="emoji-picker" id="pfEmojiPicker">' + ['📚','🔥','🚀','🎯','🧠','⚡','🏆','😎','🦉','🐼'].map(function (e) { return '<button class="pf-emoji' + ((pr.emoji || '📚') === e ? ' is-active' : '') + '" data-emoji="' + e + '" type="button" title="Use ' + e + ' as my avatar">' + e + '</button>'; }).join('') + '</div><input type="hidden" id="pfEmoji" value="' + escapeHtml(pr.emoji || '📚') + '"></label>' +
+                '<label>Your colour<div class="emoji-picker profile-colors" id="pfColorRow" style="margin-top:7px">' + (window.SL_COLORS || []).map(function (c) { return '<button class="accent-dot pf-color' + ((pr.avatarColor || '#5E6AD2') === c ? ' is-active' : '') + '" data-color="' + c + '" style="background:' + window.slMonoBg(c) + '" type="button" title="Use this colour"></button>'; }).join('') + '</div><input type="hidden" id="pfColor" value="' + escapeHtml(pr.avatarColor || '#5E6AD2') + '"></label>' +
                 '<label>Bio<input class="input" id="pfBio" maxlength="120" value="' + escapeHtml(pr.bio || '') + '" placeholder="e.g. Class 12 Arts · Target: 95%"></label>' +
                 '<label>School<input class="input" id="pfSchool" maxlength="60" value="' + escapeHtml(pr.school || '') + '" placeholder="School name (optional)"></label>' +
                 '<label>Class / Section<input class="input" id="pfClass" maxlength="30" value="' + escapeHtml(pr.classLabel || '') + '" placeholder="e.g. 11-B"></label>' +
                 '<label>Profile photo <span style="font-weight:500;">(optional, resized automatically)</span><input class="input" type="file" id="pfPhoto" accept="image/*"></label>' +
             '</div>' +
-            '<div style="margin-top:10px;"><span style="font-size:.84rem;font-weight:600;color:var(--text-muted);">Avatar colour</span><div class="profile-colors">' +
-                AVATAR_COLORS.map(function (c) { return '<button class="accent-dot pf-color' + ((pr.avatarColor || '#5E6AD2') === c ? ' is-active' : '') + '" data-color="' + c + '" style="background:' + c + '" type="button"></button>'; }).join('') +
-            '</div></div>' +
             '<div class="league-row" style="margin-top:13px;"><button class="btn" id="pfSave" type="button">Save Profile</button>' +
             (pr.photo ? '<button class="btn secondary" id="pfRemovePhoto" type="button">Remove Photo</button>' : '') +
             '<span class="league-status" id="pfStatus"></span></div>';
         list.insertBefore(card, list.firstChild);
 
+        function slSyncPreview() {
+            var prev = document.getElementById('pfPreview');
+            if (!prev || prev.tagName === 'IMG') return;
+            var p = getProfile();
+            prev.style.background = window.slMonoBg(p.avatarColor);
+            var nm = document.getElementById('pfName');
+            prev.textContent = window.slLetter(nm ? nm.value : (p.name || 'Student'));
+        }
         card.querySelectorAll('.pf-color').forEach(function (b) {
             b.addEventListener('click', function () {
                 var p = getProfile(); p.avatarColor = b.dataset.color; setProfile(p);
                 card.querySelectorAll('.pf-color').forEach(function (x) { x.classList.toggle('is-active', x === b); });
+                var hidden = document.getElementById('pfColor'); if (hidden) hidden.value = b.dataset.color;
+                slSyncPreview();
             });
         });
-        card.querySelectorAll('.pf-emoji').forEach(function (b) {
-            b.addEventListener('click', function () {
-                var hidden = document.getElementById('pfEmoji'); if (hidden) hidden.value = b.dataset.emoji;
-                card.querySelectorAll('.pf-emoji').forEach(function (x) { x.classList.toggle('is-active', x === b); });
-            });
-        });
+        var pfName = document.getElementById('pfName');
+        if (pfName) pfName.addEventListener('input', slSyncPreview);
         var photoInput = document.getElementById('pfPhoto');
         if (photoInput) photoInput.addEventListener('change', function () {
             var file = photoInput.files && photoInput.files[0];
@@ -7559,7 +7643,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         document.getElementById('pfSave').addEventListener('click', function () {
             var p = getProfile();
             p.name = (document.getElementById('pfName').value || '').trim() || 'Student';
-            p.emoji = document.getElementById('pfEmoji').value;
+            var ci = document.getElementById('pfColor'); if (ci && ci.value) p.avatarColor = ci.value;
             p.bio = (document.getElementById('pfBio').value || '').trim();
             p.school = (document.getElementById('pfSchool').value || '').trim();
             p.classLabel = (document.getElementById('pfClass').value || '').trim();
@@ -7838,7 +7922,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             }).join('');
             return '<div class="chat-msg' + (mine ? ' me' : '') + '">' +
                 (mine ? '<button class="chat-del" data-del="' + m.id + '" title="Delete message">✕</button>' : '') +
-                '<div class="chat-meta">' + (m.senderEmoji || '📚') + ' ' + escapeHtml(m.senderName || 'Student') + ' · ' + ago(m.createdAt) + '</div>' +
+                '<div class="chat-meta">' + (window.slMonoChip ? '' : '') + '<span class="sl-mono-chip sm" style="background:' + escapeHtml(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + escapeHtml(window.slLetter(m.senderName)) + '</span>' + escapeHtml(m.senderName || 'Student') + ' · ' + ago(m.createdAt) + '</div>' +
                 '<div>' + escapeHtml(m.text || '') + '</div>' +
                 '<div class="chat-reactions">' + reactBtns + '</div></div>';
         }).join('');
@@ -8570,7 +8654,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var mine = (me && it.uid === me.uid);
             var mins = Math.max(0, Math.round((Number(it.endAt) - now) / 60000));
             return '<button type="button" class="sl-now-pill' + (liveOpen === it.uid ? ' is-open' : '') + '" data-live="' + escapeHtml(it.uid) + '" aria-expanded="' + (liveOpen === it.uid ? 'true' : 'false') + '">' +
-                '<span class="sl-now-av">' + escapeHtml(it.emoji || '📚') + '</span>' +
+                '<span class="sl-now-av" style="background:' + escapeHtml(window.slMonoBg(it.avatarColor || window.slTint(it.uid))) + ';color:#fff;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(it.name)) + '</span>' +
                 '<b>' + escapeHtml(it.name || 'Student') + (mine ? ' (you)' : '') + '</b>' +
                 (it.target ? '<span class="sl-now-tg">' + escapeHtml(it.target) + '</span>' : '') +
                 '<span class="sl-now-left" data-end="' + Number(it.endAt) + '">' + mins + 'm left</span>' +
@@ -8583,7 +8667,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
             var pct = Math.max(4, Math.min(100, Math.round(doneM / total * 100)));
             detail = '<div class="sl-now-detail">' +
-                '<span class="sl-now-av lg">' + escapeHtml(d.emoji || '📚') + '</span>' +
+                '<span class="sl-now-av lg" style="background:' + escapeHtml(window.slMonoBg(d.avatarColor || window.slTint(d.uid))) + ';color:#fff;font-weight:800;font-size:17px;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(d.name)) + '</span>' +
                 '<span class="sl-now-dbody">' +
                     '<span class="sl-now-dt"><b>' + escapeHtml(d.name || 'Student') + '</b> is ' + (d.target ? 'studying' : 'in a focus session') +
                         (d.target ? ' <b>' + escapeHtml(d.target) + '</b>' : '') + '</span>' +
@@ -8862,7 +8946,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function computeStandings(weeksData) {
         var current = currentWeekId(); var table = {};
         function row(uid, score) {
-            if (!table[uid]) table[uid] = { uid:uid, displayName:(score&&score.displayName)||'Student', emoji:(score&&score.emoji)||'📚', stream:(score&&score.stream)||'', points:0, wins:0, ties:0, totalStudy:0, thisWeek:0, activeDays:0, results:[] };
+            if (!table[uid]) table[uid] = { uid:uid, displayName:(score&&score.displayName)||'Student', emoji:(score&&score.emoji)||'📚', avatarColor:(score&&score.avatarColor)||'', stream:(score&&score.stream)||'', points:0, wins:0, ties:0, totalStudy:0, thisWeek:0, activeDays:0, results:[] };
             return table[uid];
         }
         Object.keys(weeksData).forEach(function(weekId){
@@ -8920,7 +9004,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<button class="btn secondary challenge-tab'+(challengeTab==='stream'?' seg-btn is-active':'')+'" data-tab="stream" type="button">My Stream ('+escapeHtml(myStream)+')</button></div>' +
                 (rows.length ? '<table class="league-table"><thead><tr><th>Rank</th><th>Student</th><th>Champion Points</th><th>Weeks Won</th><th>Total Study Score</th><th>This Week</th></tr></thead><tbody>' +
                 rows.map(function(r,i){
-                    return '<tr'+(me&&r.uid===me.uid?' class="me"':'')+'><td class="league-rank">'+(i+1)+'</td><td><span class="league-name clickable-player" data-profile-uid="'+r.uid+'">'+r.emoji+' '+escapeHtml(r.displayName)+'</span><div class="league-bio">'+escapeHtml(r.stream||'')+'</div></td><td><b>'+r.points+'</b> ⭐</td><td>'+r.wins+'</td><td>'+r.totalStudy+'<div class="score-bar" style="margin-top:5px;"><i style="width:'+Math.min(100,r.totalStudy/4)+'%"></i></div></td><td>'+r.thisWeek+' pts<div class="league-updated">'+(r.activeDays||0)+' active days</div></td></tr>';
+                    return '<tr'+(me&&r.uid===me.uid?' class="me"':'')+'><td class="league-rank">'+(i+1)+'</td><td><span class="league-name clickable-player" data-profile-uid="'+r.uid+'"><span class="sl-mono-chip" style="background:'+escapeHtml(window.slMonoBg(r.avatarColor||window.slTint(r.uid)))+'">'+escapeHtml(window.slLetter(r.displayName))+'</span>'+escapeHtml(r.displayName)+'</span><div class="league-bio">'+escapeHtml(r.stream||'')+'</div></td><td><b>'+r.points+'</b> ⭐</td><td>'+r.wins+'</td><td>'+r.totalStudy+'<div class="score-bar" style="margin-top:5px;"><i style="width:'+Math.min(100,r.totalStudy/4)+'%"></i></div></td><td>'+r.thisWeek+' pts<div class="league-updated">'+(r.activeDays||0)+' active days</div></td></tr>';
                 }).join('') + '</tbody></table>' : '<div class="todo-empty">No weekly scores yet in this view — scores appear as league members study this week.</div>') + crownHTML +
                 (myRow ? '' : '<div class="league-status">Your score joins automatically as you study (make sure you are in a league).</div>');
             body.querySelectorAll('.challenge-tab').forEach(function(b){ b.addEventListener('click', function(){ challengeTab=b.dataset.tab; renderChallenge(); }); });
@@ -8949,7 +9033,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function openProfile(uid) {
         var m = membersByUid[uid]; if (!m) return;
         var modal = document.getElementById('profileModal'); var body = document.getElementById('profileModalBody'); if (!modal||!body) return;
-        var avatar = m.photo ? '<img class="league-avatar-img" src="'+m.photo+'" style="width:58px;height:58px;" alt="">' : '<span class="league-avatar" style="background:'+(m.avatarColor||'#5E6AD2')+';width:58px;height:58px;font-size:26px;">'+(m.emoji||'📚')+'</span>';
+        var avatar = m.photo ? '<img class="league-avatar-img" src="'+m.photo+'" style="width:58px;height:58px;" alt="">' : '<span class="league-avatar" style="background:'+window.slMonoBg(m.avatarColor)+';width:58px;height:58px;font-size:30px;">'+escapeHtml(window.slLetter(m.displayName))+'</span>';
         var subjects = (m.subjects||[]).map(subjectName).join(', ') || 'Subjects not shared';
         body.innerHTML = '<div style="display:flex;gap:14px;align-items:center;margin-bottom:13px;">'+avatar+'<div><div style="font-size:1.2rem;font-weight:800;">'+escapeHtml(m.displayName||'Student')+(me&&uid===me.uid?' (You)':'')+'</div><div class="league-bio">'+escapeHtml([m.bio,m.school,m.classLabel].filter(Boolean).join(' · '))+'</div><div class="league-bio">Stream: '+escapeHtml(m.stream||'Not set')+'</div></div></div>' +
             '<div class="league-row"><span class="pill"><b>'+(m.xp||0)+'</b>&nbsp;XP</span><span class="pill">'+(m.percent||0)+'% complete</span><span class="pill">'+(m.chaptersDone||0)+'/'+(m.chaptersTotal||0)+' chapters</span><span class="pill">'+(m.focusHidden?'Focus private':(m.focusWeekMin||0)+' focus min/wk')+'</span><span class="pill">🔥 '+(m.streak||0)+' day streak</span></div>' +
@@ -8982,7 +9066,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function renderDMPeople() {
         var box=document.getElementById('dmPeople'); if(!box) return;
         var others=Object.keys(membersByUid).filter(function(uid){return !me || uid!==me.uid;});
-        box.innerHTML = others.length ? others.map(function(uid){ var m=membersByUid[uid]; return '<button class="dm-person'+(dmUser===uid?' active':'')+'" data-dm="'+uid+'" type="button">'+(m.emoji||'📚')+' '+escapeHtml(m.displayName||'Student')+'</button>'; }).join('') : '<div class="todo-empty">No other members yet</div>';
+        box.innerHTML = others.length ? others.map(function(uid){ var m=membersByUid[uid]; return '<button class="dm-person'+(dmUser===uid?' active':'')+'" data-dm="'+uid+'" type="button"><span class="sl-mono-chip" style="background:'+escapeHtml(window.slMonoBg(m.avatarColor||window.slTint(uid)))+'">'+escapeHtml(window.slLetter(m.displayName))+'</span>'+escapeHtml(m.displayName||'Student')+'</button>'; }).join('') : '<div class="todo-empty">No other members yet</div>';
         box.querySelectorAll('[data-dm]').forEach(function(b){ b.addEventListener('click', function(){ selectDMUser(b.dataset.dm); }); });
     }
     function selectDMUser(uid) { dmUser=uid; renderDMPeople(); startDMListener(); }
@@ -9148,7 +9232,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var myVote = me ? (n.votes||{})[me.uid] || 0 : 0;
             return '<div class="card note-card" data-note="'+n.id+'"><b>'+escapeHtml(n.title)+'</b><div class="league-bio">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+'</div>' +
             '<div class="league-status" style="margin-top:7px;">'+escapeHtml((n.content||'').slice(0,140))+(n.content&&n.content.length>140?'…':'')+'</div>' +
-            '<div class="league-bio" style="margin-top:7px;">'+(n.authorEmoji||'📚')+' '+escapeHtml(n.authorName||'Student')+' · 💬 '+(n.commentsCount||0)+'</div>' +
+            '<div class="league-bio" style="margin-top:7px;"><span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(n.authorColor||window.slTint(n.authorUid)))+'">'+escapeHtml(window.slLetter(n.authorName))+'</span>'+escapeHtml(n.authorName||'Student')+' · 💬 '+(n.commentsCount||0)+'</div>' +
             '<div class="vote-row"><button class="vote-btn vote-up'+(myVote===1?' voted':'')+'" data-vote="1" data-id="'+n.id+'" type="button">▲</button><b>'+noteScore(n)+'</b><button class="vote-btn vote-down'+(myVote===-1?' voted':'')+'" data-vote="-1" data-id="'+n.id+'" type="button">▼</button><span class="league-updated">Open →</span></div></div>';
         }).join('') : '<div class="todo-empty">No notes match — upload the first one for this chapter</div>';
         grid.querySelectorAll('.vote-btn').forEach(function(b){
@@ -9182,7 +9266,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var modal = document.getElementById('noteModal'); var body = document.getElementById('noteModalBody');
         document.getElementById('noteModalTitle').textContent = n.title || 'Shared Note';
         var isLink = /^https?:\/\//i.test((n.content||'').trim());
-        body.innerHTML = '<div class="league-bio">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+' · by '+(n.authorEmoji||'📚')+' '+escapeHtml(n.authorName||'Student')+'</div>' +
+        body.innerHTML = '<div class="league-bio">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+' · by <span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(n.authorColor||window.slTint(n.authorUid)))+'">'+escapeHtml(window.slLetter(n.authorName))+'</span>'+escapeHtml(n.authorName||'Student')+'</div>' +
             (isLink ? '<div style="margin:14px 0;"><a class="btn" href="'+escapeHtml(n.content.trim())+'" target="_blank" rel="noopener">Open Linked Note ↗</a></div>' : '<div class="card" style="white-space:pre-wrap;margin:14px 0;line-height:1.75;">'+escapeHtml(n.content||'')+'</div>') +
             '<div class="vote-row"><button class="vote-btn" id="noteVoteUp" type="button">▲ Upvote</button><b>'+noteScore(n)+'</b><button class="vote-btn" id="noteVoteDown" type="button">▼ Downvote</button>' +
             (me && n.authorUid===me.uid ? '<button class="btn danger" id="noteDelete" type="button" style="margin-left:auto;">Delete Note</button>' : '') + '</div>' +
@@ -9205,7 +9289,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         .onSnapshot(function(snap){
             var box=document.getElementById('noteComments'); if(!box) return;
             var arr=[]; snap.forEach(function(d){arr.push(Object.assign({id:d.id},d.data()));});
-            box.innerHTML=arr.length?arr.map(function(c){ return '<div class="feed-item"><span>'+(c.authorEmoji||'📚')+'</span><div><b>'+escapeHtml(c.authorName||'Student')+'</b><div>'+escapeHtml(c.text||'')+'</div></div>'+(me&&c.authorUid===me.uid?'<button class="vote-btn" data-del-comment="'+c.id+'" type="button" style="margin-left:auto;">Delete</button>':'')+'</div>'; }).join(''):'<div class="todo-empty">No comments yet</div>';
+            box.innerHTML=arr.length?arr.map(function(c){ return '<div class="feed-item"><span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(c.authorColor||window.slTint(c.authorUid)))+'">'+escapeHtml(window.slLetter(c.authorName))+'</span>'+'<div><b>'+escapeHtml(c.authorName||'Student')+'</b><div>'+escapeHtml(c.text||'')+'</div></div>'+(me&&c.authorUid===me.uid?'<button class="vote-btn" data-del-comment="'+c.id+'" type="button" style="margin-left:auto;">Delete</button>':'')+'</div>'; }).join(''):'<div class="todo-empty">No comments yet</div>';
             box.querySelectorAll('[data-del-comment]').forEach(function(b){ b.addEventListener('click', function(){ db.collection('leagues').doc(code()).collection('sharedNotes').doc(id).collection('comments').doc(b.dataset.delComment).delete().catch(function(){}); }); });
         }, function(){});
     }
@@ -10013,7 +10097,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var head = el('div', 'v2-profile-head');
         var avatar = p.photo
             ? '<span class="v2-avatar"><img src="' + esc(p.photo) + '" alt=""></span>'
-            : '<span class="v2-avatar">' + esc(p.emoji || '📚') + '</span>';
+            : '<span class="v2-avatar" style="background:' + esc(window.slMonoBg(p.avatarColor)) + ';color:#fff;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.22)">' + esc(window.slLetter(p.name)) + '</span>';
         head.innerHTML = avatar +
             '<div style="min-width:200px;flex:1 1 auto;">' +
                 '<div class="v2-profile-name">' + esc(p.name || 'Add your name') + '</div>' +
@@ -10475,12 +10559,13 @@ var LEAGUE_FIREBASE_CONFIG = {
             try { pr = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || {}; } catch (e) {}
             var nm = String(pr.name || (user && user.displayName) || '').trim();
             var photo = (user && user.photoURL && !pr.photo) ? user.photoURL : '';
-            var glyph = !photo ? String(pr.emoji || nm.charAt(0) || '').trim() : '';
+            var glyph = (!photo && nm) ? window.slLetter(nm) : '';
             var mark = photo ? 'p:' + photo : (glyph ? 'g:' + glyph : 'i');
             av.title = (nm || 'My profile') + ' — open my profile';
             av.setAttribute('aria-label', 'My profile');
             av.classList.toggle('sl-has-photo', !!photo);
             av.classList.toggle('sl-has-glyph', !photo && !!glyph);
+            av.style.setProperty('--sl-mono', window.slMonoBg(pr.avatarColor));
             if (av.getAttribute('data-av') !== mark) {
                 av.setAttribute('data-av', mark);
                 if (photo) av.innerHTML = '<img class="sl-av-img" src="' + photo + '" alt="">';
@@ -11035,7 +11120,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         box.innerHTML = others.map(function (u) {
             var m = real[u];
             return '<button type="button" class="sl-person' + (u === dmUser ? ' is-active' : '') + '" data-dm-uid="' + esc(u) + '">' +
-                '<span class="sl-person-av" style="background:' + esc(m.avatarColor || '#111111') + '">' + esc(m.emoji || '📚') + '</span>' +
+                '<span class="sl-person-av" style="background:' + esc(window.slMonoBg(m.avatarColor || window.slTint(u))) + ';font-size:15px">' + esc(window.slLetter(m.displayName)) + '</span>' +
                 '<span class="sl-person-t"><b>' + esc(m.displayName || 'Student') + '</b>' +
                 '<small>' + (m.percent || 0) + '% · ' + (m.xp || 0) + ' XP</small></span></button>';
         }).join('');
@@ -11077,7 +11162,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     (counts[em] ? '<i>' + counts[em] + '</i>' : '') + '</button>';
             }).join('');
             return '<div class="sl-msg' + (mine ? ' me' : '') + '">' +
-                '<div class="sl-msg-meta">' + (mine ? 'You' : esc(m.senderEmoji || '📚') + ' ' + esc(m.senderName || 'Student')) +
+                '<div class="sl-msg-meta">' + (mine ? 'You' : '<span class="sl-mono-chip sm" style="background:' + esc(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + esc(window.slLetter(m.senderName)) + '</span>' + esc(m.senderName || 'Student')) +
                     ' · ' + ago(m.createdAt) + '</div>' +
                 '<div class="sl-msg-body">' + esc(m.text || '') + '</div>' +
                 '<div class="sl-msg-actions">' + react +
@@ -11282,10 +11367,9 @@ var LEAGUE_FIREBASE_CONFIG = {
         return TINTS[h % TINTS.length];
     }
     function avatarHtml(m, uid, extraClass) {
-        var emoji = m && m.emoji;
         var colour = (m && m.avatarColor) || tint(uid || (m && m.displayName));
-        var inner = emoji ? esc(emoji) : esc(initials(m && m.displayName));
-        return '<span class="sl-mav' + (extraClass ? ' ' + extraClass : '') + '" style="background:' + esc(colour) + '">' + inner + '</span>';
+        var inner = esc(window.slLetter(m && m.displayName));
+        return '<span class="sl-mav' + (extraClass ? ' ' + extraClass : '') + '" style="background:' + esc(window.slMonoBg(colour)) + '">' + inner + '</span>';
     }
 
     /* --------------------------------------------------------------- state */
@@ -11324,12 +11408,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         try { var p = JSON.parse(localStorage.getItem('leagueProfile') || '{}'); if (p.name) return p.name; } catch (e) {}
         return (me && me.displayName) || 'Student';
     }
-    function myEmoji() {
-        var m = members[me && me.uid] || {};
-        if (m.emoji) return m.emoji;
-        try { var p = JSON.parse(localStorage.getItem('leagueProfile') || '{}'); if (p.emoji) return p.emoji; } catch (e) {}
-        return '';
-    }
+    function myEmoji() { return window.slLetter(myName()); }
     function isOnlineText() { var n = onlineCount(); return n ? n + ' online' : 'no one else online'; }
 
     /* --------------------------------------------------------------- boot */
@@ -12088,8 +12167,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             (others.length ? others.map(function (u) {
                 var m = members[u];
                 return '<button type="button" class="sl-sheet-row" data-new="' + esc(u) + '">' +
-                    '<span class="sl-mav" style="width:22px;height:22px;border-radius:6px;font-size:.65rem;background:' + esc(m.avatarColor || tint(u)) + '">' +
-                    esc(m.emoji || initials(m.displayName)) + '</span> ' + esc(m.displayName || 'Student') + '</button>';
+                    '<span class="sl-mav" style="width:22px;height:22px;border-radius:6px;font-size:11px;background:' + esc(window.slMonoBg(m.avatarColor || tint(u))) + '">' +
+                    esc(window.slLetter(m.displayName)) + '</span> ' + esc(m.displayName || 'Student') + '</button>';
             }).join('') : '<div class="sl-sheet-note">No classmates yet — invite someone from My Profile.</div>') +
             '</div>';
         wrap.classList.add('is-open');
@@ -12501,5 +12580,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5728d4fa80799d7',t:'MTc5NDExOTY2Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5728d4fa80799d7',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a573b9ce5b98f2de',t:'MTc5NDEzMTk3NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a573b9ce5b98f2de',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
