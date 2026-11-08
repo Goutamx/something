@@ -1827,6 +1827,15 @@
         .inbox-list { display:grid; gap:9px; max-height:55vh; overflow-y:auto; }
         .inbox-item { border:1px solid var(--l5c-border); border-radius:var(--radius-md); padding:11px 13px; display:flex; justify-content:space-between; gap:12px; }
         .inbox-item.unread { border-left:4px solid var(--l5c-indigo); background:var(--bg-input); }
+        .act-lead{ margin:-2px 0 12px; font-size:.82rem; line-height:1.55; color:var(--c-ink-3,#7c828d); max-width:70ch; }
+        .activity-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .activity-row.is-hidden{ opacity:.55; }
+        .act-num{ width:20px; flex:none; text-align:center; font-size:.74rem; font-weight:800; color:var(--c-ink-3,#8b919b); }
+        .act-move{ display:flex; gap:4px; flex:none; }
+        .act-move .btn{ width:34px; padding:0 !important; }
+        .act-move .btn[disabled]{ opacity:.35; }
+        .act-preview{ margin-top:10px; padding:9px 11px; border:1px dashed var(--c-line,#e6e8ee); border-radius:10px; font-size:.78rem; color:var(--c-ink-3,#7c828d); line-height:1.5; }
+        .act-preview b{ color:var(--c-ink,#14161a); }
         .btn.is-armed, .btn.secondary.is-armed{ background:#fdecee !important; border-color:#f3c3c9 !important; color:#b3243a !important; }
         [data-theme="dark"] .btn.is-armed, [data-theme="dark"] .btn.secondary.is-armed{ background:rgba(224,71,91,.16) !important; border-color:rgba(224,71,91,.4) !important; color:#ff9aa8 !important; }
         body.compact-mode .content-area { padding-top:14px; }
@@ -3589,6 +3598,9 @@ tr.sl-ghost{ display:none !important; }
 
 /* the rank cell ignores the table's cell padding (its own rule lives above) */
 #chapterList table.league-table td.league-rank{ padding:0 !important; vertical-align:middle; }
+/* the soft right-edge fade is only drawn when the row really overflows —
+   otherwise it sat on top of the last tab and made “Notes” look greyed out */
+.v2-nav:not(.has-edge)::after{ opacity:0; }
 /* nav items never squeeze down to one letter on a narrow bar */
 .v2-nav-item{ flex:0 0 auto; }
 .v2-nav-item span{ white-space:nowrap; }
@@ -4191,7 +4203,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.8</b> · offline cache studyleague-v14 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.9</b> · offline cache studyleague-v15 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -4322,11 +4334,12 @@ tr.sl-ghost{ display:none !important; }
             "6. Poets and Pancakes",
             "7. The Interview",
             "8. Going Places",
-            "Poem 1. My Mother at Sixty Six",
-            "Poem 2. Keeping Quiet",
-            "Poem 3. A Thing of Beauty",
-            "Poem 4. A Roadside Stand",
-            "Poem 5. Aunt Jennifer's Tigers"
+            "Poem 1. My Mother at Sixty-Six",
+            "Poem 2. An Elementary School Classroom in a Slum",
+            "Poem 3. Keeping Quiet",
+            "Poem 4. A Thing of Beauty",
+            "Poem 5. A Roadside Stand",
+            "Poem 6. Aunt Jennifer's Tigers"
         ],
         Vistas: [
             "1. The Third Level",
@@ -4372,14 +4385,16 @@ tr.sl-ghost{ display:none !important; }
     },
     Geography: {
         FundamentalsOfHumanGeography: [
-            "1. Human Geography",
-            "2. The World Population",
-            "3. Human Development",
-            "4. Primary Activities",
-            "5. Secondary Activities",
-            "6. Tertiary and Quaternary Activities",
-            "7. Transport and Communication",
-            "8. International Trade"
+            "1. Human Geography: Nature and Scope",
+            "2. The World Population: Distribution, Density and Growth",
+            "3. Population Composition",
+            "4. Human Development",
+            "5. Primary Activities",
+            "6. Secondary Activities",
+            "7. Tertiary and Quaternary Activities",
+            "8. Transport and Communication",
+            "9. International Trade",
+            "10. Human Settlements"
         ],
         IndiaPeopleAndEconomy: [
             "1. Population: Distribution, Density, Growth and Composition",
@@ -4406,14 +4421,72 @@ tr.sl-ghost{ display:none !important; }
         PoliticsInIndiaSinceIndependence: [
             "1. Challenges of Nation Building",
             "2. Era of One-Party Dominance",
-            "3. Politics of Planned Democracy",
+            "3. Politics of Planned Development",
             "4. India's External Relations",
             "5. Challenges to and Restoration of the Congress System",
             "6. The Crisis of Democratic Order",
             "7. Regional Aspirations",
             "8. Recent Developments in Indian Politics"
           ]
-        }
+        },
+    Physics: {
+        All: [
+            "1. Electric Charges and Fields",
+            "2. Electrostatic Potential and Capacitance",
+            "3. Current Electricity",
+            "4. Moving Charges and Magnetism",
+            "5. Magnetism and Matter",
+            "6. Electromagnetic Induction",
+            "7. Alternating Current",
+            "8. Electromagnetic Waves",
+            "9. Ray Optics and Optical Instruments",
+            "10. Wave Optics",
+            "11. Dual Nature of Radiation and Matter",
+            "12. Atoms",
+            "13. Nuclei",
+            "14. Semiconductor Electronics: Materials, Devices and Simple Circuits"
+        ]
+    },
+    Chemistry: {
+        All: [
+            "1. Solutions",
+            "2. Electrochemistry",
+            "3. Chemical Kinetics",
+            "4. The d- and f-Block Elements",
+            "5. Coordination Compounds",
+            "6. Haloalkanes and Haloarenes",
+            "7. Alcohols, Phenols and Ethers",
+            "8. Aldehydes, Ketones and Carboxylic Acids",
+            "9. Amines",
+            "10. Biomolecules"
+        ]
+    },
+    Biology: {
+        All: [
+            "1. Sexual Reproduction in Flowering Plants",
+            "2. Human Reproduction",
+            "3. Reproductive Health",
+            "4. Principles of Inheritance and Variation",
+            "5. Molecular Basis of Inheritance",
+            "6. Evolution",
+            "7. Human Health and Disease",
+            "8. Microbes in Human Welfare",
+            "9. Biotechnology: Principles and Processes",
+            "10. Biotechnology and its Applications",
+            "11. Organisms and Populations",
+            "12. Ecosystem",
+            "13. Biodiversity and Conservation"
+        ]
+    },
+    Agriculture: {
+        All: [
+            "1. Advanced Crop Production",
+            "2. Organic Farming",
+            "3. Post-Harvest Management",
+            "4. Food Processing and Value Addition",
+            "5. Subsidiary Enterprises in Agriculture"
+        ]
+    }
     };
 
     var savedProgress = {};
@@ -7838,12 +7911,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         Accountancy:{name:'Accountancy',icon:'receipt_long'}, BusinessStudies:{name:'Business Studies',icon:'business_center'},
         Economics:{name:'Economics',icon:'trending_up'}, ComputerScience:{name:'Computer Science',icon:'computer'},
         Sociology:{name:'Sociology',icon:'groups'}, Psychology:{name:'Psychology',icon:'psychology'},
-        Hindi:{name:'Hindi',icon:'translate'}, PhysicalEducation:{name:'Physical Education',icon:'sports_soccer'}
+        Agriculture:{name:'Agriculture',icon:'agriculture'}, PhysicalEducation:{name:'Physical Education',icon:'sports_soccer'}
     };
     var STREAMS = {
-        Humanities:{subjects:['English','History','Geography','PoliticalScience'], optional:['Math','Sociology','Psychology','Hindi','PhysicalEducation']},
-        Science:{subjects:['Physics','Chemistry','Biology','English'], optional:['Math','ComputerScience','PhysicalEducation','Psychology']},
-        Commerce:{subjects:['Accountancy','BusinessStudies','Economics','English'], optional:['Math','ComputerScience','Entrepreneurship']},
+        Humanities:{subjects:['English','History','Geography','PoliticalScience'], optional:['Math','Sociology','Psychology','Agriculture','PhysicalEducation']},
+        Science:{subjects:['Physics','Chemistry','Biology','English'], optional:['Math','ComputerScience','PhysicalEducation','Psychology','Agriculture']},
+        Commerce:{subjects:['Accountancy','BusinessStudies','Economics','English'], optional:['Math','ComputerScience','Entrepreneurship','Agriculture']},
         Custom:{subjects:[], optional:Object.keys(SUBJECT_META)}
     };
     SUBJECT_META.Entrepreneurship = {name:'Entrepreneurship', icon:'lightbulb'};
@@ -7883,6 +7956,16 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     /* ---------- Registration ---------- */
+    /* V7.9 removed Hindi from the subject list; clean it out of anything saved
+       earlier so an old registration cannot keep a subject that no longer exists */
+    try {
+        var __reg0 = JSON.parse(localStorage.getItem('appRegistration') || 'null');
+        if (__reg0 && __reg0.subjects && __reg0.subjects.indexOf('Hindi') >= 0) {
+            __reg0.subjects = __reg0.subjects.filter(function (k) { return k !== 'Hindi'; });
+            localStorage.setItem('appRegistration', JSON.stringify(__reg0));
+        }
+    } catch (e) {}
+
     function defaultRegistration() {
         return { stream:'Humanities', subjects:STREAMS.Humanities.subjects.slice(), completed:false };
     }
@@ -7956,6 +8039,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         saveRegistration({ stream: document.getElementById('regStream').value, subjects: subjects, completed:true });
         document.getElementById('regModal').style.display = 'none';
         applyRegistration();
+        if (window.slRefreshSubjects) window.slRefreshSubjects();
         if (typeof renderSubjectProgress === 'function') renderSubjectProgress();
     });
     setTimeout(function(){
@@ -7996,27 +8080,64 @@ var LEAGUE_FIREBASE_CONFIG = {
             if (!subjects.length) return;
             saveRegistration({stream:document.getElementById('cfgStream').value, subjects:subjects, completed:true});
             applyRegistration(); renderSubjectProgress();
+            if (window.slRefreshSubjects) window.slRefreshSubjects();
             var st=document.getElementById('settingsStatus'); if(st) st.textContent='Subjects saved ✓ (contest stream applies next Monday)';
         });
 
         var act = document.createElement('div');
         act.className = 'settings-section'; act.id = 'cfgActivitiesSection';
-        act.innerHTML = '<h4>My Activities (applies to all chapters)</h4><div id="activityEditor"></div>' +
-            '<div class="league-row" style="margin-top:10px;"><button class="btn secondary" id="activityAdd" type="button">+ Add Activity</button><button class="btn" id="activitySave" type="button">Save Activities</button></div>' +
-            '<div class="league-status">Renaming/reordering is instant everywhere. Archiving hides a step but keeps its saved ticks.</div>';
+        act.innerHTML = '<h4>My checklist steps</h4>' +
+            '<p class="act-lead">Every chapter has the same small checklist — the tick boxes you open when you study. ' +
+            'This is that checklist. Rename the steps to match how you study, drag them into the order you use them, ' +
+            'or hide the ones you never tick. Ticking a step is what earns points and shows up in the league activity feed.</p>' +
+            '<div id="activityEditor"></div>' +
+            '<div class="league-row" style="margin-top:12px;"><button class="btn secondary" id="activityAdd" type="button">+ Add a step</button><button class="btn" id="activitySave" type="button">Save changes</button></div>' +
+            '<div class="league-status" id="activityStatus">Changes are saved only when you press “Save changes”. Hidden steps keep the ticks you already made.</div>';
         body.insertBefore(act, danger);
+        var ACT_ICONS = [
+            ['check_circle', '✓  Tick done'], ['edit_note', '✎  Notes'], ['play_circle', '▷  Video'],
+            ['auto_stories', '☰  Reading'], ['menu_book', '▣  Book work'], ['quiz', '?  Practice'],
+            ['science', '✚  Practical'], ['draw', '✍  Writing'], ['history_edu', '↻  Revision']
+        ];
         function renderActivityEditor() {
             var regA = window.__loadActivityRegistry();
-            document.getElementById('activityEditor').innerHTML = regA.map(function(a,i){
-                return '<div class="activity-row" data-i="'+i+'"><input class="input act-label" value="'+escapeHtml(a.label)+'" maxlength="40">' +
-                '<select class="input act-icon" style="flex:0 1 150px;">' + ['check_circle','edit_note','play_circle','auto_stories','menu_book','quiz','science','draw','history_edu'].map(function(ic){return '<option value="'+ic+'"'+(a.icon===ic?' selected':'')+'>'+ic+'</option>';}).join('') + '</select>' +
-                '<button class="btn secondary act-archive" type="button">'+(a.archived?'Restore':'Archive')+'</button></div>';
-            }).join('');
-            document.querySelectorAll('.act-archive').forEach(function(btn){
-                btn.addEventListener('click', function(){
-                    var row = btn.closest('.activity-row'); var idx = Number(row.dataset.i);
-                    var list = readActivityEditor(); list[idx].archived = !list[idx].archived;
-                    localStorage.setItem('activityRegistry', JSON.stringify(list)); renderActivityEditor();
+            var box = document.getElementById('activityEditor');
+            if (!box) return;
+            var shown = regA.filter(function (a) { return !a.archived; });
+            box.innerHTML = regA.map(function (a, i) {
+                return '<div class="activity-row' + (a.archived ? ' is-hidden' : '') + '" data-i="' + i + '">' +
+                    '<span class="act-num">' + (i + 1) + '</span>' +
+                    '<input class="input act-label" value="' + escapeHtml(a.label) + '" maxlength="40" placeholder="Name this step, e.g. Notes made">' +
+                    '<select class="input act-icon" title="Icon shown next to the step">' +
+                        ACT_ICONS.map(function (ic) { return '<option value="' + ic[0] + '"' + (a.icon === ic[0] ? ' selected' : '') + '>' + ic[1] + '</option>'; }).join('') +
+                    '</select>' +
+                    '<span class="act-move">' +
+                        '<button class="btn secondary act-up" type="button" title="Move up"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+                        '<button class="btn secondary act-down" type="button" title="Move down"' + (i === regA.length - 1 ? ' disabled' : '') + '>↓</button>' +
+                    '</span>' +
+                    '<button class="btn secondary act-archive" type="button" title="' + (a.archived ? 'Show this step again' : 'Hide this step, keep its ticks') + '">' + (a.archived ? 'Show' : 'Hide') + '</button>' +
+                '</div>';
+            }).join('') +
+            '<div class="act-preview"><span>What a chapter will show:</span> <b>' +
+                (shown.length ? shown.map(function (a) { return escapeHtml(a.label); }).join(' · ') : 'nothing — show at least one step') +
+            '</b>' + (regA.length - shown.length ? ' <small>(' + (regA.length - shown.length) + ' hidden)</small>' : '') + '</div>';
+
+            function commit(list) { localStorage.setItem('activityRegistry', JSON.stringify(list)); renderActivityEditor(); }
+            box.querySelectorAll('.act-archive').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var idx = Number(btn.closest('.activity-row').dataset.i);
+                    var list = readActivityEditor(); list[idx].archived = !list[idx].archived; commit(list);
+                });
+            });
+            box.querySelectorAll('.act-up, .act-down').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var idx = Number(btn.closest('.activity-row').dataset.i);
+                    var up = btn.classList.contains('act-up');
+                    var to = up ? idx - 1 : idx + 1;
+                    var list = readActivityEditor();
+                    if (to < 0 || to >= list.length) return;
+                    var tmp = list[to]; list[to] = list[idx]; list[idx] = tmp;
+                    commit(list);
                 });
             });
         }
@@ -8900,7 +9021,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function code() { return (localStorage.getItem('leagueCode') || '').toUpperCase(); }
     function profile() { try { return JSON.parse(localStorage.getItem('leagueProfile')) || {}; } catch(e) { return {}; } }
     function subjectName(k) {
-        var names = {English:'English',History:'History',Geography:'Geography',PoliticalScience:'Political Science',Math:'Mathematics',Physics:'Physics',Chemistry:'Chemistry',Biology:'Biology',Accountancy:'Accountancy',BusinessStudies:'Business Studies',Economics:'Economics',ComputerScience:'Computer Science',Sociology:'Sociology',Psychology:'Psychology',Hindi:'Hindi',PhysicalEducation:'Physical Education',Entrepreneurship:'Entrepreneurship'};
+        var names = {English:'English',History:'History',Geography:'Geography',PoliticalScience:'Political Science',Math:'Mathematics',Physics:'Physics',Chemistry:'Chemistry',Biology:'Biology',Accountancy:'Accountancy',BusinessStudies:'Business Studies',Economics:'Economics',ComputerScience:'Computer Science',Sociology:'Sociology',Psychology:'Psychology',Agriculture:'Agriculture',PhysicalEducation:'Physical Education',Entrepreneurship:'Entrepreneurship'};
         return names[k] || (window.subjectDisplayNames && subjectDisplayNames[k]) || k;
     }
     function ensureFB() {
@@ -9501,6 +9622,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var t = TABS[tab];
         document.body.classList.remove('v2-nav-open');
         if (tab === 'subjects') { renderSubjects(); }
+        if (window.slNavEdge) window.slNavEdge();
         else if (tab === 'profile') { renderProfile(); }
         else if (tab === 'messages') { renderMessagesPage(); }
         else if (tab === 'activity') { S.feedMiss = null; renderSocialPage(tab); }
@@ -9800,6 +9922,22 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
         list.appendChild(grid);
     }
+
+    /* Settings → Save Subjects used to leave the Subjects page on its old cards
+       until a hard reload rebuilt everything. Re-render it in place instead. */
+    window.slRefreshSubjects = function () {
+        try {
+            if (S.tab === 'subjects') { renderSubjects(); schedule(); }
+        } catch (e) {}
+    };
+    window.slNavEdge = function () {
+        var n = document.querySelector('.v2-nav');
+        if (!n) return;
+        n.classList.toggle('has-edge', (n.scrollWidth - n.clientWidth) > 6);
+    };
+    setTimeout(function () { if (window.slNavEdge) window.slNavEdge(); }, 900);
+    window.addEventListener('resize', function () { if (window.slNavEdge) window.slNavEdge(); });
+    document.addEventListener('scroll', function () { if (window.slNavEdge) window.slNavEdge(); }, true);
 
     function openSection(subjectKey, sectionKey) {
         setTab('subjects');
@@ -12095,7 +12233,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (!list) return;
         var existing = $('slGroupChat');
         if (!mounted || !existing || existing.getAttribute('data-sl-skel')) {
-            ctxOpen = window.innerWidth >= 1360;
+            ctxOpen = false;      // opened only by the (i) button, never on its own
             list.innerHTML = skeleton();
             var root = $('slGroupChat');
             if (window.innerWidth <= 900) root.classList.remove('mob-open');
@@ -12363,5 +12501,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a571b0f9dc5f54c2',t:'MTc5NDExMDY0Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a571b0f9dc5f54c2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a57240012fe84e87',t:'MTc5NDExNjUwMA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a57240012fe84e87',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
