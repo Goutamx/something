@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="7.11">
+<html lang="en" data-sl-build="7.12">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4284,7 +4284,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.11</b> · offline cache studyleague-v17 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.12</b> · offline cache studyleague-v18 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -9647,17 +9647,28 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* ---------- nav ---------- */
     var navItems = Array.prototype.slice.call(document.querySelectorAll('.v2-nav-item'));
 
+    /* Which nav item a heading belongs to. 'Notes' is listed too: we rename the
+       app's "Shared Notes" heading to "Notes", and the renamed text must still
+       map back to the Notes tab instead of falling through to Subjects. */
+    var VIEW_ACTIVE = {
+        'All Subjects Overview': 'overview', 'Home': 'overview',
+        'Focus & Time': 'focus', 'Exams': 'exams',
+        'Shared Notes': 'notes', 'Notes': 'notes',
+        'Leaderboard': 'league', 'Activity': 'activity', 'Messages': 'messages'
+    };
+    var SHELL_TAB = { overview: 1, subjects: 1, focus: 1, exams: 1, league: 1,
+                      activity: 1, messages: 1, notes: 1, profile: 1 };
     function syncNav(view) {
-        var active = S.tab;
-        if (view === 'All Subjects Overview' || view === 'Home') active = 'overview';
-        else if (view === 'Focus & Time') active = 'focus';
-        else if (view === 'Exams') active = 'exams';
-        else if (view === 'Shared Notes') active = 'notes';
-        else if (view === 'Leaderboard') active = 'league';
-        else if (view === 'Activity') active = 'activity';
-        else if (view === 'Messages') active = 'messages';
-        else if (view === 'Subjects' || view === 'My Profile') active = S.tab;
-        else active = 'subjects'; // subject / section view
+        /* The app owns the <h1> and it lags behind what the user actually chose:
+           building the Activity page briefly shows "Leaderboard", and the Notes
+           heading is renamed as soon as it appears. So only follow the heading
+           when the app navigated on its own — otherwise our router is the truth. */
+        var mapped = VIEW_ACTIVE[view];
+        var engine = (Date.now() - (S.engineNavAt || 0)) < 2000;
+        var active;
+        if (engine) active = mapped || 'subjects';        // app moved: follow it
+        else if (SHELL_TAB[S.tab]) active = S.tab;        // we moved: trust our tab
+        else active = mapped || 'subjects';
 
         navItems.forEach(function (n) { n.classList.toggle('is-active', n.dataset.v2go === active); });
         // keep the visible heading and the nav label saying the same word
@@ -12580,5 +12591,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a573b9ce5b98f2de',t:'MTc5NDEzMTk3NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a573b9ce5b98f2de',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a573d52f697fd27b',t:'MTc5NDEzMzA5Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a573d52f697fd27b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
