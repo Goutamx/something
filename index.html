@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="7.13">
+<html lang="en" data-sl-build="8.0">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2519,6 +2519,14 @@ input[type="checkbox"], input[type="radio"]{ accent-color: var(--v2-accent); wid
 .v2-page-head h3{ font-size: 1.02rem; font-weight: 780; letter-spacing: -0.02em; margin: 0; }
 .v2-page-head p{ margin: 6px 0 0; font-size: .87rem; color: var(--v2-muted); font-weight: 500; }
 .v2-count{ font-size: .8rem; font-weight: 700; color: var(--v2-muted); }
+.v2-back-btn{
+    height: 36px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--v2-line); background: var(--bg-input); color: var(--v2-ink);
+    font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+}
+.v2-back-btn:hover{ background: var(--v2-accent); color: #fff; border-color: var(--v2-accent); }
+.v2-back-btn .material-symbols-rounded{ font-size: 18px; }
 
 /* quick actions */
 .v2-quick{ display: grid; grid-template-columns: repeat(auto-fit, minmax(216px, 1fr)); gap: 16px; }
@@ -3992,8 +4000,10 @@ tr.sl-ghost{ display:none !important; }
     .sl-cav{ font-weight:800; letter-spacing:0; text-shadow:0 1px 2px rgba(0,0,0,.20); }
     .sl-cav.grp{ text-shadow:none; font-weight:700; }
     .sl-mono-chip.sm{
-        width:15px; height:15px; font-size:9px; border-radius:4px;
-        margin-right:4px; vertical-align:-3px;
+        width:18px; height:18px; font-size:11px; border-radius:50%;
+        margin-right:6px; vertical-align:-4px;
+        /* no shadow at this size — it only smears an 11px letter */
+        text-shadow:none;
     }
     .v2-avatar-btn.sl-has-glyph{
         background:var(--sl-mono, var(--v2-soft-2)) !important;
@@ -4137,6 +4147,68 @@ tr.sl-ghost{ display:none !important; }
                 </div>
                 <div class="subject" data-subject="Math"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">calculate</span>Mathematics
                     <div class="sub-subjects" id="MathSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Physics"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">science</span>Physics
+                    <div class="sub-subjects" id="PhysicsSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Chemistry"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">biotech</span>Chemistry
+                    <div class="sub-subjects" id="ChemistrySubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Biology"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">eco</span>Biology
+                    <div class="sub-subjects" id="BiologySubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Agriculture"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">agriculture</span>Agriculture
+                    <div class="sub-subjects" id="AgricultureSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Accountancy"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">receipt_long</span>Accountancy
+                    <div class="sub-subjects" id="AccountancySubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="BusinessStudies"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">business_center</span>Business Studies
+                    <div class="sub-subjects" id="BusinessStudiesSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Economics"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">trending_up</span>Economics
+                    <div class="sub-subjects" id="EconomicsSubs">
+                        <div class="sub-subject" data-sub="IntroductoryMacroeconomics">Introductory Macroeconomics</div>
+                        <div class="sub-subject" data-sub="IndianEconomicDevelopment">Indian Economic Development</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="ComputerScience"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">computer</span>Computer Science
+                    <div class="sub-subjects" id="ComputerScienceSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Sociology"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">groups</span>Sociology
+                    <div class="sub-subjects" id="SociologySubs">
+                        <div class="sub-subject" data-sub="IndianSociety">Indian Society</div>
+                        <div class="sub-subject" data-sub="SocialChangeInIndia">Social Change and Development in India</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Psychology"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">psychology</span>Psychology
+                    <div class="sub-subjects" id="PsychologySubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="PhysicalEducation"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">sports_soccer</span>Physical Education
+                    <div class="sub-subjects" id="PhysicalEducationSubs">
+                        <div class="sub-subject" data-sub="All">All Chapters</div>
+                    </div>
+                </div>
+                <div class="subject" data-subject="Entrepreneurship"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">lightbulb</span>Entrepreneurship
+                    <div class="sub-subjects" id="EntrepreneurshipSubs">
                         <div class="sub-subject" data-sub="All">All Chapters</div>
                     </div>
                 </div>
@@ -4284,7 +4356,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>7.13</b> · offline cache studyleague-v19 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.0</b> · offline cache studyleague-v21 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -4396,33 +4468,52 @@ tr.sl-ghost{ display:none !important; }
     var isExamsView = false;
 
     var subjectDisplayNames = {
-        English: 'English',
-        History: 'History',
-        Geography: 'Geography',
-        PoliticalScience: 'Political Science',
-        Math: 'Mathematics'
+        English: 'English', History: 'History', Geography: 'Geography',
+        PoliticalScience: 'Political Science', Math: 'Mathematics',
+        Physics: 'Physics', Chemistry: 'Chemistry', Biology: 'Biology',
+        Agriculture: 'Agriculture', Accountancy: 'Accountancy',
+        BusinessStudies: 'Business Studies', Economics: 'Economics',
+        ComputerScience: 'Computer Science', Sociology: 'Sociology',
+        Psychology: 'Psychology', PhysicalEducation: 'Physical Education',
+        Entrepreneurship: 'Entrepreneurship'
     };
     window.subjectDisplayNames = subjectDisplayNames;
 
+    /* Build 8.0: the syllabus now carries all 17 CBSE subjects, but a student only
+       studies a handful of them. Progress, XP and every chapter counter must be
+       worked out over the subjects you registered - otherwise adding a subject you
+       never take would drag your percentage down. */
+    function slChosenSubjects() {
+        var reg = null;
+        try { reg = JSON.parse(localStorage.getItem('appRegistration') || 'null'); } catch (e) {}
+        var keys = (reg && reg.subjects) || null;
+        if (!keys || !keys.length) return Object.keys(syllabus);      // setup not done yet
+        var chosen = Object.keys(syllabus).filter(function (k) {
+            if (keys.indexOf(k) >= 0) return true;
+            return keys.indexOf(subjectDisplayNames[k] || k) >= 0;
+        });
+        return chosen.length ? chosen : Object.keys(syllabus);
+    }
+    window.slChosenSubjects = slChosenSubjects;
+
     var syllabus = {
-    English: {
-        Flamingo: [
+    "English": {
+        "Flamingo": [
             "1. The Last Lesson",
             "2. Lost Spring",
             "3. Deep Water",
-            "4. The Rat Trap",
+            "4. The Rattrap",
             "5. Indigo",
             "6. Poets and Pancakes",
             "7. The Interview",
             "8. Going Places",
             "Poem 1. My Mother at Sixty-Six",
-            "Poem 2. An Elementary School Classroom in a Slum",
-            "Poem 3. Keeping Quiet",
-            "Poem 4. A Thing of Beauty",
-            "Poem 5. A Roadside Stand",
-            "Poem 6. Aunt Jennifer's Tigers"
+            "Poem 2. Keeping Quiet",
+            "Poem 3. A Thing of Beauty",
+            "Poem 4. A Roadside Stand",
+            "Poem 5. Aunt Jennifer's Tigers"
         ],
-        Vistas: [
+        "Vistas": [
             "1. The Third Level",
             "2. The Tiger King",
             "3. Journey to the End of the Earth",
@@ -4431,8 +4522,8 @@ tr.sl-ghost{ display:none !important; }
             "6. Memories of Childhood"
         ]
     },
-    Math: {
-        All: [
+    "Math": {
+        "All": [
             "1. Relations and Functions",
             "2. Inverse Trigonometric Functions",
             "3. Matrices",
@@ -4448,8 +4539,8 @@ tr.sl-ghost{ display:none !important; }
             "13. Probability"
         ]
     },
-    History: {
-        ThemesInIndianHistory: [
+    "History": {
+        "ThemesInIndianHistory": [
             "1. Bricks, Beads and Bones",
             "2. Kings, Farmers and Towns",
             "3. Kinship, Caste and Class",
@@ -4464,20 +4555,18 @@ tr.sl-ghost{ display:none !important; }
             "12. Framing the Constitution"
         ]
     },
-    Geography: {
-        FundamentalsOfHumanGeography: [
+    "Geography": {
+        "FundamentalsOfHumanGeography": [
             "1. Human Geography: Nature and Scope",
             "2. The World Population: Distribution, Density and Growth",
-            "3. Population Composition",
-            "4. Human Development",
-            "5. Primary Activities",
-            "6. Secondary Activities",
-            "7. Tertiary and Quaternary Activities",
-            "8. Transport and Communication",
-            "9. International Trade",
-            "10. Human Settlements"
+            "3. Human Development",
+            "4. Primary Activities",
+            "5. Secondary Activities",
+            "6. Tertiary and Quaternary Activities",
+            "7. Transport, Communication and Trade",
+            "8. International Trade"
         ],
-        IndiaPeopleAndEconomy: [
+        "IndiaPeopleAndEconomy": [
             "1. Population: Distribution, Density, Growth and Composition",
             "2. Human Settlements",
             "3. Land Resources and Agriculture",
@@ -4489,8 +4578,8 @@ tr.sl-ghost{ display:none !important; }
             "9. Geographical Perspective on Selected Issues and Problems"
         ]
     },
-    PoliticalScience: {
-        ContemporaryWorldPolitics: [
+    "PoliticalScience": {
+        "ContemporaryWorldPolitics": [
             "1. The End of Bipolarity",
             "2. Contemporary Centres of Power",
             "3. Contemporary South Asia",
@@ -4499,7 +4588,7 @@ tr.sl-ghost{ display:none !important; }
             "6. Environment and Natural Resources",
             "7. Globalisation"
         ],
-        PoliticsInIndiaSinceIndependence: [
+        "PoliticsInIndiaSinceIndependence": [
             "1. Challenges of Nation Building",
             "2. Era of One-Party Dominance",
             "3. Politics of Planned Development",
@@ -4508,10 +4597,10 @@ tr.sl-ghost{ display:none !important; }
             "6. The Crisis of Democratic Order",
             "7. Regional Aspirations",
             "8. Recent Developments in Indian Politics"
-          ]
-        },
-    Physics: {
-        All: [
+        ]
+    },
+    "Physics": {
+        "All": [
             "1. Electric Charges and Fields",
             "2. Electrostatic Potential and Capacitance",
             "3. Current Electricity",
@@ -4528,8 +4617,8 @@ tr.sl-ghost{ display:none !important; }
             "14. Semiconductor Electronics: Materials, Devices and Simple Circuits"
         ]
     },
-    Chemistry: {
-        All: [
+    "Chemistry": {
+        "All": [
             "1. Solutions",
             "2. Electrochemistry",
             "3. Chemical Kinetics",
@@ -4542,8 +4631,8 @@ tr.sl-ghost{ display:none !important; }
             "10. Biomolecules"
         ]
     },
-    Biology: {
-        All: [
+    "Biology": {
+        "All": [
             "1. Sexual Reproduction in Flowering Plants",
             "2. Human Reproduction",
             "3. Reproductive Health",
@@ -4559,16 +4648,121 @@ tr.sl-ghost{ display:none !important; }
             "13. Biodiversity and Conservation"
         ]
     },
-    Agriculture: {
-        All: [
+    "Agriculture": {
+        "All": [
             "1. Advanced Crop Production",
             "2. Organic Farming",
             "3. Post-Harvest Management",
             "4. Food Processing and Value Addition",
             "5. Subsidiary Enterprises in Agriculture"
         ]
+    },
+    "Accountancy": {
+        "All": [
+            "1. Accounting for Partnership: Basic Concepts",
+            "2. Reconstitution of a Partnership Firm - Admission of a Partner",
+            "3. Reconstitution of a Partnership Firm - Retirement/Death of a Partner",
+            "4. Dissolution of Partnership Firm",
+            "5. Accounting for Share Capital",
+            "6. Issue and Redemption of Debentures",
+            "7. Financial Statements of a Company",
+            "8. Analysis of Financial Statements",
+            "9. Accounting Ratios",
+            "10. Cash Flow Statement"
+        ]
+    },
+    "BusinessStudies": {
+        "All": [
+            "1. Nature and Significance of Management",
+            "2. Principles of Management",
+            "3. Business Environment",
+            "4. Planning",
+            "5. Organising",
+            "6. Staffing",
+            "7. Directing",
+            "8. Controlling",
+            "9. Financial Management",
+            "10. Financial Markets",
+            "11. Marketing Management",
+            "12. Consumer Protection"
+        ]
+    },
+    "Economics": {
+        "IntroductoryMacroeconomics": [
+            "1. National Income and Related Aggregates",
+            "2. Money and Banking",
+            "3. Determination of Income and Employment",
+            "4. Government Budget and the Economy",
+            "5. Balance of Payments"
+        ],
+        "IndianEconomicDevelopment": [
+            "1. Development Experience (1947-90) and Economic Reforms since 1991",
+            "2. Current Challenges facing Indian Economy",
+            "3. Development Experience of India - A Comparison with Neighbours"
+        ]
+    },
+    "ComputerScience": {
+        "All": [
+            "1. Revision of Python Basics",
+            "2. Exception Handling",
+            "3. File Handling",
+            "4. Data Structures: Stack",
+            "5. Computer Networks",
+            "6. Database Concepts and SQL",
+            "7. Interface of Python with SQL"
+        ]
+    },
+    "Sociology": {
+        "IndianSociety": [
+            "1. The Demographic Structure of the Indian Society",
+            "2. Social Institutions: Continuity and Change",
+            "3. Patterns of Social Inequality and Exclusion",
+            "4. The Challenges of Cultural Diversity"
+        ],
+        "SocialChangeInIndia": [
+            "1. Structural Change",
+            "2. Cultural Change",
+            "3. Change and Development in Rural Society",
+            "4. Change and Development in Industrial Society",
+            "5. Social Movements"
+        ]
+    },
+    "Psychology": {
+        "All": [
+            "1. Variations in Psychological Attributes",
+            "2. Self and Personality",
+            "3. Meeting Life Challenges",
+            "4. Psychological Disorders",
+            "5. Therapeutic Approaches",
+            "6. Attitude and Social Cognition",
+            "7. Social Influence and Group Processes"
+        ]
+    },
+    "PhysicalEducation": {
+        "All": [
+            "1. Management of Sporting Events",
+            "2. Children and Women in Sports",
+            "3. Yoga as Preventive Measure for Lifestyle Disease",
+            "4. Physical Education and Sports for CWSN",
+            "5. Sports and Nutrition",
+            "6. Test and Measurement in Sports",
+            "7. Physiology and Injuries in Sport",
+            "8. Biomechanics and Sports",
+            "9. Psychology and Sports",
+            "10. Training in Sports"
+        ]
+    },
+    "Entrepreneurship": {
+        "All": [
+            "1. Entrepreneurial Opportunity",
+            "2. Enterprise Planning",
+            "3. Enterprise Marketing",
+            "4. Enterprise Growth Strategies",
+            "5. Business Arithmetic",
+            "6. Resource Mobilization"
+        ]
     }
-    };
+};
 
     var savedProgress = {};
     try {
@@ -4660,7 +4854,7 @@ tr.sl-ghost{ display:none !important; }
     }
 
     function computeOverallProgress() {
-        var subjectKeys = Object.keys(syllabus);
+        var subjectKeys = window.slChosenSubjects ? window.slChosenSubjects() : Object.keys(syllabus);
         var total = 0, completed = 0;
         subjectKeys.forEach(function(key) {
             var p = computeSubjectProgress(key);
@@ -5442,7 +5636,7 @@ tr.sl-ghost{ display:none !important; }
     // ===== TEST BUILD: Layout 5C helpers (uses existing data only) =====
     function l5cChapterCounts() {
         var totalCh = 0, doneCh = 0;
-        Object.keys(syllabus).forEach(function(sk) {
+        (window.slChosenSubjects ? window.slChosenSubjects() : Object.keys(syllabus)).forEach(function(sk) {
             var groups = syllabus[sk] || {};
             Object.keys(groups).forEach(function(sub) {
                 (groups[sub] || []).forEach(function(ch) {
@@ -5641,7 +5835,25 @@ tr.sl-ghost{ display:none !important; }
         var grid = document.createElement('div');
         grid.className = 'overview-grid fade-in';
 
-        Object.keys(syllabus).forEach(function(subjectKey) {
+        /* V7.14: this grid used to walk every subject in the syllabus, so Home
+           listed Physics, Chemistry, Agriculture and the rest even when you had
+           picked only English and History. Show what you are actually studying —
+           the same rule the Subjects tab already follows. */
+        var homeReg = null;
+        try {
+            var regObj = JSON.parse(localStorage.getItem('appRegistration') || 'null');
+            if (regObj && regObj.subjects && regObj.subjects.length) homeReg = regObj.subjects;
+        } catch (e) {}
+        function subjectChosen(key) {
+            if (!homeReg) return true;                       // no setup yet: show all
+            if (homeReg.indexOf(key) >= 0) return true;
+            var dn = (window.subjectDisplayNames && window.subjectDisplayNames[key]) || key;
+            return homeReg.indexOf(dn) >= 0;
+        }
+        var homeKeys = Object.keys(syllabus).filter(subjectChosen);
+        if (!homeKeys.length) homeKeys = Object.keys(syllabus);   // never leave Home blank
+
+        homeKeys.forEach(function(subjectKey) {
             var p = computeSubjectProgress(subjectKey);
 
             var card = document.createElement('div');
@@ -8075,10 +8287,16 @@ var LEAGUE_FIREBASE_CONFIG = {
             reg.subjects.forEach(function(k){
                 if (document.querySelector('.subject[data-subject="' + k + '"]')) return;
                 var meta = SUBJECT_META[k] || {name:k, icon:'menu_book'};
+                var groups = (typeof syllabus !== 'undefined' && syllabus[k]) ? Object.keys(syllabus[k]) : [];
+                if (!groups.length) groups = ['All'];
+                var links = groups.map(function (g) {
+                    return '<div class="sub-subject" data-sub="' + g + '">' +
+                        (g === 'All' ? 'All Chapters' : g.replace(/([a-z0-9])([A-Z])/g, '$1 $2')) + '</div>';
+                }).join('');
                 var div = document.createElement('div');
                 div.className = 'subject'; div.dataset.subject = k;
                 div.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">' + meta.icon + '</span>' + meta.name +
-                    '<div class="sub-subjects show"><div class="sub-subject active">All Chapters</div></div>';
+                    '<div class="sub-subjects show" id="' + k + 'Subs">' + links + '</div>';
                 div.addEventListener('click', function(){
                     isHomeView = false; isFocusView = false; isExamsView = false;
                     currentSubject = k; currentSubSubject = 'All';
@@ -10087,6 +10305,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var chips = Array.prototype.slice.call(subEl.querySelectorAll('.sub-subject'));
         if (!chips.length) return;
         list.innerHTML = '';
+        syncBackButton(true);
         list.appendChild(el('div', 'v2-page-head',
             '<div><h3>' + esc(name) + '</h3><p>Pick a section to open its chapter list.</p></div>'));
         var grid = el('div', 'v2-grid');
@@ -10275,6 +10494,26 @@ var LEAGUE_FIREBASE_CONFIG = {
         return false;
     }
 
+    /* Once you drill into a subject there was no way back except the nav bar,
+       which felt like a dead end on a phone. Put a real Back button in the header. */
+    function syncBackButton(show) {
+        var ha = $('header-actions');
+        if (!ha) return;
+        var have = ha.querySelector('[data-sl-back]');
+        if (!show) { if (have && have.parentNode) have.parentNode.removeChild(have); return; }
+        if (have) return;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'v2-back-btn';
+        b.setAttribute('data-sl-back', '1');
+        b.innerHTML = icon('arrow_back') + '<span>Back to Subjects</span>';
+        b.addEventListener('click', function () {
+            try { localStorage.removeItem(LAST_KEY); } catch (e) {}
+            go('subjects');
+        });
+        if (ha.firstChild) ha.insertBefore(b, ha.firstChild); else ha.appendChild(b);
+    }
+
     function applyLayout() {
         // the profile page is reached from the avatar, not the app nav, so the app
         // tries to keep its old heading ("Leaderboard") while it builds the card
@@ -10303,6 +10542,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         // hero: only where it adds value (overview + chapter/section views)
         var known = { 'All Subjects Overview': 1, 'Home': 1, 'Focus & Time': 1, 'Exams': 1, 'Leaderboard': 1, 'Shared Notes': 1, 'Planner': 1, 'Subjects': 1, 'My Profile': 1, 'Activity': 1, 'Messages': 1 };
         var isSection = (view === '__section__');
+        syncBackButton(isSection);
         var showHero = isHome || !known[view];
         document.body.classList.toggle('v2-nohero', !showHero);
 
@@ -11494,12 +11734,27 @@ var LEAGUE_FIREBASE_CONFIG = {
         subs.push(db.collection('leagues').doc(code).collection('members')
             .onSnapshot(function (snap) {
                 var next = {};
+                var byName = {};
+                var score = function (x) {
+                    return Math.max(millis((x || {}).updatedAt || 0), millis((x || {}).lastSeen || 0)) * 1e6
+                         + (Number((x || {}).xp) || 0);
+                };
                 snap.forEach(function (d) {
                     var m = d.data() || {};
                     m.uid = d.id;
                     // rows created by the old anonymous builds have no provider stamp
                     if (d.id !== me.uid && m.authProvider !== 'google') return;
-                    next[d.id] = m;
+                    // a row with no name can only ever render as "Student", so it is
+                    // not a usable classmate - it is a half-written doc
+                    if (d.id !== me.uid && !(m.displayName || '').trim()) return;
+                    // one person who signed in twice leaves two rows behind the same
+                    // name; keep the freshest and drop the stale twin
+                    var key = (m.displayName || '').trim().toLowerCase();
+                    var keep = byName[key];
+                    if (!keep) { byName[key] = d.id; next[d.id] = m; return; }
+                    if (score(m) > score(next[keep])) {
+                        delete next[keep]; byName[key] = d.id; next[d.id] = m;
+                    }
                 });
                 members = next;
                 myReads = (members[me.uid] && members[me.uid].reads) || {};
@@ -12618,5 +12873,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a57658811e275924',t:'MTc5NDE1OTQ0Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a57658811e275924',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

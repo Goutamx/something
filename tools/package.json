@@ -1,0 +1,12 @@
+{
+  "name": "studyleague-probes",
+  "private": true,
+  "description": "Development-only browser probes. The deployed app has no npm dependencies or build step.",
+  "scripts": {
+    "test": "node probe_verify_all.cjs"
+  },
+  "devDependencies": {
+    "@sparticuz/chromium": "153.0.0",
+    "playwright": "1.65.0"
+  }
+}
