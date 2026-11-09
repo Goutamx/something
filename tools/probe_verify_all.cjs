@@ -8,7 +8,7 @@ const { launch } = require('./browser.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASE = process.env.STUDYLEAGUE_URL || 'http://localhost:8101/something/';
-const EXPECTED_MD5 = '58be2789e38ec23e1c173e7259612955';
+const EXPECTED_MD5 = 'cc8bf59054bf6d1b4d0e48fbda08033a';
 const EXPECTED = {
   English: 19, History: 12, Geography: 17, PoliticalScience: 15, Math: 13,
   Physics: 14, Chemistry: 10, Biology: 13, Agriculture: 5, Accountancy: 10,
@@ -128,10 +128,10 @@ async function test(name, run) {
         label: document.getElementById('slBuildLine').textContent.trim(), bytes: bytes.byteLength,
         swCache: sw.match(/const CACHE = '([^']+)'/)[1], manifest, icons };
     });
-    assert.equal(identity.build, '8.0');
-    assert.match(identity.label, /App build 8\.0 · offline cache studyleague-v21/);
-    assert.equal(identity.bytes, 655659);
-    assert.equal(identity.swCache, 'studyleague-v21');
+    assert.equal(identity.build, '8.1');
+    assert.match(identity.label, /App build 8\.1 · offline cache studyleague-v22/);
+    assert.equal(identity.bytes, 656646);
+    assert.equal(identity.swCache, 'studyleague-v22');
     assert.equal(identity.manifest.name, 'StudyLeague — Class 12 Syllabus Tracker');
     assert.equal(identity.manifest.start_url, '.');
     assert.equal(identity.manifest.scope, '.');
@@ -340,8 +340,8 @@ async function test(name, run) {
   await test('12 PWA cache update, offline reload, dark phone DOM', async () => {
     const page = await makePage({ worker: true, mock: false, theme:'dark', viewport:{width:390,height:844} });
     await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout:10000 });
-    const cache = await page.evaluate(async () => ({ names:await caches.keys(), urls:(await (await caches.open('studyleague-v21')).keys()).map(r => new URL(r.url).pathname) }));
-    assert(cache.names.includes('studyleague-v21'));
+    const cache = await page.evaluate(async () => ({ names:await caches.keys(), urls:(await (await caches.open('studyleague-v22')).keys()).map(r => new URL(r.url).pathname) }));
+    assert(cache.names.includes('studyleague-v22'));
     for (const file of ['index.html','manifest.webmanifest','icon-192.png','icon-512.png','studyleague-logo.png']) assert(cache.urls.some(url => url.endsWith('/'+file)), `${file} not precached`);
     await nav(page, 'subjects');
     await openSection(page);
@@ -357,24 +357,24 @@ async function test(name, run) {
       mainWidth:document.querySelector('#main').getBoundingClientRect().width,
       build:document.documentElement.dataset.slBuild, completed:computeOverallProgress().completed
     }));
-    assert.equal(dark.theme,'dark'); assert.equal(dark.build,'8.0'); assert.equal(dark.completed,1);
+    assert.equal(dark.theme,'dark'); assert.equal(dark.build,'8.1'); assert.equal(dark.completed,1);
     assert(dark.documentWidth <= dark.viewport + 1, 'Phone document must not overflow horizontally');
     await page.locator('[data-sl-back]').click();
     assert.deepEqual(await visibleTexts(page,'#chapterList .v2-subject-name'),['English','History']);
     await page.context().setOffline(false);
     await page.evaluate(async () => {
-      await caches.open('studyleague-v19');
+      await caches.open('studyleague-v21');
       const registration = await navigator.serviceWorker.getRegistration();
       await registration.unregister();
-      await navigator.serviceWorker.register('sw.js?probe=v21');
+      await navigator.serviceWorker.register('sw.js?probe=v22');
     });
-    await eventually(() => page.evaluate(async () => !(await caches.keys()).includes('studyleague-v19')), 'New worker must delete v19 cache');
+    await eventually(() => page.evaluate(async () => !(await caches.keys()).includes('studyleague-v21')), 'New worker must delete v21 cache');
     return { cache, offlineStatus:response.status(), fromServiceWorker:true, preservedTicks:1, darkPhone:dark, staleCacheRemoved:true, firebaseSDK:'unavailable, local-only fallback exercised' };
   });
 
   await browser.close();
   const failed = results.filter(x => !x.pass).length;
-  const report = { timestamp:new Date().toISOString(), base:BASE, build:'8.0', expectedMd5:EXPECTED_MD5, firebase:'in-memory mock; no live OAuth, security-rules or real multi-user claims', results, browserErrors:errors, failed };
+  const report = { timestamp:new Date().toISOString(), base:BASE, build:'8.1', expectedMd5:EXPECTED_MD5, firebase:'in-memory mock; no live OAuth, security-rules or real multi-user claims', results, browserErrors:errors, failed };
   fs.mkdirSync(path.join(__dirname,'results'),{recursive:true});
   const reportName = process.env.PROBE_FILTER ? `regression-${process.env.PROBE_FILTER}.json` : 'regression.json';
   fs.writeFileSync(path.join(__dirname,'results',reportName),JSON.stringify(report,null,2)+'\n');

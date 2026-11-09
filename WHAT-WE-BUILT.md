@@ -1,89 +1,115 @@
-# StudyLeague — build 8.0
+# StudyLeague — build 8.1
 
-Updated 2026-11-09. This checkout's authoritative app is root `index.html`.
-It is patched/deployed directly: **no build step**.
+Updated 2026-11-09. Root `index.html` is the authoritative built app.
+It is patched directly: **no build step**.
 
-## Release identity
+## Current release identity
 
 | Field | Value |
 |---|---|
-| HTML size | 655,659 bytes |
-| HTML MD5 | `58be2789e38ec23e1c173e7259612955` |
-| `data-sl-build` | `8.0` |
-| Settings build label | App build **8.0** · offline cache **studyleague-v21** |
-| Service worker | `sw.js`, cache `studyleague-v21` |
+| HTML size | 656,646 bytes |
+| HTML MD5 | `cc8bf59054bf6d1b4d0e48fbda08033a` |
+| `data-sl-build` | `8.1` |
+| Settings build label | App build **8.1** · offline cache **studyleague-v22** |
+| Service worker | `sw.js`, cache `studyleague-v22` |
 | App files | `index.html`, `sw.js`, `manifest.webmanifest`, three PNGs, `.nojekyll` |
-| Deployment method | GitHub Pages target: `main`, repository root; changes delivered by PR from the Arena working branch |
-| Publication status | **Blocked, not live**: enabling Pages returned HTTP 403, `Resource not accessible by integration` |
-| Uploaded source | [PR #1](https://github.com/Goutamx/something/pull/1), merged 2026-11-09; main merge `f53f4e4d55b15155d3b4290dd85ded46f8f04606` |
+| Working branch | `arena/4fa95bc6-something` |
+| Delivery | 8.1 fix prepared on the working branch; not claimed merged or publicly deployed |
+| Pages state checked this turn | Repository still reports `has_pages: false` |
 
-After merging, the GitHub Contents API independently confirmed main's HTML is
-655,659 bytes with the exact MD5 above. The Pages create request (`POST
-repos/Goutamx/something/pages`, branch main, path /) was rejected by the current
-integration. No successful Pages build or public site is claimed. GitHub needs
-Pages-administration permission, or the owner must enable Settings → Pages →
-Deploy from a branch → main → / (root) once. **No file upload is needed.**
+## 8.1 — Notes avatar alignment
 
-The HTML, service worker, and three icons are byte-for-byte copies of the user's
-attachments. The repository's existing manifest name was corrected from Class 11
-to **Class 12** and `.nojekyll` was added. No application bug was silently patched
-or version number relabelled. A push/merge is not proof of a successful Pages
-publish: check the repository's Pages build status.
+The screenshot bug was reproduced in the 8.0 HTML using a dark-theme Playwright
+DOM probe at 1366×687, with the reported Goutam author/comment layout:
 
-## What is included
+| Location | 8.0 avatar centre relative to author text centre | 8.1 |
+|---|---:|---:|
+| Browse Notes card | 5.797 px below | 0.875 px below |
+| Note modal byline | 5.797 px below | 0.875 px below |
+| Comment author | 2.500 px above | 0.266 px below (0.273 px with the tested wrapped name) |
 
-| Feature | How to check | Current evidence |
-|---|---|---|
-| CBSE Class 12 syllabus | Register all subjects, open Subjects and each section | 17 subjects; 22 sections; all 187 chapter titles rendered; 748 activity checkboxes |
-| Registration-scoped progress | Register English + History | Home and Subjects each show exactly those 2; 31 chapters / 124 tasks |
-| Chapter checklists and XP | Complete one registered chapter | 4 completed tasks, 3% overall, 60 XP; ticks survive reload; unregistered Physics ticks do not count |
-| Subject Back button | Open Flamingo → Back to Subjects | 1 Back button in chapter view, 0 in subject list; returns to the 2 registered subjects |
-| Honest zeros | Tick then untick a task | Mock-published XP 0 → 10 → 0; weekly score 0 → 10 → 0; a stale event alone scores 0 |
-| Messages member filter | Seed duplicate Madhaw and nameless/anonymous members | Rail: Class 12 — League, Priya, Kabir, Madhaw; 3 direct rows; freshest Madhaw UID retained |
-| Group / private messages | Send one of each | Correct mock Firestore paths, rendered messages and 1 DM notification |
-| Shared notes | Publish a note and vote | Both mock writes verified; author monogram P measures 18×18 px, font 11 px |
-| Focus timer | Start, pause, reset | Controls and timer state verified; reset returns to 25:00 |
-| Profile | Open top-right avatar | Visible profile editor and stats verified |
-| Offline PWA | Load once, disable network, reload | HTTP 200 from the real service worker, build 8.0, saved tick preserved; v19 cache removed on v21 activation |
-| Dark phone smoke check | 390×844, theme dark | Document and main width 390 px, no horizontal document overflow in the tested chapter view; Back works |
+The actual avatar/name **layout-box centres** now differ by at most **0.008 px**.
+Text Range bounds retain subpixel font-metric differences; the largest measured
+text-centre difference is **0.875 px**, not a claimed exact zero.
 
-## Verification — not a clean regression
+### What changed
 
-The old chat's test rig did not exist here. New Playwright probes were recreated
-under `tools/`; they are **not the handoff's original 12 checks**.
+- A Notes-local `noteAuthor()` helper gives cards, modal bylines and comment
+  headers the same `inline-flex; align-items:center` avatar/name pair.
+- Removed the chip's baseline offset/margin only inside that pair. Other chat,
+  leaderboard and profile avatars retain their existing CSS and colours.
+- Comments group the avatar with the author name, not the full multi-line comment.
+  Comment text is indented beneath the name; the Delete control remains available.
+- Note context and modal byline are separate rows; long names/context wrap within
+  the available space. Avatar size remains 18×18 px with an 11 px monogram.
+- HTML build marker, visible Settings label and service-worker cache bumped
+  together to **8.1 / v22**. No Firestore paths, schema or study-data migration.
 
-**11 of 12 recreated suites pass, with 0 browser console errors or uncaught
-exceptions.** Inline JavaScript syntax passes for all 14 inline script blocks,
-and `sw.js` passes `node --check`.
+### Verified fix
 
-The navigation suite fails one rapid transition: **15 of 16 tab transitions
-succeed**, but a fresh quick Leaderboard → Activity switch remains on Leaderboard.
-The Profile editor itself passes. The failing probe is retained, not hidden by a
-sleep. `npm test --prefix tools` therefore correctly exits nonzero on this build.
+`npm run test:notes --prefix tools` passes **24 alignment checks across 8 variants**:
+dark/light × 1366×687/390×844 × short/long author names. Long cases also have
+multi-line comments. The probe checks box/text/glyph centres, containment and
+spacing, comment indentation, own-comment Delete, vote updates, comment deletion
+and posting. **0 browser console errors or uncaught exceptions.**
 
-A separate A/B browser probe confirmed:
+The probe loads the exact 8.0 baseline from commit
+`b9a032bb188fbcba204312fda7b3c3cc61f192e7`, asserts its original MD5, reproduces the
+bad offsets, then tests the current app. Firebase is mocked and external fonts
+are isolated, so pixel measurements describe the local browser's fallback fonts,
+not a visual inspection of the supplied PNGs or production Google/Firebase.
 
-- Immediate Leaderboard → Activity: still Leaderboard after about 4.5 seconds.
-- Wait 2,200 ms on Leaderboard first: Activity and its feed render.
-- Home → Activity directly: Activity and its feed render.
+## Full regression — known unrelated failure retained
 
-Cause read from the code: `pageGuard()` adopts the temporary League heading while
-`S.engineNavAt` is less than 2,000 ms old. That changes `S.tab` to `league`, so the
-Activity poll no longer restores the requested page. This existing defect was not
-changed because the requested deployment is the exact build 8.0 artifact.
+Current 8.1 run: **11/12 suites pass; 0 browser errors**. All 14 inline script
+blocks and `sw.js` pass Node syntax checks.
 
-Firebase tests use an in-memory mock. **Real Google sign-in, authorized domains,
-Firestore security rules, production two-person sync, and the public Pages HTTP
-endpoint are not browser-verified in this restricted-network workspace.** The
-phone measurements are a smoke check, not a full visual review.
+The unrelated Activity navigation suite remains failing: this run passed 14/16
+rapid tab transitions, with both Activity entries observing the temporary
+Leaderboard heading; Profile passed. The earlier 8.0 run passed 15/16. The routing
+code was not changed in 8.1, and no clean-regression claim is made or timing delay
+added to hide this existing race. See `HANDOFF.md` and `tools/README.md`.
 
-## History supplied by the handoff
+| Feature | Current evidence |
+|---|---|
+| CBSE Class 12 syllabus | 17 subjects; 22 sections; all 187 chapter titles rendered; 748 checkboxes |
+| Registration-scoped progress | English + History only on Home/Subjects; 31 chapters / 124 tasks |
+| Checklist / XP / persistence | One full registered chapter: 4 tasks, 3% overall, 60 XP; ticks survive reload; unregistered Physics excluded |
+| Back button | Returns from chapter view to the 2 registered subjects; saved view survives reload |
+| Honest zeros | Mock XP 0 → 10 → 0 and weekly score 0 → 10 → 0; stale event alone scores 0 |
+| DM list | Class 12 — League, Priya, Kabir, Madhaw; 3 direct rows, no nameless/anonymous rows; fresh UID retained |
+| Messages | Mock group/DM paths, rendered messages and one DM notification pass |
+| Shared Notes | Publish/vote pass; new card/modal/comment alignment probe passes |
+| Focus / Profile | Start, pause and 25:00 reset pass; real visible Profile editor/stats render |
+| PWA | Real SW offline reload at `/something/` gives HTTP 200/build 8.1 with saved tick; v22 removes a seeded v21 cache |
+| Dark phone chapter smoke check | Document/main width 390 px, no document overflow; Back works |
+
+Real Google sign-in, authorized domains, Firestore security rules, production
+two-person sync and the public Pages endpoint remain unverified from this
+restricted-network workspace. Phone checks are measured smoke checks, not a full
+visual review.
+
+## Deployment history / limitation
+
+Build 8.0 was uploaded to `main` through
+[PR #1](https://github.com/Goutamx/something/pull/1). Its 655,659-byte HTML and MD5
+`58be2789e38ec23e1c173e7259612955` were verified using the GitHub Contents API.
+The supplied SW/icons were copied unchanged; the stale Class 11 manifest name was
+corrected to Class 12 and `.nojekyll` added.
+
+Enabling Pages then failed with **HTTP 403: Resource not accessible by
+integration**. The current turn's repository metadata still says `has_pages:false`.
+No unchanged enable request was retried. Pages permission/settings must change
+before public publishing can be claimed. No manual file upload is required.
+
+## History
 
 | Build | Change |
 |---|---|
 | 7.11 | Monogram avatars |
 | 7.12 | Earlier nav highlight corrections |
-| 7.13 | Gate ghost ticks on saved progress; permit deliberate zero publishing |
-| 7.14 | Registration-filtered Home subjects; Notes avatar sizing |
-| 8.0 | Full 17-subject syllabus; scoped progress; chapter Back button; duplicate/nameless Messages rows filtered |
-| 8.0 deployment import | Exact uploaded HTML/SW/icons imported into this repository; Class 12 manifest, `.nojekyll`, persistent test source and handoff added |
+| 7.13 | Ghost-tick gating and deliberate zero publishing |
+| 7.14 | Registration-filtered Home and Notes avatar sizing |
+| 8.0 | Full syllabus, scoped progress, Back button, duplicate/nameless DM filtering |
+| 8.0 import | Exact uploaded artifact copied to this repository; manifest, `.nojekyll`, recreated probes and handoff |
+| **8.1** | **Centre Notes avatars with author names in cards, modal and comments; cache v22; before/after Playwright probe** |

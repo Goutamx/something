@@ -1,50 +1,84 @@
-# StudyLeague handoff — 2026-11-09
+# StudyLeague handoff — 2026-11-09 — build 8.1
 
-Read this before changing the app. This is the Git checkout continuation of the
-user's earlier handoff, not the old `/home/user` workspace.
+Read before changing the app. This is the Git checkout, not the old /home/user
+prototype workspace.
 
-## Current artifact and workspace
+## Current artifact / working branch
 
-- Repository: `Goutamx/something`, checkout `/home/user/something`.
-- Arena working branch: `arena/344d92ee-something`. Keep all commits/pushes on this
-  branch; do not switch branches. Publish `main` changes through a numbered PR.
-- **Root `index.html` is the authoritative built app in this workspace.**
-- Build `8.0`, 655,659 bytes, MD5 `58be2789e38ec23e1c173e7259612955`.
-- HTML and SW imported from the user's attachments without changing their bytes.
-  SW cache is `studyleague-v21`; the Settings footer agrees.
-- The three supplied PNGs were copied unchanged. Manifest's stale Class 11 name
-  corrected to Class 12; `.nojekyll` added for Pages.
-- There is no build script or source-partial tree. **Patch the HTML directly.**
-- Earlier paths `index-v6-clean-messages.html`, `/home/user/studyleague-deploy/`,
-  `studyleague-github.zip`, `/home/user/tools/`, old docs/rules and old probes were
-  **not present** in this checkout. Do not assume they exist or regenerate the app.
-- Root app files are the deploy files; no second HTML/SW copy needs syncing here.
-- `tools/` now contains recreated Playwright probe source, a Firebase mock, a
-  development static server and pinned test-only dependencies. There are still
-  **no npm runtime dependencies or application build step**.
-- `WHAT-WE-BUILT.md` records actual counts, checks and limitations.
+- Repository `Goutamx/something`, checkout `/home/user/something`.
+- Current Arena branch **`arena/4fa95bc6-something`**, active. The old
+  `arena/344d92ee-something` was merged; it is not the current working branch.
+  Keep all work/commits/pushes on the current fixed branch; never switch branches.
+- **Root `index.html` is the authoritative built app. No build step.**
+- Current **8.1**, **656,646 bytes**, MD5 `cc8bf59054bf6d1b4d0e48fbda08033a`.
+- HTML `data-sl-build`, Settings build footer and root SW agree on **8.1 / v22**.
+- This turn patches the Notes alignment bug. It does NOT claim a public deploy.
+- 8.0 baseline was 655,659 bytes, MD5 `58be2789e38ec23e1c173e7259612955`,
+  cache v21, imported byte-for-byte from the user's earlier attachments.
+- Existing manifest is Class 12. The three original icons and `.nojekyll` remain.
+- There is no build script/source-partial tree. **Patch the built HTML directly.**
+- Old paths `index-v6-clean-messages.html`, `/home/user/studyleague-deploy/`,
+  `/home/user/tools/`, old zip, rules files and old probes were not present here.
+  Do not assume they exist or try to regenerate the app.
+- `tools/` is a separate development-only rig. No application runtime npm deps.
+- `WHAT-WE-BUILT.md` contains the current checks and accurate release identity.
 
 ## User's standing rules
 
-1. Verify every fix with a Playwright probe before claiming completion. State
-   actual counts/results, never “should work.” Do not alter tests just to pass.
-2. Bug screenshots must be interpreted through OCR, pixel/DOM measurement or an
-   explicit admission that they could not be interpreted. Do not invent a visual
-   diagnosis. The uploaded images this turn were app icons, not bug screenshots;
-   their natural dimensions, not appearance, were checked in Chromium.
-3. No speculation; separate measured facts, judgment calls and untested areas.
-4. Keep console snippets short, global-safe and mock-validated. `db`, `me`, and
-   `auth` are private closure variables, not console globals. `firebase` is global.
-5. User is in Jaipur, CBSE Class 12 Humanities, registered English + History.
-6. Deploy through GitHub when connected; do not ask the user to upload to hosting.
-   Git/gh authentication is configured in the sandbox; never ask for tokens.
-7. Update this file and `WHAT-WE-BUILT.md` when shipping.
+1. Verify every fix with Playwright before claiming completion. Give real numbers,
+   never “should work.” Do not hide a failure by weakening a test.
+2. Screenshots must be interpreted with OCR or pixel/DOM measurement, or plainly
+   admit they cannot be interpreted. Do not invent a visual diagnosis. The latest
+   Notes screenshots were diagnosed/reproduced through DOM measurement.
+3. No speculation: distinguish measured facts, judgment calls and untested areas.
+4. Keep user console snippets short, global-safe and mock-validated. `db`, `me`,
+   `auth` are closure-private, not console globals; `firebase` is global.
+5. User is in Jaipur, Class 12 Humanities, registered English + History.
+6. Use GitHub delivery when connected; do not ask for hosting uploads or tokens.
+7. Update this file and `WHAT-WE-BUILT.md` with shipped/verified changes.
 
-## App and syllabus
+## 8.1 — Notes avatar/name alignment fixed
 
-Vanilla JS offline PWA with Google Firebase Auth / Firestore, league `STUDY1`.
-Eight nav tabs (first labelled Home): Home, Subjects, Focus, Exams, Leaderboard,
-Activity, Messages, Notes; Profile opens from the avatar.
+Scope: Browse Notes cards, note-modal byline, comment author headers only.
+
+Baseline Playwright DOM measurements using exact 8.0 HTML at 1366×687 dark:
+card/modal avatar centre **5.797 px below** the name's text bounds; comment avatar
+centre **2.500 px above**. The old small chip used `vertical-align:-4px` inline,
+while the comment's avatar was a sibling of the entire two-line name/body block
+in a top-aligned flex row.
+
+Implementation:
+- Notes-IIFE-local `noteAuthor(name, uid, colour, bold)` renders an escaped name
+  and existing monogram inside `.sl-note-author`, an inline-flex centered pair.
+- `.sl-note-author .sl-mono-chip.sm` clears the baseline hack/margin only there.
+  Other avatars and `--c-active` are untouched; size stays 18×18 px / 11 px glyph.
+- `.sl-note-byline` centers the pair and metadata. Modal context/byline split into
+  separate rows. Context and long names wrap within available width.
+- Comment pair lives in `.sl-note-comment-body`; `.sl-note-comment-text` is
+  indented 24 px (18 px avatar + 6 px gap), under the name rather than the avatar.
+  Delete button, voting, posting and Firestore schema remain intact.
+- Re-grep these class/helper names rather than trusting old line numbers.
+
+New regression: `npm run test:notes --prefix tools`:
+- Exact 8.0 baseline from commit `b9a032bb188fbcba204312fda7b3c3cc61f192e7` is
+  loaded in memory with `git show`; original MD5 asserted; bad offsets reproduced.
+- **24 alignment checks / 8 variants pass**: dark/light × desktop 1366×687/phone
+  390×844 × short/long names. Long variants include multi-line comments.
+- Avatar/name layout-box centre difference at most **0.008 px**.
+- Maximum text Range centre difference **0.875 px** (cards/modal). Comments are
+  0.266–0.273 px; monogram text centres are 0 px from avatar centres in this probe.
+- Avatar size, containment, spacing, comment indent, escaped text-only name DOM,
+  voting, comment deletion and posting verified. **0 browser errors**.
+- External CDN/fonts are isolated, so exact text measurements use browser fallback
+  fonts, not a screenshot pixel reading or production font/OAuth verification.
+- If the baseline commit is absent from a later shallow checkout, fetch that exact
+  commit before running this before/after probe. Do not replace it with 8.1.
+
+## App / syllabus
+
+Vanilla JS offline PWA; Firebase Google Auth/Firestore; league STUDY1. Nav tabs:
+Home, Subjects, Focus, Exams, Leaderboard, Activity, Messages, Notes. Profile is
+behind the top-right avatar.
 
 | Subject | Chapters |
 |---|---:|
@@ -67,110 +101,93 @@ Activity, Messages, Notes; Profile opens from the avatar.
 | Entrepreneurship | 6 |
 | **Total** | **187** |
 
-There are 22 sections and 748 tasks with the default 4 activities. English +
-History is 31 chapters / **124 tasks**, not 748. `slChosenSubjects()` scopes overall
-progress and chapter counters. Both Home and Subjects are registration-filtered.
+22 sections / 748 default activities total. English + History = **31 chapters,
+124 tasks**, not 748. `slChosenSubjects()` scopes progress/chapter counts. Home and
+Subjects both filter registration. One fully completed registered chapter gives
+4 tasks / 3% overall / 60 XP in the verified no-focus case.
 
-The earlier handoff's deliberate judgments remain: Economics uses the 8 listed
-units, not the brief's inconsistent 10; Sociology uses 9 evaluated chapters, not
-11. Deleted chapters are omitted, not faded. Do not change this without asking.
+Earlier deliberate syllabus judgments remain: Economics uses the 8 listed units
+rather than the inconsistent brief's 10; Sociology uses 9 evaluated chapters
+rather than 11. Deleted chapters are omitted, not faded. Ask before changing.
 
-## Tests and honest current result
+## Test setup / current full result
 
-See `tools/README.md` for commands. Run the development server bound to 0.0.0.0;
-the tests default to `http://localhost:8101/something/` to exercise Pages-relative
-paths. The HTML registers SWs only on HTTPS or hostname `localhost`, not 127.0.0.1.
+`tools/README.md` documents commands. Reinstall dev dependencies with
+`npm ci --prefix tools --ignore-scripts --no-audit --no-fund`; they/browsers do not
+survive snapshots. Never commit node_modules, browser binaries or large artifacts.
+Playwright 1.65.0 and npm-packaged Chromium 153.0.8010.0 include NSS/NSPR libs
+extracted to /tmp; only registry.npmjs.org is required, not apt or a browser CDN.
 
-The previous rig/browser did not survive. Recreated probes use Playwright 1.65.0
-and npm-packaged Chromium 153.0.8010.0, including NSS/NSPR libs extracted into /tmp.
-This needs registry.npmjs.org, not apt or the Playwright CDN. Dependencies and
-results are ignored; never commit large binaries. `npm ci --prefix tools
---ignore-scripts` restores them. Python serves the static HTML; npm is testing only.
+Start `python3 tools/serve.py --bind 0.0.0.0 --port 8101`. `/` is a preview;
+`/something/` mimics Pages. Probes use `http://localhost:8101/something/`: hostname
+localhost is required for the app's HTTP SW registration guard (not 127.0.0.1).
 
-- **11 of 12 recreated suites pass**, not the old handoff's claimed clean 12/12.
-- **0 browser console errors / uncaught exceptions** in the probes.
-- All 14 inline JS blocks and the SW pass Node syntax checks.
-- All 17 subjects' 187 chapter titles rendered, with 748 checkboxes.
-- Scoped progress, XP, persistence, Back, zero publishing, DM filtering, mocked
-  message/notification/note/vote writes and Focus controls pass.
-- Real SW offline reload at `/something/` returns 200, build 8.0 and a saved tick.
-  v21 activation removes a seeded v19 cache.
-- Dark 390×844 phone chapter view: document/main width 390 px, no document overflow.
-- Firebase is mocked, external fonts/CDN isolated; production OAuth/rules/sync and
-  the public Pages endpoint are not browser-verified. Do not call this a live
-  Firebase regression or full phone/dark visual review.
+8.1 full run: **11/12 recreated suites pass, 0 browser console errors or uncaught
+exceptions**. These are not the old handoff's original 12 checks. All 14 inline
+scripts and the SW pass Node syntax checks. The full suite pins 8.1's new MD5,
+size, footer and v22 cache, and confirms real SW offline reload/study persistence
+plus eviction of an old v21 cache at the /something/ subpath.
 
-### Newly reproduced existing navigation race (not patched)
+### Known unrelated Activity routing failure retained
 
-Probe 06 attempts 16 rapid tab transitions: **15 succeed, 1 fails**, then the real
-Profile editor and stats render successfully. The failure is immediate
-Leaderboard → Activity on a fresh load: it remains Leaderboard even after 4.5 s.
-A/B: wait 2,200 ms on Leaderboard first, or go directly Home → Activity, and the
-Activity feed renders correctly.
+The rapid-navigation suite remains failing and intentionally exits nonzero:
+8.1 run **14/16** tab transitions passed; both Activity heading checks observed
+Leaderboard. Profile passed. The earlier 8.0 run passed 15/16. Timing affects
+which entry fails; no router code was changed for this Notes fix.
 
-Mechanism read from `pageGuard()`: a recent engine navigation (<2,000 ms) makes the
-guard adopt the temporary Leaderboard heading borrowed by `renderSocialPage()`.
-That changes `S.tab` to `league`, so the asynchronous Activity poll does not
-restore Activity. No HTML fix was made, to preserve the exact requested 8.0 hash.
-Do not mask the failure with a delay; ship a separately identified future build
-if the user asks for the fix.
+The earlier A/B probe confirmed immediate Leaderboard → Activity can remain on
+Leaderboard after ~4.5 s. Waiting 2,200 ms first, or going Home → Activity directly,
+rendered Activity and its feed. Mechanism: `pageGuard()` adopts a temporary League
+heading borrowed by `renderSocialPage()` while an engine click is <2,000 ms old,
+changes `S.tab` to league, and the async Activity poll no longer restores it.
+Do not mask it with a sleep or call the full suite clean. It is out of this fix's
+scope unless the user requests it.
 
-### Earlier parked risks (from the supplied handoff)
+### Other evidence / parked risks
 
-- DM same-name merging may collapse genuinely different students. Freshness uses
-  max(updatedAt,lastSeen), then XP. Current duplicate-DM probe confirms the fresh
-  Madhaw UID wins, nameless/anonymous rows disappear.
-- Weekly bye auto-win, live-status expiry and avatar/XP cosmetic work are parked.
-- Production two-user sync remains unverified.
-- Do not change `--c-active` for monogram cosmetic work without request.
+- All 17 subjects / 187 titles / 748 checkboxes rendered. Scoped progress,
+  persistence, Back, honest zero publishing, messages, notes and Focus pass.
+- Mock tick/untick XP 0 → 10 → 0; ghost log tick alone gives zero weekly score.
+- DM rail: Class 12 — League, Priya, Kabir, Madhaw; fresh Madhaw UID retained,
+  no nameless/anonymous rows. Same-name merging can still collapse real classmates.
+- Real production OAuth, authorized domains, Firestore rules and two-person sync
+  are unverified. Do not call mock tests a production regression.
+- Dark phone chapter view width 390 px with no document overflow is a smoke check,
+  not a full phone/dark visual review.
+- Weekly bye auto-win, live-status expiry and avatar/XP cosmetics remain parked.
 
-## Deployment — uploaded, publication blocked
+## Deployment / delivery status
 
-PR [#1](https://github.com/Goutamx/something/pull/1) merged 2026-11-09 at
-14:53:42 UTC, merge SHA `f53f4e4d55b15155d3b4290dd85ded46f8f04606`.
-GitHub's Contents API verified `main` contains the exact 655,659-byte HTML and MD5
-above. **It is uploaded, not a confirmed live deployment.**
+8.0 source reached main via PR #1; blocker documentation via PR #2. Current branch
+starts from main merge `b9a032bb188fbcba204312fda7b3c3cc61f192e7`.
+8.1 is a new branch change; do not claim it is already merged or live.
 
-Enabling Pages with `POST repos/Goutamx/something/pages` and body
-`{"build_type":"legacy","source":{"branch":"main","path":"/"}}` failed with
-**HTTP 403: Resource not accessible by integration**. The configured connection
-permits contents writes and PR merges, but that Pages request is not authorized.
-The repository originally reported `has_pages:false`, with no Pages deployment.
-Do not repeat an enable request unchanged until permissions/settings change.
-Ask the owner to reconnect GitHub with the required Pages permissions or enable
-Settings → Pages → Deploy from a branch → main → / (root) once. No upload,
-password or token is needed from the user. Once authorized/enabled, verify the
-Pages build status before calling publication complete.
+Previous `POST repos/Goutamx/something/pages` enablement returned **HTTP 403,
+Resource not accessible by integration**. Contents/PR access worked. Repository
+metadata checked again this turn still reports `has_pages:false`. No unchanged
+POST was retried. Pages permission or settings must change before publishing.
+No manual file upload, password or token is needed from the user.
 
-Target: GitHub Pages, source `main` / repository root, via PR from the fixed Arena
-branch. Use git for commits/push to the Arena branch, gh for PR/Pages operations.
-A push or PR merge alone is not success; verify the Pages API/build run status.
-Internet in this workspace is restricted (GitHub API is reachable; the public
-`github.io` host is not on the allowed outbound list). Report API build status
-and local browser verification separately, never pretend the public page was
-opened with Playwright.
+Target remains Pages from main / repository root, via PR from the current Arena
+branch. Git for commits and pushes (current branch only), gh for PR/Pages. Do not
+confuse push/merge with deployment success. Verify Pages build status separately.
+The public github.io host is outside the allowed outbound list, so never claim a
+public Playwright check from this workspace.
 
-Future application deploys must bump together: HTML `data-sl-build`, the
-`slBuildLine` label/cache text, and `const CACHE` in root `sw.js`. Preserve a source
-checksum, syntax-check, run probes and document failures. The imported 8.0 already
-moves this repository from 7.13/v19 to 8.0/v21, so it was not relabelled again.
-
-After publishing, ask for Ctrl+Shift+R and Settings → App build 8.0. If an old
-cache persists, Settings → Reload newest clears the offline shell without clearing
-local study data. Real Google auth domain/rules configuration cannot be inferred
-from a successful static Pages build.
+Future app releases bump together: HTML data-sl-build, Settings slBuildLine
+build/cache text, and const CACHE in root sw.js. 8.1 advances 8.0/v21 to 8.1/v22.
+After a real publication, the expected footer is App build 8.1; use Reload newest
+if an old offline shell persists, without clearing local study data.
 
 ## Code gotchas
 
-- Re-grep function names rather than trusting old handoff line numbers.
-- Hidden engine `.subject` nodes are not visible UI. Filter DOM measurements by
-  bounding-rect width/height >4.
-- The constructed `.v2-profile-head` is intentionally not appended (duplicate
-  profile header removed). Assert the visible `#socialProfileCard` and stats.
-- Initial Home paint precedes saved-view restoration (250 ms); wait for restore.
-- Focus's paused button says Start, except distracted pause says Resume.
-- Ghost studyEvents are append-only; scoring must also check current saved ticks.
-  Honest zero publishing needs `slDidUntick` in both stale guard and payload hash.
-- Test mocks now model document `.ref`; user snippets should still use
-  `collection.doc(d.id).delete()` as documented in the old handoff.
+- Hidden engine .subject nodes are not visible UI; measure rect width/height >4.
+- The duplicate .v2-profile-head is intentionally not appended. Assert the visible
+  #socialProfileCard and stats instead.
+- Saved-view restoration happens 250 ms after the initial Home paint; wait for it.
+- Paused Focus button says Start, except distracted pause says Resume.
+- Append-only studyEvents must be gated on saved ticks; honest zeros need
+  slDidUntick in both the stale guard AND payload hash.
+- Use collection.doc(d.id).delete() in user console snippets rather than assuming
+  the old mock's doc.ref existed (the new mock does model ref).
 - Capture Playwright console events or return evaluation results explicitly.
