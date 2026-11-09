@@ -124,7 +124,23 @@ if the user asks for the fix.
 - Production two-user sync remains unverified.
 - Do not change `--c-active` for monogram cosmetic work without request.
 
-## Deployment
+## Deployment — uploaded, publication blocked
+
+PR [#1](https://github.com/Goutamx/something/pull/1) merged 2026-11-09 at
+14:53:42 UTC, merge SHA `f53f4e4d55b15155d3b4290dd85ded46f8f04606`.
+GitHub's Contents API verified `main` contains the exact 655,659-byte HTML and MD5
+above. **It is uploaded, not a confirmed live deployment.**
+
+Enabling Pages with `POST repos/Goutamx/something/pages` and body
+`{"build_type":"legacy","source":{"branch":"main","path":"/"}}` failed with
+**HTTP 403: Resource not accessible by integration**. The configured connection
+permits contents writes and PR merges, but that Pages request is not authorized.
+The repository originally reported `has_pages:false`, with no Pages deployment.
+Do not repeat an enable request unchanged until permissions/settings change.
+Ask the owner to reconnect GitHub with the required Pages permissions or enable
+Settings → Pages → Deploy from a branch → main → / (root) once. No upload,
+password or token is needed from the user. Once authorized/enabled, verify the
+Pages build status before calling publication complete.
 
 Target: GitHub Pages, source `main` / repository root, via PR from the fixed Arena
 branch. Use git for commits/push to the Arena branch, gh for PR/Pages operations.

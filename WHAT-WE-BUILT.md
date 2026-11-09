@@ -13,7 +13,16 @@ It is patched/deployed directly: **no build step**.
 | Settings build label | App build **8.0** · offline cache **studyleague-v21** |
 | Service worker | `sw.js`, cache `studyleague-v21` |
 | App files | `index.html`, `sw.js`, `manifest.webmanifest`, three PNGs, `.nojekyll` |
-| Deployment method | GitHub Pages, `main`, repository root; changes delivered by PR from the Arena working branch |
+| Deployment method | GitHub Pages target: `main`, repository root; changes delivered by PR from the Arena working branch |
+| Publication status | **Blocked, not live**: enabling Pages returned HTTP 403, `Resource not accessible by integration` |
+| Uploaded source | [PR #1](https://github.com/Goutamx/something/pull/1), merged 2026-11-09; main merge `f53f4e4d55b15155d3b4290dd85ded46f8f04606` |
+
+After merging, the GitHub Contents API independently confirmed main's HTML is
+655,659 bytes with the exact MD5 above. The Pages create request (`POST
+repos/Goutamx/something/pages`, branch main, path /) was rejected by the current
+integration. No successful Pages build or public site is claimed. GitHub needs
+Pages-administration permission, or the owner must enable Settings → Pages →
+Deploy from a branch → main → / (root) once. **No file upload is needed.**
 
 The HTML, service worker, and three icons are byte-for-byte copies of the user's
 attachments. The repository's existing manifest name was corrected from Class 11
