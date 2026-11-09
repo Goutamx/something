@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.0">
+<html lang="en" data-sl-build="8.1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4025,6 +4025,23 @@ tr.sl-ghost{ display:none !important; }
         margin-right:6px; vertical-align:-5px; flex:none;
         text-shadow:0 1px 2px rgba(0,0,0,.20);
     }
+    /* Build 8.1: Notes avatars and author names share a centered row.
+       Do not move every monogram's baseline: chat/leaderboard use this chip too. */
+    .sl-note-author{
+        display:inline-flex; align-items:center; gap:6px;
+        min-width:0; max-width:100%; vertical-align:middle;
+    }
+    .sl-note-author .sl-mono-chip.sm{
+        margin:0; vertical-align:middle; line-height:1;
+    }
+    .sl-note-author-name{ min-width:0; overflow-wrap:anywhere; }
+    .sl-note-byline{
+        display:flex; align-items:center; gap:6px; flex-wrap:wrap; max-width:none;
+    }
+    .sl-note-context{ max-width:none; overflow-wrap:anywhere; }
+    .sl-note-comment-body{ flex:1; min-width:0; }
+    .sl-note-comment-text{ padding-left:24px; overflow-wrap:anywhere; }
+    .sl-note-comment > .vote-btn{ flex-shrink:0; }
     </style>
     <script>
     /* V7.11 - monogram avatars. One letter, on the person's own colour. */
@@ -4356,7 +4373,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.0</b> · offline cache studyleague-v21 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.1</b> · offline cache studyleague-v22 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -9353,6 +9370,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         var names = {English:'English',History:'History',Geography:'Geography',PoliticalScience:'Political Science',Math:'Mathematics',Physics:'Physics',Chemistry:'Chemistry',Biology:'Biology',Accountancy:'Accountancy',BusinessStudies:'Business Studies',Economics:'Economics',ComputerScience:'Computer Science',Sociology:'Sociology',Psychology:'Psychology',Agriculture:'Agriculture',PhysicalEducation:'Physical Education',Entrepreneurship:'Entrepreneurship'};
         return names[k] || (window.subjectDisplayNames && subjectDisplayNames[k]) || k;
     }
+    function noteAuthor(name, uid, colour, bold) {
+        var tag = bold ? 'b' : 'span';
+        return '<span class="sl-note-author">' +
+            '<span class="sl-mono-chip sm" style="background:' + escapeHtml(window.slMonoBg(colour || window.slTint(uid))) + '">' + escapeHtml(window.slLetter(name)) + '</span>' +
+            '<' + tag + ' class="sl-note-author-name">' + escapeHtml(name || 'Student') + '</' + tag + '></span>';
+    }
     function ensureFB() {
         if (typeof firebase === 'undefined' || typeof LEAGUE_FIREBASE_CONFIG === 'undefined' || !LEAGUE_FIREBASE_CONFIG.apiKey || LEAGUE_FIREBASE_CONFIG.apiKey.indexOf('PASTE_') === 0) return false;
         try {
@@ -9475,9 +9498,9 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
         grid.innerHTML = rows.length ? rows.map(function(n){
             var myVote = me ? (n.votes||{})[me.uid] || 0 : 0;
-            return '<div class="card note-card" data-note="'+n.id+'"><b>'+escapeHtml(n.title)+'</b><div class="league-bio">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+'</div>' +
+            return '<div class="card note-card" data-note="'+n.id+'"><b>'+escapeHtml(n.title)+'</b><div class="league-bio sl-note-context">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+'</div>' +
             '<div class="league-status" style="margin-top:7px;">'+escapeHtml((n.content||'').slice(0,140))+(n.content&&n.content.length>140?'…':'')+'</div>' +
-            '<div class="league-bio" style="margin-top:7px;"><span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(n.authorColor||window.slTint(n.authorUid)))+'">'+escapeHtml(window.slLetter(n.authorName))+'</span>'+escapeHtml(n.authorName||'Student')+' · 💬 '+(n.commentsCount||0)+'</div>' +
+            '<div class="league-bio sl-note-byline" style="margin-top:7px;">' + noteAuthor(n.authorName, n.authorUid, n.authorColor) + '<span>· 💬 '+(n.commentsCount||0)+'</span></div>' +
             '<div class="vote-row"><button class="vote-btn vote-up'+(myVote===1?' voted':'')+'" data-vote="1" data-id="'+n.id+'" type="button">▲</button><b>'+noteScore(n)+'</b><button class="vote-btn vote-down'+(myVote===-1?' voted':'')+'" data-vote="-1" data-id="'+n.id+'" type="button">▼</button><span class="league-updated">Open →</span></div></div>';
         }).join('') : '<div class="todo-empty">No notes match — upload the first one for this chapter</div>';
         grid.querySelectorAll('.vote-btn').forEach(function(b){
@@ -9511,7 +9534,8 @@ var LEAGUE_FIREBASE_CONFIG = {
         var modal = document.getElementById('noteModal'); var body = document.getElementById('noteModalBody');
         document.getElementById('noteModalTitle').textContent = n.title || 'Shared Note';
         var isLink = /^https?:\/\//i.test((n.content||'').trim());
-        body.innerHTML = '<div class="league-bio">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+' · by <span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(n.authorColor||window.slTint(n.authorUid)))+'">'+escapeHtml(window.slLetter(n.authorName))+'</span>'+escapeHtml(n.authorName||'Student')+'</div>' +
+        body.innerHTML = '<div class="league-bio sl-note-context">'+subjectName(n.subjectKey)+' · '+escapeHtml(n.book||'')+' · '+escapeHtml(n.chapter||'')+'</div>' +
+            '<div class="league-bio sl-note-byline"><span>by</span>' + noteAuthor(n.authorName, n.authorUid, n.authorColor) + '</div>' +
             (isLink ? '<div style="margin:14px 0;"><a class="btn" href="'+escapeHtml(n.content.trim())+'" target="_blank" rel="noopener">Open Linked Note ↗</a></div>' : '<div class="card" style="white-space:pre-wrap;margin:14px 0;line-height:1.75;">'+escapeHtml(n.content||'')+'</div>') +
             '<div class="vote-row"><button class="vote-btn" id="noteVoteUp" type="button">▲ Upvote</button><b>'+noteScore(n)+'</b><button class="vote-btn" id="noteVoteDown" type="button">▼ Downvote</button>' +
             (me && n.authorUid===me.uid ? '<button class="btn danger" id="noteDelete" type="button" style="margin-left:auto;">Delete Note</button>' : '') + '</div>' +
@@ -9534,7 +9558,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         .onSnapshot(function(snap){
             var box=document.getElementById('noteComments'); if(!box) return;
             var arr=[]; snap.forEach(function(d){arr.push(Object.assign({id:d.id},d.data()));});
-            box.innerHTML=arr.length?arr.map(function(c){ return '<div class="feed-item"><span class="sl-mono-chip sm" style="background:'+escapeHtml(window.slMonoBg(c.authorColor||window.slTint(c.authorUid)))+'">'+escapeHtml(window.slLetter(c.authorName))+'</span>'+'<div><b>'+escapeHtml(c.authorName||'Student')+'</b><div>'+escapeHtml(c.text||'')+'</div></div>'+(me&&c.authorUid===me.uid?'<button class="vote-btn" data-del-comment="'+c.id+'" type="button" style="margin-left:auto;">Delete</button>':'')+'</div>'; }).join(''):'<div class="todo-empty">No comments yet</div>';
+            box.innerHTML=arr.length?arr.map(function(c){ return '<div class="feed-item sl-note-comment"><div class="sl-note-comment-body">' + noteAuthor(c.authorName, c.authorUid, c.authorColor, true) + '<div class="sl-note-comment-text">'+escapeHtml(c.text||'')+'</div></div>'+(me&&c.authorUid===me.uid?'<button class="vote-btn" data-del-comment="'+c.id+'" type="button" style="margin-left:auto;">Delete</button>':'')+'</div>'; }).join(''):'<div class="todo-empty">No comments yet</div>';
             box.querySelectorAll('[data-del-comment]').forEach(function(b){ b.addEventListener('click', function(){ db.collection('leagues').doc(code()).collection('sharedNotes').doc(id).collection('comments').doc(b.dataset.delComment).delete().catch(function(){}); }); });
         }, function(){});
     }

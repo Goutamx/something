@@ -3,7 +3,8 @@
   "private": true,
   "description": "Development-only browser probes. The deployed app has no npm dependencies or build step.",
   "scripts": {
-    "test": "node probe_verify_all.cjs"
+    "test": "node probe_verify_all.cjs",
+    "test:notes": "node probe_notes_alignment.cjs"
   },
   "devDependencies": {
     "@sparticuz/chromium": "153.0.0",
