@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.2">
+<html lang="en" data-sl-build="8.5">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3524,6 +3524,15 @@ body.sl-hold .v2-stand-in-h1{
 .v2-stand-in-h1{ display:none; }
 body.sl-hold .v2-stand-in-h1{ display:block; }
 
+/* ---- 8.3: borrowing the League view to fetch a card (see renderSocialPage) ----
+   While the legacy standings render, the real list is hidden so it cannot
+   paint. The placeholder below keeps a heading and a spinner on screen. */
+body.sl-mounting #chapterList{ display:none !important; }
+.sl-mount-ph .v2-stand-in-h1{
+    display:block; font-size:2rem; font-weight:750; letter-spacing:-.02em;
+    color:var(--c-ink); margin:0 0 14px; line-height:1.15;
+}
+
 /* ---- ghost rows (hidden anyway, kept for debugging) ---- */
 tr.sl-ghost{ display:none !important; }
 
@@ -4489,7 +4498,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.2</b> · offline cache studyleague-v23 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.5</b> · offline cache studyleague-v26 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -9336,8 +9345,23 @@ var LEAGUE_FIREBASE_CONFIG = {
                 var a = byUid[pair[0]], b = pair[1] ? byUid[pair[1]] : null;
                 if (!a) return;
                 var ga = Math.min(6, Math.floor((a.wps||0)/15)), gb = b ? Math.min(6, Math.floor((b.wps||0)/15)) : 0;
-                if (!b) { if ((a.wps||0) >= 10) { row(a.uid,a).points += 2; row(a.uid,a).wins++; row(a.uid,a).results.push('W'); } return; }
-                if ((a.wps||0) < 10 && (b.wps||0) < 10) { row(a.uid,a).results.push('L'); row(b.uid,b).results.push('L'); return; }
+                /* 8.4 -- a bye used to pay a full 2 Champion Points for merely turning
+                   up (wps >= 10), so with an odd number of players one person banked a
+                   free win every week while everyone else had to actually beat
+                   somebody. A bye is now worth the same as a draw: 1 point, a tie. */
+                if (!b) {
+                    if ((a.wps||0) >= 10) { row(a.uid,a).points += 1; row(a.uid,a).ties++; row(a.uid,a).results.push('D'); }
+                    else { row(a.uid,a).results.push('L'); }
+                    return;
+                }
+                /* 8.4 -- 10 pts marks an active week. The old test only fired when BOTH
+                   players were under it, so a player on 5 points still collected a
+                   point from a "draw" whenever their opponent happened to be active.
+                   Now the inactive side simply loses. */
+                var aIn = (a.wps||0) >= 10, bIn = (b.wps||0) >= 10;
+                if (!aIn && !bIn) { row(a.uid,a).results.push('L'); row(b.uid,b).results.push('L'); return; }
+                if (!aIn)  { row(b.uid,b).points+=2; row(b.uid,b).wins++; row(b.uid,b).results.push('W'); row(a.uid,a).results.push('L'); return; }
+                if (!bIn)  { row(a.uid,a).points+=2; row(a.uid,a).wins++; row(a.uid,a).results.push('W'); row(b.uid,b).results.push('L'); return; }
                 if (ga > gb) { row(a.uid,a).points+=2; row(a.uid,a).wins++; row(a.uid,a).results.push('W'); row(b.uid,b).results.push('L'); }
                 else if (gb > ga) { row(b.uid,b).points+=2; row(b.uid,b).wins++; row(b.uid,b).results.push('W'); row(a.uid,a).results.push('L'); }
                 else { row(a.uid,a).points+=1; row(a.uid,a).ties++; row(a.uid,a).results.push('D'); row(b.uid,b).points+=1; row(b.uid,b).ties++; row(b.uid,b).results.push('D'); }
@@ -9468,6 +9492,11 @@ var LEAGUE_FIREBASE_CONFIG = {
         .catch(function(e){ var st=document.getElementById('dmStatus'); if(st) st.textContent='Could not send: '+e.message; });
     }
 
+    /* 8.5: let the shell build the Activity / Messages cards on demand instead of
+       waiting for the interval below. Both are no-ops unless the league view is
+       mounted and the card is not already present, so calling early is safe.
+       Exported here because this is the IIFE that defines them. */
+    window.__slCardInject = { feed: injectFeedCard, dm: injectDMCard };
     setInterval(function(){ injectFeedCard(); injectChallengeCard(); injectDMCard(); }, 1400);
     setInterval(function(){ if(db&&me) publishScore(); }, 20000);
 })();
@@ -10291,24 +10320,75 @@ var LEAGUE_FIREBASE_CONFIG = {
             return;
         }
 
-        if (h1Text() !== 'Leaderboard') {
-            S.busy++;
-            progClick($('leagueBtn'));
-            S.busy--;
+        /* 8.3: borrow the League view WITHOUT showing it.
+           injectFeedCard()/injectDMCard() only run while the heading reads
+           "Leaderboard", so we borrow the heading (hidden by sl-hold, with a
+           stand-in keeping the real title on screen) and hide the list itself
+           (sl-mounting) so the standings renderLeague() writes can never paint. */
+        var headText = which === 'activity' ? 'Activity' : 'Messages';
+        var subText = which === 'activity'
+            ? 'Everything your league mates are doing — chapters, streaks and focus sessions.'
+            : 'Private 1-to-1 chats with the people in your class league.';
+        var addedHold = !document.body.classList.contains('sl-hold');
+        var mountPh = null;
+        function endMount() {
+            var ph = document.querySelector('.sl-mount-ph');
+            if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
+            document.body.classList.remove('sl-mounting');
+            if (addedHold) document.body.classList.remove('sl-hold');
+            if (h1El()) h1El().textContent = headText;
+            var sb2 = $('subject-subtitle');
+            if (sb2) sb2.textContent = subText;
+            mountPh = null;
         }
+
+        if (h1Text() !== 'Leaderboard') {
+            mountPh = document.createElement('div');
+            mountPh.className = 'sl-mount-ph';
+            mountPh.innerHTML = '<div class="v2-stand-in-h1">' + headText + '</div>' +
+                '<div class="v2-notice">' + icon('spinner') +
+                '<span>Loading ' + headText.toLowerCase() + '…</span></div>';
+            if (list.parentNode) list.parentNode.insertBefore(mountPh, list);
+            document.body.classList.add('sl-hold', 'sl-mounting');
+            if (h1El()) h1El().textContent = 'Leaderboard';
+            S.busy++;
+            try {
+                progClick($('leagueBtn'));
+                /* 8.5: the league view is mounted (hidden) right now, so build the
+                   card immediately instead of waiting for the 1.4 s interval that
+                   normally does it. Measured before: 726-1422 ms of spinner. */
+                try {
+                    var CI = window.__slCardInject;
+                    var inj = CI ? (which === 'activity' ? CI.feed : CI.dm) : null;
+                    if (inj) inj();
+                } catch (e) {}
+            } finally { S.busy--; }
+        }
+
+        // shared teardown: lift the card out of the hidden league view, then reveal
+        function lift(n) {
+            clearInterval(socialPoll);
+            if (n.parentNode && n.parentNode !== stash) stash.appendChild(n);
+            list.innerHTML = '';                     // drop the standings while still hidden
+            endMount();                              // then reveal — nothing to flash
+            if (S.tab === which) renderSocialPage(which);
+        }
+
+        // the direct injection above usually produced it already — finish at once
+        var gotNow = $(wanted) || stash.querySelector('#' + wanted);
+        if (gotNow) { lift(gotNow); return; }
+
         clearInterval(socialPoll);
         var tries = 0;
         socialPoll = setInterval(function () {
             tries++;
             var n = $(wanted) || stash.querySelector('#' + wanted);
-            if (n) {
-                clearInterval(socialPoll);
-                if (S.tab === which) renderSocialPage(which);
-                return;
-            }
+            if (n) { lift(n); return; }
             if (tries > 12) {                       // ~4s, then stop bouncing
                 clearInterval(socialPoll);
                 S.feedMiss = wanted;
+                list.innerHTML = '';
+                endMount();
                 if (S.tab === which) renderSocialPage(which);
             }
         }, 350);
@@ -11920,11 +12000,6 @@ var LEAGUE_FIREBASE_CONFIG = {
         subs.push(db.collection('leagues').doc(code).collection('members')
             .onSnapshot(function (snap) {
                 var next = {};
-                var byName = {};
-                var score = function (x) {
-                    return Math.max(millis((x || {}).updatedAt || 0), millis((x || {}).lastSeen || 0)) * 1e6
-                         + (Number((x || {}).xp) || 0);
-                };
                 snap.forEach(function (d) {
                     var m = d.data() || {};
                     m.uid = d.id;
@@ -11933,14 +12008,14 @@ var LEAGUE_FIREBASE_CONFIG = {
                     // a row with no name can only ever render as "Student", so it is
                     // not a usable classmate - it is a half-written doc
                     if (d.id !== me.uid && !(m.displayName || '').trim()) return;
-                    // one person who signed in twice leaves two rows behind the same
-                    // name; keep the freshest and drop the stale twin
-                    var key = (m.displayName || '').trim().toLowerCase();
-                    var keep = byName[key];
-                    if (!keep) { byName[key] = d.id; next[d.id] = m; return; }
-                    if (score(m) > score(next[keep])) {
-                        delete next[keep]; byName[key] = d.id; next[d.id] = m;
-                    }
+                    /* 8.4 -- the doc id IS the uid, so there is exactly one member row
+                       per account and two rows can only ever mean two different
+                       people. We used to collapse them by lowercased displayName,
+                       "keeping the freshest", which silently deleted a real classmate
+                       whenever two students shared a name: two Madhaws, each with
+                       their own Gmail and their own XP, rendered as one. Names are not
+                       identity. Never merge on a name. */
+                    next[d.id] = m;
                 });
                 members = next;
                 myReads = (members[me.uid] && members[me.uid].reads) || {};
@@ -13059,5 +13134,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5849a8c98140aa8',t:'MTc5NDMwODk1Mw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5849a8c98140aa8',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5860605a89e91a4',t:'MTc5NDMyMzg0MA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5860605a89e91a4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
