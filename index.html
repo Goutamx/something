@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.7">
+<html lang="en" data-sl-build="8.9">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4113,11 +4113,14 @@ tr.sl-ghost{ display:none !important; }
     }
     .sl-cav{ font-weight:800; letter-spacing:0; text-shadow:0 1px 2px rgba(0,0,0,.20); }
     .sl-cav.grp{ text-shadow:none; font-weight:700; }
+    /* 8.9 -- was an 18px CIRCLE with no shadow, the only round monogram in the
+       app: everywhere else they are rounded squares (this one's big brother
+       uses 6px, .sl-mav uses 8px). Square and larger now, so Notes and chat
+       read the same as the board. */
     .sl-mono-chip.sm{
-        width:18px; height:18px; font-size:11px; border-radius:50%;
-        margin-right:6px; vertical-align:-4px;
-        /* no shadow at this size — it only smears an 11px letter */
-        text-shadow:none;
+        width:22px; height:22px; font-size:12px; border-radius:7px;
+        margin-right:6px; vertical-align:-5px;
+        text-shadow:0 1px 2px rgba(0,0,0,.20);
     }
     .v2-avatar-btn.sl-has-glyph{
         background:var(--sl-mono, var(--v2-soft-2)) !important;
@@ -4156,6 +4159,85 @@ tr.sl-ghost{ display:none !important; }
     .sl-note-comment-body{ flex:1; min-width:0; }
     .sl-note-comment-text{ padding-left:24px; overflow-wrap:anywhere; }
     .sl-note-comment > .vote-btn{ flex-shrink:0; }
+    /* 8.8 -- a native file control inside a textbox style looked broken.
+       The input stays in the DOM and fully keyboard-accessible; it is just
+       transparent and stretched over a real button. */
+    .sl-file{
+        display:flex; align-items:center; gap:10px; margin-top:7px;
+        position:relative; min-width:0;
+    }
+    .sl-file input[type="file"]{
+        position:absolute; inset:0; width:100%; height:100%;
+        opacity:0; margin:0; padding:0; cursor:pointer;
+    }
+    .sl-file-btn{
+        display:inline-flex; align-items:center; gap:7px; flex:none;
+        padding:8px 13px; border-radius:10px;
+        border:1px solid var(--l5c-border, rgba(148,163,184,.35));
+        background:var(--bg-card, #fff); color:var(--text-main, #111);
+        font-size:.86rem; font-weight:600; white-space:nowrap;
+    }
+    .sl-file:hover .sl-file-btn{ filter:brightness(.97); }
+    .sl-file input:focus-visible + .sl-file-btn{
+        outline:2px solid var(--c-active, #5E6AD2); outline-offset:2px;
+    }
+    .sl-file-name{
+        font-size:.82rem; opacity:.7; min-width:0;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    /* ------------------------------------------------------------------ 8.9
+       DIRECTION B — Command Center, for the Messages tab only.
+       Hero stat tile, chat as one full-width bento card, 250px rail, chips
+       above the search. Everything below is presentation; the markup ids and
+       the panes themselves are unchanged.
+       ------------------------------------------------------------------ */
+    .b-msg{ display:flex; flex-direction:column; gap:14px; }
+    .b-hero{
+        display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+        padding:15px 18px; border-radius:12px;
+        background:var(--c-fill); border:1px solid var(--c-line);
+    }
+    .b-kick{
+        font-size:.68rem; font-weight:700; letter-spacing:.10em;
+        text-transform:uppercase; color:var(--c-ink-3); flex:none;
+    }
+    .b-hero-row{ display:flex; gap:26px; margin-left:auto; }
+    .b-stat{ display:flex; flex-direction:column; gap:3px; }
+    .b-stat b{ font-size:1.35rem; font-weight:800; letter-spacing:-.02em; line-height:1; }
+    .b-stat span{ font-size:.72rem; color:var(--c-ink-3); }
+    .b-chat-card{ padding:0; overflow:hidden; }
+    .b-chat-card .sl-msgr{ border:0; border-radius:0; }
+    /* B's rail is narrower than the 288px the old layout used. Scoped to
+       desktop: an unscoped rule here would out-rank the phone media query
+       further up the sheet (a media query adds no specificity) and leave the
+       layout stuck at two columns on a 390px screen. */
+    @media (min-width:901px){
+        .sl-msgr{ grid-template-columns:250px minmax(0,1fr); }
+        .sl-msgr.has-ctx{ grid-template-columns:250px minmax(0,1fr) 300px; }
+    }
+    /* chips above the search field, B's order */
+    .sl-rail-head{ display:flex; flex-direction:column; gap:8px; }
+    .sl-tabs{ margin-top:0; }
+    /* the board tile at the top of the group thread */
+    .b-evt{
+        display:flex; align-items:center; gap:10px; flex:none;
+        margin:10px 12px 0; padding:9px 12px;
+        border:1px solid var(--c-line); border-radius:10px; background:var(--c-fill);
+    }
+    .b-evt-ic{
+        width:30px; height:30px; border-radius:8px; flex:none;
+        display:grid; place-items:center;
+        background:var(--sl-accent-soft); color:var(--c-active);
+    }
+    .b-evt-ic .material-symbols-rounded{ font-size:17px; }
+    .b-evt-t{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .b-evt-t b{ font-size:.82rem; font-weight:700; }
+    .b-evt-t span{ font-size:.74rem; color:var(--c-ink-3); }
+    .b-evt-btn{ margin-left:auto; flex:none; padding:5px 11px; font-size:.76rem; }
+    @media (max-width:900px){
+        .b-hero{ gap:12px; }
+        .b-hero-row{ margin-left:0; gap:18px; width:100%; }
+    }
     </style>
     <script>
     /* V7.11 - monogram avatars. One letter, on the person's own colour. */
@@ -4190,6 +4272,28 @@ tr.sl-ghost{ display:none !important; }
             var h = 0, t = String(seed == null ? '' : seed);
             for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 9973;
             return TINTS[h % TINTS.length];
+        };
+        /* 8.8 -- ONE way to decide what colour somebody's monogram is.
+           Three call sites used to disagree:
+             Leaderboard : m.avatarColor            -> indigo #5E6AD2 when unset
+             Notes       : colour || slTint(uid)    -> the 7-colour hash
+             Messages    : colour || tint(uid)      -> a private copy of the hash
+           So one person was a different colour on each tab, AND every member
+           who never picked a colour came out the SAME indigo on the board.
+           Rule: your colour if you picked one, else a colour derived from your
+           uid -- identical everywhere. */
+        window.slAvatarColor = function (m, uid) {
+            var c = m && (m.avatarColor || m.senderColor || m.authorColor);
+            if (c) return c;
+            return window.slTint(uid || (m && m.uid) || (m && m.displayName) || '');
+        };
+        /* the signed-in uid, for your own cards (your colour lives in
+           localStorage, not in the member doc you read off the board) */
+        window.slMyUid = function () {
+            try {
+                var a = window.firebase && window.firebase.auth && window.firebase.auth();
+                return (a && a.currentUser && a.currentUser.uid) || '';
+            } catch (e) { return ''; }
         };
         /* the colour dots inside the join-league card */
         document.addEventListener('click', function (ev) {
@@ -4498,7 +4602,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v28 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v30 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -7667,13 +7771,22 @@ var LEAGUE_FIREBASE_CONFIG = {
     function renderBoard() {
         var body = document.getElementById('leagueBoardBody');
         if (!body) return;
-        var rows = membersCache.slice().sort(function (a, b) { return (b[sortMetric] || 0) - (a[sortMetric] || 0); });
+        /* 8.8 -- the board had no tiebreak at all: two members level on the
+           chosen metric kept whatever order the snapshot handed them, and that
+           order is not guaranteed to repeat. Same class of bug as the 8.7
+           standings sort. Resolve: metric, then XP, then progress, then uid. */
+        var rows = membersCache.slice().sort(function (a, b) {
+            return ((b[sortMetric] || 0) - (a[sortMetric] || 0))
+                || ((b.xp || 0) - (a.xp || 0))
+                || ((b.percent || 0) - (a.percent || 0))
+                || (((a.uid || '') < (b.uid || '')) ? -1 : ((a.uid || '') > (b.uid || '')) ? 1 : 0);
+        });
         if (!rows.length) { body.innerHTML = '<tr><td colspan="6" class="league-updated">No members yet — share your league code with your friend.</td></tr>'; return; }
         body.innerHTML = rows.map(function (m, i) {
             var me = currentUser && m.uid === currentUser.uid;
             var avatar = m.photo
                 ? '<img class="league-avatar-img" src="' + m.photo + '" alt="">'
-                : '<span class="league-avatar" style="background:' + escapeHtml(window.slMonoBg(m.avatarColor)) + ';font-size:19px">' + escapeHtml(window.slLetter(m.displayName)) + '</span>';
+                : '<span class="league-avatar" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColor(m, m.uid))) + ';font-size:19px">' + escapeHtml(window.slLetter(m.displayName)) + '</span>';
             var presence = '<div class="league-presence" data-uid="' + m.uid + '"></div>';
             var bio = (m.bio || m.school) ? '<div class="league-bio">' + escapeHtml([m.bio, m.school].filter(Boolean).join(' · ')) + '</div>' : '';
             var nudge = me ? '' : '<button class="btn secondary nudge-btn" data-uid="' + m.uid + '" data-name="' + escapeHtml(m.displayName || 'Student') + '" type="button" title="Send a nudge">👋 Nudge</button>';
@@ -8036,7 +8149,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         card.className = 'card fade-in'; card.id = 'socialProfileCard'; card.style.marginBottom = '14px';
         var preview = pr.photo
             ? '<img class="league-avatar-img" id="pfPreview" src="' + pr.photo + '" style="width:52px;height:52px;" alt="">'
-            : '<span class="league-avatar" id="pfPreview" style="background:' + window.slMonoBg(pr.avatarColor) + ';width:52px;height:52px;font-size:28px;">' + escapeHtml(window.slLetter(pr.name)) + '</span>';
+            : '<span class="league-avatar" id="pfPreview" style="background:' + window.slMonoBg(window.slAvatarColor(pr, (me && me.uid) || window.slMyUid())) + ';width:52px;height:52px;font-size:28px;">' + escapeHtml(window.slLetter(pr.name)) + '</span>';
         card.innerHTML =
             '<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">account_circle</span> My Profile</div>' +
             '<div style="display:flex;gap:14px;align-items:center;margin-bottom:12px;">' + preview +
@@ -8047,7 +8160,10 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<label>Bio<input class="input" id="pfBio" maxlength="120" value="' + escapeHtml(pr.bio || '') + '" placeholder="e.g. Class 12 Arts · Target: 95%"></label>' +
                 '<label>School<input class="input" id="pfSchool" maxlength="60" value="' + escapeHtml(pr.school || '') + '" placeholder="School name (optional)"></label>' +
                 '<label>Class / Section<input class="input" id="pfClass" maxlength="30" value="' + escapeHtml(pr.classLabel || '') + '" placeholder="e.g. 11-B"></label>' +
-                '<label>Profile photo <span style="font-weight:500;">(optional, resized automatically)</span><input class="input" type="file" id="pfPhoto" accept="image/*"></label>' +
+                '<label>Profile photo <span style="font-weight:500;">(optional, resized automatically)</span>' +
+                    '<span class="sl-file"><input type="file" id="pfPhoto" accept="image/*">' +
+                    '<span class="sl-file-btn">Choose photo</span>' +
+                    '<span class="sl-file-name" id="pfPhotoName">No file chosen</span></span></label>' +
             '</div>' +
             '<div class="league-row" style="margin-top:13px;"><button class="btn" id="pfSave" type="button">Save Profile</button>' +
             (pr.photo ? '<button class="btn secondary" id="pfRemovePhoto" type="button">Remove Photo</button>' : '') +
@@ -8075,6 +8191,8 @@ var LEAGUE_FIREBASE_CONFIG = {
         var photoInput = document.getElementById('pfPhoto');
         if (photoInput) photoInput.addEventListener('change', function () {
             var file = photoInput.files && photoInput.files[0];
+            var lbl = document.getElementById('pfPhotoName');
+            if (lbl) lbl.textContent = file ? (file.name || 'Photo selected') : 'No file chosen';
             if (!file) return;
             var img = new Image();
             img.onload = function () {
@@ -8102,6 +8220,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             setProfile(p);
             var st = document.getElementById('pfStatus');
             if (st) st.textContent = 'Saving…';
+            try { document.dispatchEvent(new CustomEvent('sl:profile-saved')); } catch (ev) {}
             syncProfileToCloud().then(function () {
                 if (st) { st.textContent = 'Profile saved & synced ✓'; st.className = 'league-status ok'; }
                 var lb = document.getElementById('leagueBtn'); if (lb) setTimeout(function () { lb.click(); }, 650);
@@ -9570,7 +9689,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function openProfile(uid) {
         var m = membersByUid[uid]; if (!m) return;
         var modal = document.getElementById('profileModal'); var body = document.getElementById('profileModalBody'); if (!modal||!body) return;
-        var avatar = m.photo ? '<img class="league-avatar-img" src="'+m.photo+'" style="width:58px;height:58px;" alt="">' : '<span class="league-avatar" style="background:'+window.slMonoBg(m.avatarColor)+';width:58px;height:58px;font-size:30px;">'+escapeHtml(window.slLetter(m.displayName))+'</span>';
+        var avatar = m.photo ? '<img class="league-avatar-img" src="'+m.photo+'" style="width:58px;height:58px;" alt="">' : '<span class="league-avatar" style="background:'+window.slMonoBg(window.slAvatarColor(m, uid))+';width:58px;height:58px;font-size:30px;">'+escapeHtml(window.slLetter(m.displayName))+'</span>';
         var subjects = (m.subjects||[]).map(subjectName).join(', ') || 'Subjects not shared';
         body.innerHTML = '<div style="display:flex;gap:14px;align-items:center;margin-bottom:13px;">'+avatar+'<div><div style="font-size:1.2rem;font-weight:800;">'+escapeHtml(m.displayName||'Student')+(me&&uid===me.uid?' (You)':'')+'</div><div class="league-bio">'+escapeHtml([m.bio,m.school,m.classLabel].filter(Boolean).join(' · '))+'</div><div class="league-bio">Stream: '+escapeHtml(m.stream||'Not set')+'</div></div></div>' +
             '<div class="league-row"><span class="pill"><b>'+(m.xp||0)+'</b>&nbsp;XP</span><span class="pill">'+(m.percent||0)+'% complete</span><span class="pill">'+(m.chaptersDone||0)+'/'+(m.chaptersTotal||0)+' chapters</span><span class="pill">'+(m.focusHidden?'Focus private':(m.focusWeekMin||0)+' focus min/wk')+'</span><span class="pill">🔥 '+(m.streak||0)+' day streak</span></div>' +
@@ -9653,10 +9772,21 @@ var LEAGUE_FIREBASE_CONFIG = {
         var names = {English:'English',History:'History',Geography:'Geography',PoliticalScience:'Political Science',Math:'Mathematics',Physics:'Physics',Chemistry:'Chemistry',Biology:'Biology',Accountancy:'Accountancy',BusinessStudies:'Business Studies',Economics:'Economics',ComputerScience:'Computer Science',Sociology:'Sociology',Psychology:'Psychology',Agriculture:'Agriculture',PhysicalEducation:'Physical Education',Entrepreneurship:'Entrepreneurship'};
         return names[k] || (window.subjectDisplayNames && subjectDisplayNames[k]) || k;
     }
+    /* 8.8 -- notes and comments written before 8.8 carry no authorColor at
+       all. Without this the wrong colour is baked in forever, so look the
+       member up in the live member index first, and only then fall back to the
+       uid hash. */
+    function noteAuthorColour(uid, colour) {
+        if (colour) return colour;
+        var m = (window.__slMembers && window.__slMembers[uid]) || null;
+        if (m && m.avatarColor) return m.avatarColor;
+        return window.slTint(uid);
+    }
     function noteAuthor(name, uid, colour, bold) {
         var tag = bold ? 'b' : 'span';
+        var _bg = window.slMonoBg(noteAuthorColour(uid, colour));
         return '<span class="sl-note-author">' +
-            '<span class="sl-mono-chip sm" style="background:' + escapeHtml(window.slMonoBg(colour || window.slTint(uid))) + '">' + escapeHtml(window.slLetter(name)) + '</span>' +
+            '<span class="sl-mono-chip sm" style="background:' + escapeHtml(_bg) + '">' + escapeHtml(window.slLetter(name)) + '</span>' +
             '<' + tag + ' class="sl-note-author-name">' + escapeHtml(name || 'Student') + '</' + tag + '></span>';
     }
     function ensureFB() {
@@ -9762,6 +9892,9 @@ var LEAGUE_FIREBASE_CONFIG = {
                 subjectKey: subjSel.value, book: document.getElementById('snBook').value,
                 chapter: document.getElementById('snChapter').value,
                 authorUid: me.uid, authorName: p.name || 'Student', authorEmoji: p.emoji || '📚',
+                /* 8.8 -- notes never stored the author's colour, so the byline
+                   always fell back to the uid hash and never matched the board. */
+                authorColor: (p.avatarColor || window.slTint(me.uid)),
                 votes: {}, commentsCount: 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function(){
@@ -9876,7 +10009,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             ev.preventDefault();
             var input = document.getElementById('noteCommentInput'); var text=(input.value||'').trim(); if(!text||!db||!me) return; input.value='';
             var p=profile();
-            db.collection('leagues').doc(code()).collection('sharedNotes').doc(id).collection('comments').add({text:text.slice(0,500), authorUid:me.uid, authorName:p.name||'Student', authorEmoji:p.emoji||'📚', createdAt:firebase.firestore.FieldValue.serverTimestamp()})
+            db.collection('leagues').doc(code()).collection('sharedNotes').doc(id).collection('comments').add({text:text.slice(0,500), authorUid:me.uid, authorName:p.name||'Student', authorEmoji:p.emoji||'📚', authorColor:(p.avatarColor||window.slTint(me.uid)), createdAt:firebase.firestore.FieldValue.serverTimestamp()})
             .then(function(){ return db.collection('leagues').doc(code()).collection('sharedNotes').doc(id).update({commentsCount: firebase.firestore.FieldValue.increment(1)}); }).catch(function(){});
         });
         if (commentsUnsub) commentsUnsub();
@@ -10755,7 +10888,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var head = el('div', 'v2-profile-head');
         var avatar = p.photo
             ? '<span class="v2-avatar"><img src="' + esc(p.photo) + '" alt=""></span>'
-            : '<span class="v2-avatar" style="background:' + esc(window.slMonoBg(p.avatarColor)) + ';color:#fff;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.22)">' + esc(window.slLetter(p.name)) + '</span>';
+            : '<span class="v2-avatar" style="background:' + esc(window.slMonoBg(window.slAvatarColor(p, window.slMyUid()))) + ';color:#fff;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.22)">' + esc(window.slLetter(p.name)) + '</span>';
         head.innerHTML = avatar +
             '<div style="min-width:200px;flex:1 1 auto;">' +
                 '<div class="v2-profile-name">' + esc(p.name || 'Add your name') + '</div>' +
@@ -11244,7 +11377,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             av.setAttribute('aria-label', 'My profile');
             av.classList.toggle('sl-has-photo', !!photo);
             av.classList.toggle('sl-has-glyph', !photo && !!glyph);
-            av.style.setProperty('--sl-mono', window.slMonoBg(pr.avatarColor));
+            av.style.setProperty('--sl-mono', window.slMonoBg(window.slAvatarColor(pr, window.slMyUid())));
             if (av.getAttribute('data-av') !== mark) {
                 av.setAttribute('data-av', mark);
                 if (photo) av.innerHTML = '<img class="sl-av-img" src="' + photo + '" alt="">';
@@ -11433,6 +11566,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         show(p.saveRow, open);
         if (p.colors) show(p.colors.parentNode, open);     // the whole “Avatar colour” block
         show(card.querySelector('#slPfEdit'), !open);
+        show(card.querySelector('#slPfCancel'), open);
         show(card.querySelector('#slPfNote'), !open);
         card.classList.toggle('sl-pf-collapsed', !open);
     }
@@ -11458,6 +11592,22 @@ var LEAGUE_FIREBASE_CONFIG = {
                 if (first && first.focus) first.focus();
             });
             p.previewRow.appendChild(edit);
+            /* 8.8 -- the editor was a one-way door. Opening it set `editing`
+               for good and then hid the only control that could reopen it, so
+               the clean card was unreachable without a reload. And decorate()
+               runs on a 1.2 s interval, so it re-applied `open` forever.
+               Now it is a real toggle: Cancel, or a successful save. */
+            var cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.id = 'slPfCancel';
+            cancel.className = 'btn secondary sl-pf-cancel';
+            cancel.textContent = 'Cancel';
+            cancel.style.marginLeft = '8px';
+            cancel.addEventListener('click', function () {
+                editing = false;
+                setMode(card, false);
+            });
+            p.previewRow.appendChild(cancel);
         }
 
         // a quiet helper line under the header while collapsed
@@ -11484,6 +11634,11 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     setInterval(decorate, 1200);
     document.addEventListener('sl:signed-in', function () { setTimeout(decorate, 200); });
+    document.addEventListener('sl:profile-saved', function () {
+        editing = false;
+        var c = document.getElementById('socialProfileCard');
+        if (c) setMode(c, false);
+    });
 })();
 </script>
 
@@ -12155,7 +12310,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 members = next;
                 myReads = (members[me.uid] && members[me.uid].reads) || {};
                 if (!alive()) return;
-                renderRail(); renderThreadHead(); renderCtx(); renderTyping();
+                renderRail(); renderThreadHead(); renderB(); renderCtx(); renderTyping();
                 // read receipts change what my stamps say, so repaint the tail
                 paintMessages();
             }, function () {}));
@@ -12635,7 +12790,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (s) { s.classList.remove('on'); s.querySelector('input').value = ''; }
         var root = $('slGroupChat');
         if (root) root.classList.add('mob-open');
-        renderThreadHead(); renderPin(); paintMessages(); renderRail(); renderTyping();
+        renderThreadHead(); renderPin(); paintMessages(); renderRail(); renderB(); renderTyping();
         var ta = $('slMsgInput');
         if (ta) ta.placeholder = type === 'group' ? 'Message your class…'
             : 'Message ' + (((members[uid] || {}).displayName || 'your classmate').split(' ')[0]) + '…';
@@ -12869,18 +13024,73 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
     }
 
+    /* --------------------------------------- 8.9 Direction B: hero + board tile
+       Both are pure presentation over data the module already holds, so nothing
+       new is subscribed to and nothing can stall the page. */
+    function renderB() {
+        var hero = $('bMsgHero');
+        if (hero) {
+            var ids = Object.keys(members);
+            var mineId = me ? me.uid : '';
+            var online = ids.filter(function (u) { return live(u); }).length;
+            var unread = 0;
+            ids.forEach(function (u) { if (u !== mineId) unread += dmUnread(u); });
+            hero.innerHTML =
+                '<span class="b-kick">League \u00b7 ' + esc(code) + '</span>' +
+                '<div class="b-hero-row">' +
+                    '<div class="b-stat"><b>' + ids.length + '</b><span>conversation' + (ids.length === 1 ? '' : 's') + '</span></div>' +
+                    '<div class="b-stat"><b>' + unread + '</b><span>unread</span></div>' +
+                    '<div class="b-stat"><b>' + online + '</b><span>online</span></div>' +
+                '</div>';
+        }
+        var evt = $('bEvt');
+        if (!evt) return;
+        // the board tile belongs to the group thread only — a DM has no board
+        if (conv.type !== 'group') { evt.innerHTML = ''; evt.style.display = 'none'; return; }
+        var myId = me ? me.uid : '';
+        var top = null;
+        Object.keys(members).forEach(function (u) {
+            if (u === myId) return;
+            if (!top || (members[u].xp || 0) > (members[top].xp || 0)) top = u;
+        });
+        if (!top) { evt.innerHTML = ''; evt.style.display = 'none'; return; }
+        var lead = (members[top].xp || 0) - ((members[myId] && members[myId].xp) || 0);
+        var line = lead > 0 ? ' is ' + lead + ' XP ahead of you.'
+            : lead < 0 ? ' is ' + (-lead) + ' XP behind you.'
+            : ' is level with you.';
+        evt.style.display = '';
+        evt.innerHTML =
+            '<span class="b-evt-ic"><span class="material-symbols-rounded">emoji_events</span></span>' +
+            '<span class="b-evt-t"><b>This week on the board</b>' +
+                '<span>' + esc(members[top].displayName || 'Student') + line + '</span></span>' +
+            '<button type="button" class="btn secondary b-evt-btn" id="bEvtBoard">View board</button>';
+        var bb = $('bEvtBoard');
+        if (bb) bb.addEventListener('click', function () {
+            var lb = document.getElementById('leagueBtn');
+            if (lb) { lb.click(); return; }
+            var n = document.querySelector('.v2-nav-item[data-v2go="league"]');
+            if (n) n.click();
+        });
+    }
+
     /* ------------------------------------------------------------- skeleton */
     function skeleton() {
-        return '<div class="sl-msgr' + (ctxOpen ? ' has-ctx' : '') + '" id="slGroupChat">' +
+        /* 8.9 -- Direction B (Command Center). B puts a hero stat tile above
+           the page and wraps the chat in ONE full-width card, and it puts the
+           filter chips ABOVE the search field. Ids are untouched. */
+        return '<div class="b-msg">' +
+            '<div class="b-hero" id="bMsgHero"></div>' +
+            '<div class="card b-chat-card">' +
+            '<div class="sl-msgr' + (ctxOpen ? ' has-ctx' : '') + '" id="slGroupChat">' +
             '<aside class="sl-rail">' +
                 '<div class="sl-rail-head">' +
-                    '<label class="sl-search"><span class="material-symbols-rounded" style="font-size:16px">search</span>' +
-                        '<input id="slRailQ" type="text" placeholder="Search people or messages" autocomplete="off"></label>' +
                     '<div class="sl-tabs">' +
                         '<button type="button" class="sl-tab on" id="slTabAll">All</button>' +
                         '<button type="button" class="sl-tab" id="slTabDirect">Direct</button>' +
                         '<button type="button" class="sl-tab" id="slTabUnread">Unread</button>' +
                     '</div>' +
+                    '<label class="sl-search"><span class="material-symbols-rounded" style="font-size:16px">search</span>' +
+                        '<input id="slRailQ" type="text" placeholder="Search people or messages" autocomplete="off"></label>' +
                 '</div>' +
                 '<div class="sl-convos" id="slConvos"></div>' +
                 '<div class="sl-rail-foot" id="slRailFoot"></div>' +
@@ -12889,6 +13099,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<div class="sl-thr-head" id="slThrHead"></div>' +
                 '<div class="sl-pinbar" id="slPinBar" style="display:none"></div>' +
                 '<div class="sl-thr-search" id="slThrSearch"><input type="text" placeholder="Search in this chat" autocomplete="off"></div>' +
+                '<div class="b-evt" id="bEvt"></div>' +
                 '<div class="sl-thread-msgs" id="slMsgs"></div>' +
                 '<button type="button" class="sl-jump" id="slJump"><span class="material-symbols-rounded" style="font-size:15px">arrow_downward</span> Jump to latest</button>' +
                 '<div class="sl-typing" id="slTyping"></div>' +
@@ -12904,6 +13115,8 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '</div>' +
             '</section>' +
             '<aside class="sl-ctx" id="slCtx"></aside>' +
+            '</div>' +
+            '</div>' +
             '</div>' +
             '<div class="sl-sheet-wrap" id="slSheetWrap"></div>';
     }
@@ -12990,8 +13203,10 @@ var LEAGUE_FIREBASE_CONFIG = {
             // unknown/late auth: keep the new shell's shape, never the old cards
             var host = document.getElementById('chapterList');
             if (host && !authKnown) {
-                host.innerHTML = '<div class="sl-msgr" id="slGroupChat" data-sl-skel="1">' +
-                    '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div></div>';
+                host.innerHTML = '<div class="b-msg"><div class="card b-chat-card">' +
+                    '<div class="sl-msgr" id="slGroupChat" data-sl-skel="1">' +
+                    '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div>' +
+                    '</div></div></div>';
                 return;
             }
             if (origRender) origRender();
@@ -13009,7 +13224,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             bind();
             subscribe();
         }
-        renderRail(); renderThreadHead(); renderCtx(); renderTyping(); renderReply(); paintMessages();
+        renderRail(); renderThreadHead(); renderB(); renderCtx(); renderTyping(); renderReply(); paintMessages();
         restoreDraft();
         markRead(Date.now());
     }
@@ -13028,7 +13243,7 @@ var LEAGUE_FIREBASE_CONFIG = {
 
         var prevClean = S.cleanGhosts;
         // the old refresh hook re-rendered the DM grid; keep it harmless
-        S.refresh = function () { if (mounted) { renderRail(); paintMessages(); } };
+        S.refresh = function () { if (mounted) { renderRail(); renderB(); paintMessages(); } };
     }
     arm(0);
 
@@ -13269,5 +13484,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58aea9ed90e91b8',t:'MTc5NDM3NTE0Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58aea9ed90e91b8',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
