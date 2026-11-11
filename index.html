@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.9">
+<html lang="en" data-sl-build="8.10">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4207,14 +4207,19 @@ tr.sl-ghost{ display:none !important; }
     .b-stat span{ font-size:.72rem; color:var(--c-ink-3); }
     .b-chat-card{ padding:0; overflow:hidden; }
     .b-chat-card .sl-msgr{ border:0; border-radius:0; }
-    /* B's rail is narrower than the 288px the old layout used. Scoped to
-       desktop: an unscoped rule here would out-rank the phone media query
-       further up the sheet (a media query adds no specificity) and leave the
-       layout stuck at two columns on a 390px screen. */
+    /* 8.10 -- Direction A. Scoped to desktop: an unscoped rule here would
+       out-rank the phone media query further up the sheet (a media query adds
+       no specificity) and leave the layout stuck at two columns on a 390px
+       screen. Height is set at runtime by fitHeight(); the clamp below is only
+       a fallback for the moment before it runs. */
     @media (min-width:901px){
-        .sl-msgr{ grid-template-columns:250px minmax(0,1fr); }
-        .sl-msgr.has-ctx{ grid-template-columns:250px minmax(0,1fr) 300px; }
+        .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
+            height:clamp(380px, calc(100vh - 420px), 980px); }
+        .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
+    .sl-msgr.sl-fullbleed{ width:100%; }
+    /* the B card wrapper is gone, so the box carries its own edge again */
+    .sl-msgr.sl-fullbleed{ border-radius:12px; }
     /* chips above the search field, B's order */
     .sl-rail-head{ display:flex; flex-direction:column; gap:8px; }
     .sl-tabs{ margin-top:0; }
@@ -4602,7 +4607,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v30 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v31 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -12791,6 +12796,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var root = $('slGroupChat');
         if (root) root.classList.add('mob-open');
         renderThreadHead(); renderPin(); paintMessages(); renderRail(); renderB(); renderTyping();
+        fitHeight();
         var ta = $('slMsgInput');
         if (ta) ta.placeholder = type === 'group' ? 'Message your class…'
             : 'Message ' + (((members[uid] || {}).displayName || 'your classmate').split(' ')[0]) + '…';
@@ -13024,6 +13030,23 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
     }
 
+    /* ------------------------------------------------- 8.10 fill the tab
+       The old rule was height:clamp(440px, calc(100vh - 322px), 800px). That
+       constant was wrong for the chrome that is actually above the box, so the
+       composer ended up 76px below the fold at every window size. Measure the
+       real offset instead: top of the box to the bottom of the viewport. */
+    function fitHeight() {
+        var m = $('slGroupChat');
+        if (!m) return;
+        // phones keep the stylesheet's own height rule
+        if (window.innerWidth <= 900) { m.style.height = ''; return; }
+        var top = m.getBoundingClientRect().top + (window.pageYOffset || 0);
+        var h = window.innerHeight - top - 22;      // 22px of air at the bottom
+        if (h < 380) h = 380;
+        if (h > 980) h = 980;
+        m.style.height = Math.round(h) + 'px';
+    }
+
     /* --------------------------------------- 8.9 Direction B: hero + board tile
        Both are pure presentation over data the module already holds, so nothing
        new is subscribed to and nothing can stall the page. */
@@ -13078,10 +13101,11 @@ var LEAGUE_FIREBASE_CONFIG = {
         /* 8.9 -- Direction B (Command Center). B puts a hero stat tile above
            the page and wraps the chat in ONE full-width card, and it puts the
            filter chips ABOVE the search field. Ids are untouched. */
-        return '<div class="b-msg">' +
-            '<div class="b-hero" id="bMsgHero"></div>' +
-            '<div class="card b-chat-card">' +
-            '<div class="sl-msgr' + (ctxOpen ? ' has-ctx' : '') + '" id="slGroupChat">' +
+        /* 8.10 -- Direction A: the chat IS the tab content. No hero tile, no
+           card wrapper, no surrounding margin -- the rail and the thread run
+           to the edges of the content column. The page heading above it
+           (eyebrow / h1 / subtitle) belongs to the shell and is untouched. */
+        return '<div class="sl-msgr sl-fullbleed' + (ctxOpen ? ' has-ctx' : '') + '" id="slGroupChat">' +
             '<aside class="sl-rail">' +
                 '<div class="sl-rail-head">' +
                     '<div class="sl-tabs">' +
@@ -13116,12 +13140,11 @@ var LEAGUE_FIREBASE_CONFIG = {
             '</section>' +
             '<aside class="sl-ctx" id="slCtx"></aside>' +
             '</div>' +
-            '</div>' +
-            '</div>' +
             '<div class="sl-sheet-wrap" id="slSheetWrap"></div>';
     }
 
     function bind() {
+        window.addEventListener('resize', fitHeight);
         $('slRailQ').addEventListener('input', function (e) { railQ = e.target.value; renderRail(); });
         $('slTabAll').addEventListener('click', function () { filter = 'all'; renderRail(); });
         $('slTabDirect').addEventListener('click', function () { filter = 'direct'; renderRail(); });
@@ -13203,10 +13226,9 @@ var LEAGUE_FIREBASE_CONFIG = {
             // unknown/late auth: keep the new shell's shape, never the old cards
             var host = document.getElementById('chapterList');
             if (host && !authKnown) {
-                host.innerHTML = '<div class="b-msg"><div class="card b-chat-card">' +
-                    '<div class="sl-msgr" id="slGroupChat" data-sl-skel="1">' +
+                host.innerHTML = '<div class="sl-msgr sl-fullbleed" id="slGroupChat" data-sl-skel="1">' +
                     '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div>' +
-                    '</div></div></div>';
+                    '</div>';
                 return;
             }
             if (origRender) origRender();
@@ -13225,6 +13247,12 @@ var LEAGUE_FIREBASE_CONFIG = {
             subscribe();
         }
         renderRail(); renderThreadHead(); renderB(); renderCtx(); renderTyping(); renderReply(); paintMessages();
+        /* The first measurement runs before the shell header has settled: it
+           reads a box top ~170px too low and leaves dead space under the chat
+           (measured 132px at a 800px window). Re-measure as the page stops
+           moving. Cheap, idempotent, and it self-corrects. */
+        fitHeight();
+        [60, 200, 500, 1200].forEach(function (d) { setTimeout(fitHeight, d); });
         restoreDraft();
         markRead(Date.now());
     }
@@ -13243,7 +13271,7 @@ var LEAGUE_FIREBASE_CONFIG = {
 
         var prevClean = S.cleanGhosts;
         // the old refresh hook re-rendered the DM grid; keep it harmless
-        S.refresh = function () { if (mounted) { renderRail(); renderB(); paintMessages(); } };
+        S.refresh = function () { if (mounted) { renderRail(); renderB(); paintMessages(); fitHeight(); } };
     }
     arm(0);
 
@@ -13484,5 +13512,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58aea9ed90e91b8',t:'MTc5NDM3NTE0Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58aea9ed90e91b8',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58b22306ddbcda0',t:'MTc5NDM3NzQyMw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58b22306ddbcda0',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
