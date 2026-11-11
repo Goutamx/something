@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.6">
+<html lang="en" data-sl-build="8.7">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4498,7 +4498,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.6</b> · offline cache studyleague-v27 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v28 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -9421,7 +9421,8 @@ var LEAGUE_FIREBASE_CONFIG = {
     function computeStandings(weeksData) {
         var current = currentWeekId(); var table = {};
         function row(uid, score) {
-            if (!table[uid]) table[uid] = { uid:uid, displayName:(score&&score.displayName)||'Student', emoji:(score&&score.emoji)||'📚', avatarColor:(score&&score.avatarColor)||'', stream:(score&&score.stream)||'', points:0, wins:0, ties:0, totalStudy:0, thisWeek:0, activeDays:0, results:[] };
+            if (!table[uid]) table[uid] = { uid:uid, displayName:(score&&score.displayName)||'Student', emoji:(score&&score.emoji)||'📚', avatarColor:(score&&score.avatarColor)||'', stream:(score&&score.stream)||'', points:0, wins:0, ties:0, totalStudy:0, thisWeek:0, activeDays:0, results:[],
+                                    sd:0, h2h:{} };   /* 8.7: scoreDiff + head-to-head */
             return table[uid];
         }
         Object.keys(weeksData).forEach(function(weekId){
@@ -9437,25 +9438,71 @@ var LEAGUE_FIREBASE_CONFIG = {
                    up (wps >= 10), so with an odd number of players one person banked a
                    free win every week while everyone else had to actually beat
                    somebody. A bye is now worth the same as a draw: 1 point, a tie. */
-                if (!b) {
-                    if ((a.wps||0) >= 10) { row(a.uid,a).points += 1; row(a.uid,a).ties++; row(a.uid,a).results.push('D'); }
-                    else { row(a.uid,a).results.push('L'); }
+                var ra = row(a.uid, a), rb = b ? row(b.uid, b) : null;
+                if (!rb) {
+                    if ((a.wps||0) >= 10) { ra.points += 1; ra.ties++; ra.results.push('D'); }
+                    else { ra.results.push('L'); }
                     return;
+                }
+                /* ---- 8.7 tiebreak bookkeeping -----------------------------------
+                   sd is the goal-difference analogue: how much you beat opponents
+                   BY, not merely how much you scored. h2h records the meetings
+                   between two specific players. A bye contributes to neither,
+                   because there is no opponent to be better than. */
+                ra.sd += (a.wps||0) - (b.wps||0);
+                rb.sd += (b.wps||0) - (a.wps||0);
+                ra.h2h[b.uid] = ra.h2h[b.uid] || { pts:0, diff:0 };
+                rb.h2h[a.uid] = rb.h2h[a.uid] || { pts:0, diff:0 };
+                ra.h2h[b.uid].diff += (a.wps||0) - (b.wps||0);
+                rb.h2h[a.uid].diff += (b.wps||0) - (a.wps||0);
+                function award(r, n, opp) {
+                    r.points += n;
+                    if (n === 2) { r.wins++; r.results.push('W'); }
+                    else { r.ties++; r.results.push('D'); }
+                    r.h2h[opp].pts += n;
                 }
                 /* 8.4 -- 10 pts marks an active week. The old test only fired when BOTH
                    players were under it, so a player on 5 points still collected a
                    point from a "draw" whenever their opponent happened to be active.
                    Now the inactive side simply loses. */
                 var aIn = (a.wps||0) >= 10, bIn = (b.wps||0) >= 10;
-                if (!aIn && !bIn) { row(a.uid,a).results.push('L'); row(b.uid,b).results.push('L'); return; }
-                if (!aIn)  { row(b.uid,b).points+=2; row(b.uid,b).wins++; row(b.uid,b).results.push('W'); row(a.uid,a).results.push('L'); return; }
-                if (!bIn)  { row(a.uid,a).points+=2; row(a.uid,a).wins++; row(a.uid,a).results.push('W'); row(b.uid,b).results.push('L'); return; }
-                if (ga > gb) { row(a.uid,a).points+=2; row(a.uid,a).wins++; row(a.uid,a).results.push('W'); row(b.uid,b).results.push('L'); }
-                else if (gb > ga) { row(b.uid,b).points+=2; row(b.uid,b).wins++; row(b.uid,b).results.push('W'); row(a.uid,a).results.push('L'); }
-                else { row(a.uid,a).points+=1; row(a.uid,a).ties++; row(a.uid,a).results.push('D'); row(b.uid,b).points+=1; row(b.uid,b).ties++; row(b.uid,b).results.push('D'); }
+                if (!aIn && !bIn) { ra.results.push('L'); rb.results.push('L'); return; }
+                if (!aIn)  { award(rb, 2, a.uid); ra.results.push('L'); return; }
+                if (!bIn)  { award(ra, 2, b.uid); rb.results.push('L'); return; }
+                if (ga > gb)      { award(ra, 2, b.uid); rb.results.push('L'); }
+                else if (gb > ga) { award(rb, 2, a.uid); ra.results.push('L'); }
+                else { award(ra, 1, b.uid); award(rb, 1, a.uid); }
             });
         });
-        return Object.keys(table).map(function(k){return table[k];}).sort(function(a,b){ return b.points-a.points || b.totalStudy-a.totalStudy; });
+        /* 8.7 -- the full tiebreak cascade, football-style.
+             1 Champion Points         (league points)
+             2 score difference        (goal difference: what you beat people BY)
+             3 total Study Score       (goals scored)
+             4 wins                    (most victories)
+             5 head-to-head            (what happened when these two actually met)
+             6 this week's score       (current form)
+             7 active days             (consistency)
+             8 uid                     (deterministic — see below)
+           Step 8 is not cosmetic. Object.keys(weeksData) is populated inside each
+           promise's .then(), so it is in NETWORK COMPLETION ORDER. Without a final
+           stable key, two players still level after step 7 would swap ranks
+           between reloads for no reason at all. */
+        function h2hCmp(x, y) {
+            var a = (x.h2h || {})[y.uid], b = (y.h2h || {})[x.uid];
+            if (!a || !b) return 0;
+            return (b.pts - a.pts) || (b.diff - a.diff);
+        }
+        function tiebreak(x, y) {
+            return (y.points - x.points)
+                || ((y.sd || 0) - (x.sd || 0))
+                || (y.totalStudy - x.totalStudy)
+                || (y.wins - x.wins)
+                || h2hCmp(x, y)
+                || ((y.thisWeek || 0) - (x.thisWeek || 0))
+                || ((y.activeDays || 0) - (x.activeDays || 0))
+                || (x.uid < y.uid ? -1 : x.uid > y.uid ? 1 : 0);
+        }
+        return Object.keys(table).map(function(k){return table[k];}).sort(tiebreak);
     }
     function loadRecentWeeks() {
         var code = leagueCode(); if (!db || !code) return Promise.resolve({});
@@ -9504,7 +9551,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var list = document.getElementById('chapterList'); var h1=document.querySelector('#main h1');
         if (!list || !h1 || h1.textContent !== 'Leaderboard' || document.getElementById('challengeCard')) return;
         var card=document.createElement('div'); card.className='card fade-in'; card.id='challengeCard'; card.style.marginTop='14px';
-        card.innerHTML='<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">emoji_events</span> Weekly Challenge <span class="league-updated" style="margin-left:auto;">Win ⭐2 · Tie ⭐1</span></div><div id="challengeBody"><div class="todo-empty">Loading weekly challenge…</div></div><details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:650;">How ranking works</summary><div class="league-status">Every week you are paired with another league member. Your Study Score (0–100) comes from difficulty-weighted progress (40), focus effort vs your goal (25), active days (20), chapters finished (10) and spreading work across subjects (5). Higher score on Sunday wins. Activities have no special weights — every step you set in Settings counts equally.</div></details>';
+        card.innerHTML='<div class="card-title"><span class="material-symbols-rounded" style="font-size:20px;vertical-align:middle;margin-right:6px;">emoji_events</span> Weekly Challenge <span class="league-updated" style="margin-left:auto;">Win ⭐2 · Tie ⭐1</span></div><div id="challengeBody"><div class="todo-empty">Loading weekly challenge…</div></div><details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:650;">How ranking works</summary><div class="league-status">Every week you are paired with another league member. Your Study Score (0–100) comes from difficulty-weighted progress (40), focus effort vs your goal (25), active days (20), chapters finished (10) and spreading work across subjects (5). Higher score on Sunday wins.<br><br><b>If two players finish level:</b> Champion Points, then score difference (how much you beat opponents by), then total Study Score, then most wins, then the result between those two players, then this week\'s score, then active days. Activities have no special weights — every step you set in Settings counts equally.</div></details>';
         list.appendChild(card); renderChallenge();
     }
 
@@ -13222,5 +13269,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5864a46ef5cf50f',t:'MTc5NDMyNjYzNg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5864a46ef5cf50f',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
