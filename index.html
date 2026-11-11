@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.11">
+<html lang="en" data-sl-build="8.12">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4630,7 +4630,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v32 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v33 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -12704,7 +12704,8 @@ var LEAGUE_FIREBASE_CONFIG = {
         var newDivDone = !!q;
         var prev = null;
 
-        if (conv.type === 'group' && !q) html.push(eventCard());
+        /* 8.12: no board tile in the thread. It was a Direction-B leftover
+           and the chosen direction (A, full-bleed chat) has no tile. */
 
         list.forEach(function (m) {
             var ts = millis(m.createdAt);
@@ -12796,6 +12797,10 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     function eventCard() {
+        /* 8.12: the board tile was removed from this tab. Kept as a no-op so
+           any other caller stays valid. */
+        return '';
+        // eslint-disable-next-line no-unreachable
         var others = Object.keys(members).filter(function (u) { return u !== me.uid; });
         if (!others.length) return '';
         var sorted = others.sort(function (a, b) { return (members[b].xp || 0) - (members[a].xp || 0); });
@@ -13158,7 +13163,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<div class="sl-thr-head" id="slThrHead"></div>' +
                 '<div class="sl-pinbar" id="slPinBar" style="display:none"></div>' +
                 '<div class="sl-thr-search" id="slThrSearch"><input type="text" placeholder="Search in this chat" autocomplete="off"></div>' +
-                '<div class="b-evt" id="bEvt"></div>' +
+                /* 8.12: no #bEvt board tile above the thread. */
                 '<div class="sl-thread-msgs" id="slMsgs"></div>' +
                 '<button type="button" class="sl-jump" id="slJump"><span class="material-symbols-rounded" style="font-size:15px">arrow_downward</span> Jump to latest</button>' +
                 '<div class="sl-typing" id="slTyping"></div>' +
@@ -13549,5 +13554,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58d4fe2cff1c166',t:'MTc5NDQwMDI2Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58d4fe2cff1c166',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58da48a6e1cf4d3',t:'MTc5NDQwMzczNA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58da48a6e1cf4d3',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
