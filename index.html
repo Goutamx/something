@@ -9323,7 +9323,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 var items = [];
                 snap.forEach(function (d) { items.push(Object.assign({ id: d.id }, d.data())); });
                 window.__slLive = { items: items };
-                paintLive();
+                paintLive();<!DOCTYPE html>
             }, function () { window.__slLive = { items: [] }; paintLive(); });
         } catch (e) {}
     }
@@ -9473,7 +9473,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             lock = { weekId:id, stream:reg.stream, subjects:reg.subjects.slice(),
                 dailyGoal:(typeof focusSettings!=='undefined' && focusSettings.dailyGoalMinutes) || 120,
                 targetWC: Math.max(5, Math.min(15, Math.round(reg.subjects.length * 2.5))) };
-            localStorage.setItem('challengeLock', JSON.stringify(lock));
+     <!DOCTYPE html>       localStorage.setItem('challengeLock', JSON.stringify(lock));
         }
         return lock;
     }
@@ -9712,7 +9712,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             uid = pres ? pres.dataset.uid : '';
         }
         if (!uid || !membersByUid[uid]) return;
-        openProfile(uid);
+        openProfile(uid);<!DOCTYPE html>
     });
     function openProfile(uid) {
         var m = membersByUid[uid]; if (!m) return;
@@ -10463,7 +10463,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function progClick(node) {
         if (!node) return;
         S.progClick = true;
-        try { node.click(); } finally { S.progClick = false; }
+<!DOCTYPE html>        try { node.click(); } finally { S.progClick = false; }
     }
 
     function go(tab) {
@@ -11735,7 +11735,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function initFB() {
         if (!CFG || !CFG.apiKey || typeof firebase === 'undefined' || !firebase.firestore) return false;
         try {
-            if (!firebase.apps.length) firebase.initializeApp(CFG);
+        <!DOCTYPE html>    if (!firebase.apps.length) firebase.initializeApp(CFG);
             db = firebase.firestore();
             auth = firebase.auth();
             auth.onAuthStateChanged(function (u) {
@@ -12657,7 +12657,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             });
             return;
         }
-        box.innerHTML =
+        box.inn<!DOCTYPE html>erHTML =
             '<div class="sl-ctx-head">In this league<button type="button" id="slCtxClose">✕</button></div>' +
             '<div class="sl-ctx-sec"><div class="sl-ctx-lab"><span>Online now</span><span>' + online.length + '</span></div>' +
                 (online.length ? online.map(function (u) {
@@ -12959,7 +12959,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (!db || !me) return;
         var coll = conv.type === 'group'
             ? db.collection('leagues').doc(code).collection('messages')
-            : db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, conv.uid)).collection('messages');
+            <!DOCTYPE html>: db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, conv.uid)).collection('messages');
         coll.doc(id).delete().catch(function (e) { status('Could not delete — ' + msg(e)); });
     }
 
@@ -13081,7 +13081,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         // phones keep the stylesheet's own height rule
         if (window.innerWidth <= 900) { m.style.height = ''; return; }
         var top = m.getBoundingClientRect().top + (window.pageYOffset || 0);
-        var h = window.innerHeight - top - 10;      // 10px of air at the bottom
+        var h = window.innerHeight - top - 0;      // 10px of air at the bottom
         if (h < 300) h = 300;      // was 380: bound on ordinary laptop windows
         if (h > 1200) h = 1200;    // was 980: wasted 172px on a 1440-tall screen
         m.style.height = Math.round(h) + 'px';
