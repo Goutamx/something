@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.10">
+<html lang="en" data-sl-build="8.11">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4214,12 +4214,35 @@ tr.sl-ghost{ display:none !important; }
        a fallback for the moment before it runs. */
     @media (min-width:901px){
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(380px, calc(100vh - 420px), 980px); }
+            height:clamp(300px, calc(100vh - 190px), 1200px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
     /* the B card wrapper is gone, so the box carries its own edge again */
     .sl-msgr.sl-fullbleed{ border-radius:12px; }
+
+    /* ---- 8.11: the Messages tab compacts its own page header.
+       Measured: the default header is 200px tall, so on a 687px window the
+       chat got only 380px -- and 380 is the min clamp, meaning they were
+       looking at the floor, not a computed height. The mockup this was chosen
+       from gives the chat 86% of the frame.
+       The "New message" button is a real control, so it is not deleted: it
+       moves to the top-right, inline with the eyebrow, where it costs no
+       vertical space. Header 200px -> ~94px. Scoped to this tab only. ---- */
+    body.sl-msgs-tab .main-header{ padding:12px 52px 6px !important; position:relative; }
+    body.sl-msgs-tab .main-header h1{ font-size:1.5rem !important; margin:4px 0 0 !important; }
+    body.sl-msgs-tab #subject-subtitle,
+    body.sl-msgs-tab .subject-subtitle{
+        margin-top:4px !important; font-size:.85rem !important; }
+    body.sl-msgs-tab .header-actions{
+        position:absolute !important; right:52px; top:10px; margin:0 !important; }
+    @media (max-width:1180px){
+        body.sl-msgs-tab .main-header{ padding:12px 20px 6px !important; }
+        body.sl-msgs-tab .header-actions{ right:20px; }
+    }
+    @media (max-width:900px){
+        body.sl-msgs-tab .header-actions{ position:static !important; margin:10px 0 0 !important; }
+    }
     /* chips above the search field, B's order */
     .sl-rail-head{ display:flex; flex-direction:column; gap:8px; }
     .sl-tabs{ margin-top:0; }
@@ -4607,7 +4630,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v31 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v32 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -10446,12 +10469,20 @@ var LEAGUE_FIREBASE_CONFIG = {
     function go(tab) {
         if (!TABS[tab]) return;
         document.body.classList.remove('sl-building');
+        /* 8.11: dropped on every tab switch and re-added by the Messages
+           branch below. Relying on the module's teardown() alone was not
+           enough: alive() only runs when Firestore pushes, so leaving the tab
+           left the class set and the next tab inherited a compact header. */
+        document.body.classList.remove('sl-msgs-tab');
         setTab(tab);
         var t = TABS[tab];
         document.body.classList.remove('v2-nav-open');
         if (tab === 'subjects') { renderSubjects(); }
         else if (tab === 'profile') { renderProfile(); }
-        else if (tab === 'messages') { renderMessagesPage(); }
+        else if (tab === 'messages') {
+            document.body.classList.add('sl-msgs-tab');
+            renderMessagesPage();
+        }
         else if (tab === 'activity') { S.feedMiss = null; renderSocialPage(tab); }
         else if (t.engine) {
             var b = $(t.engine);
@@ -12280,6 +12311,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     function teardown() {
         subs.forEach(function (u) { try { u(); } catch (e) {} });
         subs = [];
+        document.body.classList.remove('sl-msgs-tab');
         mounted = false;
     }
     function alive() {
@@ -13037,13 +13069,16 @@ var LEAGUE_FIREBASE_CONFIG = {
        real offset instead: top of the box to the bottom of the viewport. */
     function fitHeight() {
         var m = $('slGroupChat');
-        if (!m) return;
+        if (!m || !m.classList.contains('sl-fullbleed')) {
+            document.body.classList.remove('sl-msgs-tab');
+            return;
+        }
         // phones keep the stylesheet's own height rule
         if (window.innerWidth <= 900) { m.style.height = ''; return; }
         var top = m.getBoundingClientRect().top + (window.pageYOffset || 0);
-        var h = window.innerHeight - top - 22;      // 22px of air at the bottom
-        if (h < 380) h = 380;
-        if (h > 980) h = 980;
+        var h = window.innerHeight - top - 10;      // 10px of air at the bottom
+        if (h < 300) h = 300;      // was 380: bound on ordinary laptop windows
+        if (h > 1200) h = 1200;    // was 980: wasted 172px on a 1440-tall screen
         m.style.height = Math.round(h) + 'px';
     }
 
@@ -13243,6 +13278,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             var root = $('slGroupChat');
             if (window.innerWidth <= 900) root.classList.remove('mob-open');
             mounted = true;
+            /* lets the sheet compact the page header for this one tab */
+            document.body.classList.add('sl-msgs-tab');
             bind();
             subscribe();
         }
@@ -13512,5 +13549,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58d4fe2cff1c166',t:'MTc5NDQwMDI2Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58d4fe2cff1c166',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
