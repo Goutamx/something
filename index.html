@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.13">
+<html lang="en" data-sl-build="8.14">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4217,7 +4217,7 @@ tr.sl-ghost{ display:none !important; }
        a fallback for the moment before it runs. */
     @media (min-width:901px){
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(160px, calc(100vh - 190px), 1200px); }
+            height:clamp(480px, calc(100vh + 104px), 1600px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
@@ -4246,14 +4246,9 @@ tr.sl-ghost{ display:none !important; }
     @media (max-width:900px){
         body.sl-msgs-tab .header-actions{ position:static !important; margin:10px 0 0 !important; }
     }
-    /* 8.13: short windows — laptops with a lot of browser chrome, short
-       embeds — drop the subtitle line and trim the padding, so the box gets
-       that room instead. Moves the top edge 196 -> ~150, worth ~46px. */
-    @media (max-height:640px){
-        body.sl-msgs-tab .main-header{ padding:8px 52px 4px !important; }
-        body.sl-msgs-tab #subject-subtitle,
-        body.sl-msgs-tab .subject-subtitle{ display:none !important; }
-    }
+    /* 8.14: 8.13 hid the subtitle below 640px tall to free up space. Freeing
+       space is no longer the goal, and hiding it contradicts keeping the three
+       header lines. Removed. */
     /* chips above the search field, B's order */
     .sl-rail-head{ display:flex; flex-direction:column; gap:8px; }
     .sl-tabs{ margin-top:0; }
@@ -4641,7 +4636,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v34 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v35 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -13082,7 +13077,20 @@ var LEAGUE_FIREBASE_CONFIG = {
        The old rule was height:clamp(440px, calc(100vh - 322px), 800px). That
        constant was wrong for the chrome that is actually above the box, so the
        composer ended up 76px below the fold at every window size. Measure the
-       real offset instead: top of the box to the bottom of the viewport. */
+       real offset instead: top of the box to the bottom of the viewport.
+
+       8.14 — the box is MEANT to run past the bottom edge. The user wants to
+       scroll down to see the whole thing, so SL_BELOW is deliberate, not an
+       overflow bug. (8.13 tried to make it always fit; that was the opposite
+       of the request and is reverted here.)
+
+           SL_BELOW = 300  -> box ends 300px past the bottom, ~396px of scroll
+           SL_BELOW = 600  -> ~696px of scroll
+           SL_BELOW = 0    -> fills the screen exactly, no scroll
+
+       Phones are unaffected: fitHeight() skips them (width <= 900). */
+    var SL_BELOW = 300;
+
     function fitHeight() {
         var m = $('slGroupChat');
         if (!m || !m.classList.contains('sl-fullbleed')) {
@@ -13092,17 +13100,13 @@ var LEAGUE_FIREBASE_CONFIG = {
         // phones keep the stylesheet's own height rule
         if (window.innerWidth <= 900) { m.style.height = ''; return; }
         var top = m.getBoundingClientRect().top + (window.pageYOffset || 0);
-        var room = window.innerHeight - top - 10;   // 10px of air at the bottom
-        var h = room;
-        if (h < 300) h = 300;      // preferred floor — below this the box is useless
-        if (h > 1200) h = 1200;    // was 980: wasted 172px on a 1440-tall screen
-        /* 8.13: the floor must never push the composer off the screen. On a
-           window shorter than ~496px it did exactly that — measured 96px past
-           the fold at 400px tall, with the composer invisible and the only way
-           to reach it a scroll. If honouring the floor would overflow, take the
-           room that is actually there. 160px is the hard stop: past that a box
-           is not worth having, so we let it scroll rather than vanish. */
-        if (h > room) h = Math.max(160, room);
+        /* Deliberately taller than the screen: the bottom edge lands SL_BELOW
+           pixels below the fold, and the user scrolls to see the rest. #main is
+           the scroll container (overflow-y:auto), so this becomes real scroll
+           rather than being clipped — body is overflow:hidden. */
+        var h = window.innerHeight - top + SL_BELOW;
+        if (h < 480) h = 480;      // never so short the box is useless
+        if (h > 1600) h = 1600;    // never absurd on a very tall monitor
         m.style.height = Math.round(h) + 'px';
     }
 
@@ -13573,5 +13577,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58ed9b9da7b5972',t:'MTc5NDQxNjM5OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58ed9b9da7b5972',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
