@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.23">
+<html lang="en" data-sl-build="8.24">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3642,6 +3642,8 @@ tr.sl-ghost{ display:none !important; }
     padding:2px 8px; border-radius:999px; background:#fdecee; color:#b3243a; font-variant-numeric:tabular-nums;
 }
 [data-theme="dark"] .sl-now-pill{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.1); color:#e8eaee; }
+    /* 8.24: quiet a while, but the timer is still running -- dim, don't hide */
+    .sl-now-pill.is-stale{ opacity:.62; }
 [data-theme="dark"] .sl-now-pill.is-open{ background:rgba(94,106,210,.18); border-color:rgba(94,106,210,.45); }
 [data-theme="dark"] .sl-now-detail{ background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.1); }
 [data-theme="dark"] .sl-now-bar{ background:rgba(255,255,255,.1); }
@@ -4649,7 +4651,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v44';
+                var SW_CACHE = 'studyleague-v45';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -9336,6 +9338,10 @@ var LEAGUE_FIREBASE_CONFIG = {
         } catch (e) {}
     }
 
+    /* 8.24 -- a backgrounded tab gets its timers throttled, so refresh the
+       moment the user comes back rather than waiting out the interval. */
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) livePublish(); });
+
     function liveStop() {
         if (liveBeatTimer) { clearInterval(liveBeatTimer); liveBeatTimer = null; }
         try {
@@ -9346,10 +9352,17 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     function liveLeftMs(it) { return Math.max(0, Number(it && it.endAt || 0) - Date.now()); }
+    /* 8.24 -- a session used to disappear after two quiet minutes. Browsers
+       throttle timers in a background tab, so one missed 60s beat and a
+       still-running session vanished from everyone else's feed while the
+       timer kept counting. endAt is the trustworthy signal: if the timer has
+       not run out, the session is running. Staleness now dims the pill and is
+       reported -- it no longer deletes the person from the board. */
+    function liveStaleMs(it) { return Date.now() - Number((it && it.updatedAt) || 0); }
     function liveFresh(it) {
         if (!it || !it.endAt) return false;
         if (liveLeftMs(it) <= 0) return false;                       // timer finished
-        if (Date.now() - Number(it.updatedAt || 0) > 120000) return false;  // app went quiet
+        if (liveStaleMs(it) > 15 * 60000) return false;              // silent a long while
         return true;
     }
     function liveClock(ms) {
@@ -9371,7 +9384,9 @@ var LEAGUE_FIREBASE_CONFIG = {
         var pills = items.map(function (it) {
             var mine = (me && it.uid === me.uid);
             var mins = Math.max(0, Math.round((Number(it.endAt) - now) / 60000));
-            return '<button type="button" class="sl-now-pill' + (liveOpen === it.uid ? ' is-open' : '') + '" data-live="' + escapeHtml(it.uid) + '" aria-expanded="' + (liveOpen === it.uid ? 'true' : 'false') + '">' +
+            var stale = liveStaleMs(it) > 180000;
+            return '<button type="button" class="sl-now-pill' + (liveOpen === it.uid ? ' is-open' : '') + (stale ? ' is-stale' : '') +
+                '" title="' + (stale ? 'Last update ' + Math.round(liveStaleMs(it) / 60000) + 'm ago' : '') + '" data-live="' + escapeHtml(it.uid) + '" aria-expanded="' + (liveOpen === it.uid ? 'true' : 'false') + '">' +
                 '<span class="sl-now-av" style="background:' + escapeHtml(window.slMonoBg(it.avatarColor || window.slTint(it.uid))) + ';color:#fff;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(it.name)) + '</span>' +
                 '<b>' + escapeHtml(it.name || 'Student') + (mine ? ' (you)' : '') + '</b>' +
                 (it.target ? '<span class="sl-now-tg">' + escapeHtml(it.target) + '</span>' : '') +
@@ -9393,6 +9408,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     '<span class="sl-now-bar"><i style="width:' + pct + '%"></i></span>' +
                 '</span>' +
                 '<span class="sl-now-chip" data-end="' + Number(d.endAt) + '">' + Math.max(0, Math.round((Number(d.endAt) - now) / 60000)) + 'm left</span>' +
+                (d.uid ? '<button type="button" class="sl-now-chip" data-profile-uid="' + escapeHtml(d.uid) + '" style="cursor:pointer;">View profile</button>' : '') +
             '</div>';
         }
         host.innerHTML = '<div class="sl-now-head"><span class="sl-now-dot"></span>Studying now · ' + items.length + '</div>' +
@@ -9837,15 +9853,14 @@ var LEAGUE_FIREBASE_CONFIG = {
     function slUidFromEvent(e) {
         var t = e.target;
         if (!t || !t.closest) return '';
+        /* 8.24 -- ONE RULE: never hijack a control. A conversation row opens
+           that conversation, a "Studying now" pill expands that session, and a
+           Message button starts a DM. Each already has a job, and a name
+           inside one must not silently become something else. (8.23 resolved
+           [data-dm] and [data-conv] to a person, which broke all three.) */
+        if (t.closest('[data-conv], [data-live], [data-dm], [data-dm-uid]')) return '';
         var el = t.closest('[data-profile-uid]');
         if (el && el.dataset.profileUid) return el.dataset.profileUid;
-        var dm = t.closest('[data-dm]');
-        if (dm && dm.dataset.dm) return dm.dataset.dm;
-        var conv = t.closest('[data-conv]');
-        if (conv) {
-            var parts = (conv.getAttribute('data-conv') || '').split(':');
-            if (parts[0] === 'dm' && parts[1]) return parts[1];
-        }
         el = t.closest('.league-name, .league-avatar, .league-avatar-img');
         if (el) {
             if (el.dataset && el.dataset.profileUid) return el.dataset.profileUid;
@@ -9860,6 +9875,8 @@ var LEAGUE_FIREBASE_CONFIG = {
        people who share a name is worse than not opening. */
     function slUidFromText(t) {
         if (!t || t.children.length) return '';
+        /* plain prose only: never a button, link or form control */
+        if (t.closest('button, a, input, textarea, select, [role="button"]')) return '';
         var name = String(t.textContent || '').trim().toLowerCase();
         if (!name || name.length > 40) return '';
         var hits = Object.keys(membersByUid).filter(function (u) {
@@ -9948,7 +9965,16 @@ var LEAGUE_FIREBASE_CONFIG = {
                 '<button class="btn secondary" id="profileNotesBtn" type="button">View their notes</button></div>');
         modal.style.display='flex';
         var msg=document.getElementById('profileMessageBtn');
-        if (msg) msg.addEventListener('click', function(){ modal.style.display='none'; var lb=document.getElementById('leagueBtn'); if(lb) lb.click(); setTimeout(function(){ selectDMUser(uid); var c=document.getElementById('socialDMCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); },300); });
+        if (msg) msg.addEventListener('click', function(){
+            modal.style.display='none';
+            /* 8.24 -- this used to go to the Leaderboard, because that is where
+               the old DM card lived. The conversation belongs in Messages. */
+            var n = document.querySelector('.v2-nav-item[data-v2go="messages"]');
+            if (n) n.click();
+            setTimeout(function(){
+                if (window.__slMsg && window.__slMsg.open) window.__slMsg.open('dm', uid);
+            }, 700);
+        });
         var nud=document.getElementById('profileNudgeBtn');
         if (nud) nud.addEventListener('click', function(){
             if (!db||!me) return; var p=myProfile();
@@ -11484,7 +11510,9 @@ var LEAGUE_FIREBASE_CONFIG = {
     var auth = null, user = null, booted = false;
     var waiters = [];
     var dismissed = false;
+    var bootTries = 0;
     var authResolved = false;          // Firebase has told us whether a session exists
+    var authResolvedAt = 0;            // 8.24: when it last changed (see boot())
     var DISMISS_KEY = 'slAuthDismissed';
 
     function wasDismissed() { try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch (e) { return false; } }
@@ -11629,6 +11657,8 @@ var LEAGUE_FIREBASE_CONFIG = {
     function onSignedIn(u) {
         user = u || (auth && auth.currentUser) || null;
         authResolved = true;
+        authResolvedAt = Date.now();          // keep the grace period honest
+        if (gateTimer) { clearTimeout(gateTimer); gateTimer = null; }
         dismissed = false;
         forgetDismiss();
         hideGate();
@@ -11692,12 +11722,32 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     /* ---------------- public API used by the rest of the app ---------------- */
+    /* 8.24 -- one grace period, shared by the auto-prompt and ensure(). */
+    var GATE_GRACE = 2500;
+    var gateTimer = null;
+    function slGateWhenReady() {
+        if (gateTimer) return;
+        (function tryOpen() {
+            gateTimer = null;
+            if (auth.currentUser || dismissed || wasDismissed()) return;
+            if (!authResolved || Date.now() - authResolvedAt < GATE_GRACE) {
+                gateTimer = setTimeout(tryOpen, 250);
+                return;
+            }
+            showGate('');
+        })();
+    }
+
     function ensure() {
         if (!ready()) return Promise.reject(new Error('firebase-not-configured'));
         if (auth.currentUser) { user = auth.currentUser; return Promise.resolve({ user: user }); }
         return new Promise(function (resolve, reject) {
             waiters.push({ resolve: resolve, reject: reject });
-            showGate('');
+            /* The app calls this while Firebase is still restoring a saved
+               session, so auth.currentUser is briefly null for everyone --
+               signed in or not. Opening the prompt now is what made it flash
+               on every reload. Wait until auth has settled. */
+            slGateWhenReady();
         });
     }
 
@@ -11777,12 +11827,25 @@ var LEAGUE_FIREBASE_CONFIG = {
 
     /* ---------------- boot ---------------- */
     function boot() {
-        if (booted) return; booted = true;
-        if (!ready()) return;                       // no firebase → app runs local-only
+        if (booted) return;
+        /* 8.24 -- this used to set booted = true BEFORE checking ready(), so on
+           a slow connection the SDK was still loading, boot gave up for good,
+           and neither the sign-in chip nor the prompt ever appeared. Wait for
+           it instead of abandoning the page. */
+        if (!ready()) {
+            if (++bootTries < 60) setTimeout(boot, 250);   // keep trying for ~15s
+            return;
+        }
+        booted = true;
         buildChip();
         setTimeout(injectAccount, 400);
         auth.onAuthStateChanged(function (u) {
             user = u;
+            /* 8.24 -- Firebase fires this first with null while it restores the
+               saved session, then again with the real user about a second later.
+               Treating that first null as final made the gate flash open on
+               every single reload. Record WHEN auth last changed instead. */
+            if (!authResolved || u) authResolvedAt = Date.now();
             authResolved = true;
             paint();
             updateAccount();
@@ -11799,6 +11862,11 @@ var LEAGUE_FIREBASE_CONFIG = {
             tries++;
             if (tries > 240) { clearInterval(auto); return; }
             if (!authResolved) return;                       // still restoring the Google session
+            /* 8.24 -- give the saved session a moment to arrive before asking
+               anyone to sign in. Opening this prompt late costs nothing; a
+               flash that opens and closes on every reload is maddening, so
+               the grace is deliberately generous rather than tight. */
+            if (Date.now() - authResolvedAt < GATE_GRACE) return;
             if (auth.currentUser || dismissed || wasDismissed()) { clearInterval(auto); return; }
             if (!registrationDone() || anyModalOpen()) return;
             clearInterval(auto);
@@ -12770,7 +12838,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             if (c.type !== 'group') av = av.replace('class="sl-mav', 'class="sl-cav sl-mav');
             return '<button type="button" class="sl-convo' + (on ? ' on' : '') + '" data-conv="' + c.type + ':' + esc(c.uid) + '">' +
                 av +
-                '<span class="sl-cn"><b' + (c.type === 'dm' ? ' data-profile-uid="' + esc(c.uid) + '"' : '') + '>' + esc(c.name) + '</b>' +
+                '<span class="sl-cn"><b>' + esc(c.name) + '</b>' +
                     '<small>' + (c.type === 'group' && c.preview.indexOf('You: ') !== 0 && c.ts ? '<b>' + esc(firstName(c)) + ':</b> ' : '') + esc(c.preview.slice(0, 90)) + '</small></span>' +
                 '<span class="sl-cmeta"><span class="sl-ctime">' + (c.ts ? ago(c.ts) : '') + '</span>' +
                     (c.unread ? '<span class="sl-unread">' + c.unread + '</span>' : '') + '</span>' +
@@ -13880,5 +13948,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59cb210fab4c1d9',t:'MTc5NDU2MTU3NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59cb210fab4c1d9',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59d3fba8de8f2de',t:'MTc5NDU2NzM3Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59d3fba8de8f2de',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
