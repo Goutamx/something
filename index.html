@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.14">
+<html lang="en" data-sl-build="8.15">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4217,7 +4217,7 @@ tr.sl-ghost{ display:none !important; }
        a fallback for the moment before it runs. */
     @media (min-width:901px){
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(480px, calc(100vh + 104px), 1600px); }
+            height:clamp(480px, calc(100vh - 196px + var(--sl-below, 300px)), 1600px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
@@ -4636,7 +4636,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v35 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v36 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -12689,7 +12689,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
         box.querySelectorAll('[data-dm]').forEach(function (b) {
             b.addEventListener('click', function () { openConvo('dm', b.getAttribute('data-dm')); });
-        });y
+        });
     }
 
     /* -------------------------------------------------------- message list */
@@ -13089,7 +13089,14 @@ var LEAGUE_FIREBASE_CONFIG = {
            SL_BELOW = 0    -> fills the screen exactly, no scroll
 
        Phones are unaffected: fitHeight() skips them (width <= 900). */
-    var SL_BELOW = 50;
+    var SL_BELOW = 300;
+
+    /* One number, one source of truth. The stylesheet used to hard-code the
+       300 case (calc(100vh + 104px)), so changing SL_BELOW here left the CSS
+       still rendering the OLD height whenever the inline style was absent —
+       the "set it to 100, still looks like 300" bug. Publish it instead. */
+    try { document.documentElement.style.setProperty('--sl-below', SL_BELOW + 'px'); }
+    catch (e) {}
 
     function fitHeight() {
         var m = $('slGroupChat');
@@ -13292,9 +13299,17 @@ var LEAGUE_FIREBASE_CONFIG = {
                 host.innerHTML = '<div class="sl-msgr sl-fullbleed" id="slGroupChat" data-sl-skel="1">' +
                     '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div>' +
                     '</div>';
+                /* 8.15: this path used to return WITHOUT sizing the box, so it
+                   fell through to the stylesheet's fallback and stayed there —
+                   and no refits were scheduled here, so it never corrected.
+                   Re-entering the tab is exactly when this branch runs. */
+                fitHeight();
+                [60, 200, 500, 1200].forEach(function (d) { setTimeout(fitHeight, d); });
                 return;
             }
             if (origRender) origRender();
+            /* legacy UI is not full-bleed: fitHeight() clears the compact header */
+            fitHeight();
             return;
         }
         var list = document.getElementById('chapterList');
@@ -13577,5 +13592,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59a8ba80ec85a26',t:'MTc5NDUzOTAyOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59a8ba80ec85a26',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
