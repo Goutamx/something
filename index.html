@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.15">
+<html lang="en" data-sl-build="8.17">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4217,7 +4217,7 @@ tr.sl-ghost{ display:none !important; }
        a fallback for the moment before it runs. */
     @media (min-width:901px){
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(480px, calc(100vh - 196px + var(--sl-below, 300px)), 1600px); }
+            height:clamp(480px, calc(100vh - 196px + var(--sl-below, 0px)), 1600px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
@@ -4636,7 +4636,75 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v36 · if this line is missing you are on an older copy</div>
+                        <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>&mdash;</b></div>
+            <div class="league-status" id="slUpdateLine" style="font-size:.72rem;margin-top:4px;"></div>
+            <script>
+            /* 8.16 -- this line used to have "App build 8.7" typed into it, so it
+               stayed at 8.7 through every later release and could not be used to
+               tell which copy was running. It is now read off <html data-sl-build>
+               at runtime, together with the live height setting, so it can never
+               go stale and you can see at a glance whether your edit took.
+
+               8.17 -- the deployed site does not update itself, so a stale deploy
+               and a stale browser cache look identical from here. Ask the site
+               what it is actually serving and say which one it is. */
+            (function () {
+                var SW_CACHE = 'studyleague-v38';
+                function num(v) {
+                    var p = String(v || '').split('.');
+                    return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
+                }
+                function paint() {
+                    var el = document.getElementById('slBuildLine');
+                    if (!el) return;
+                    var build = document.documentElement.getAttribute('data-sl-build') || 'unknown';
+                    var msg = window.__slMsg;
+                    var below = (msg && typeof msg.below === 'function') ? msg.below() : null;
+                    var txt = 'App build <b>' + build + '</b>';
+                    if (below !== null) {
+                        txt += ' · messages box <b>' + below + 'px</b> below the fold';
+                        if (window.innerWidth <= 900) txt += ' (narrow windows always fit)';
+                    }
+                    txt += ' · offline cache ' + SW_CACHE;
+                    txt += ' · if this line is missing you are on an older copy';
+                    el.innerHTML = txt;
+                }
+                function checkUpdate() {
+                    var out = document.getElementById('slUpdateLine');
+                    if (!out) return;
+                    var mine = document.documentElement.getAttribute('data-sl-build') || '';
+                    if (!/^https?:/i.test(location.href)) { out.textContent = ''; return; }
+                    var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
+                    out.textContent = 'Checking for a newer build…';
+                    fetch(base + 'version.json?t=' + Date.now(), { cache: 'no-store' })
+                        .then(function (r) { return r.json(); })
+                        .then(function (j) {
+                            var latest = (j && j.build) ? String(j.build) : '';
+                            if (!latest) { out.textContent = ''; return; }
+                            if (num(latest) > num(mine)) {
+                                out.innerHTML = 'The site has a newer build: <b>' + latest +
+                                    '</b> — this tab is running ' + mine +
+                                    '. Tap <b>Reload newest</b> above.';
+                                out.style.color = '#B45309';
+                            } else {
+                                out.innerHTML = 'Up to date — the site is serving <b>' + latest + '</b>.';
+                                out.style.color = '';
+                            }
+                        })
+                        .catch(function () {
+                            out.textContent = 'Could not reach the site to check for updates.';
+                        });
+                }
+                paint();
+                setTimeout(paint, 300); setTimeout(paint, 1200); setTimeout(paint, 3000);
+                checkUpdate();
+                window.addEventListener('resize', paint);
+                /* the messages module is parsed after this script, so the value
+                   is not knowable on the first paint -- refresh it whenever the
+                   user touches the page. */
+                document.addEventListener('click', function () { setTimeout(paint, 40); }, true);
+            })();
+            </script>
         </div>
     </div>
 </div>
@@ -9358,9 +9426,18 @@ var LEAGUE_FIREBASE_CONFIG = {
                 }));
             }
         } catch (err) {}
-        Promise.all(jobs).catch(function () {}).then(function () {
+            Promise.all(jobs).catch(function () {}).then(function () {
             try { localStorage.removeItem('slBuildSeen'); } catch (err) {}
-            location.reload();
+            /* 8.17: a plain reload can be answered straight from the HTTP
+               cache, handing back the very copy just deleted. Bust the query
+               string so the fetch has to go to the network. file:// URLs take
+               no query, so they fall back to a normal reload. */
+            if (/^https?:/i.test(location.href)) {
+                var u = location.href.split('#')[0].split('?')[0];
+                location.replace(u + '?slbust=' + Date.now());
+            } else {
+                location.reload();
+            }
         });
     });
 
@@ -13098,6 +13175,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     try { document.documentElement.style.setProperty('--sl-below', SL_BELOW + 'px'); }
     catch (e) {}
 
+    var lastFitH = -1;
     function fitHeight() {
         var m = $('slGroupChat');
         if (!m || !m.classList.contains('sl-fullbleed')) {
@@ -13114,7 +13192,14 @@ var LEAGUE_FIREBASE_CONFIG = {
         var h = window.innerHeight - top + SL_BELOW;
         if (h < 480) h = 480;      // never so short the box is useless
         if (h > 1600) h = 1600;    // never absurd on a very tall monitor
-        m.style.height = Math.round(h) + 'px';
+        h = Math.round(h);
+        /* Idempotent: a re-measure that lands on the same number writes
+           nothing, so the observer below can fire as often as it likes
+           without thrashing layout. A freshly created box has no inline
+           height, so it is always sized on the first pass. */
+        if (h === lastFitH && m.style.height) return;
+        lastFitH = h;
+        m.style.height = h + 'px';
     }
 
     /* --------------------------------------- 8.9 Direction B: hero + board tile
@@ -13355,9 +13440,28 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     arm(0);
 
+    /* 8.16 -- every render path now schedules refits, but that still trusts
+       the right call site to run. Watch the host instead: whenever the
+       messages markup changes (header swapped, skeleton replaced, thread
+       painted) re-measure on the next frame. childList only -- fitHeight()
+       writes an inline style, which is an attribute change and so cannot
+       feed back into this observer. */
+    (function watchHost() {
+        if (!window.MutationObserver) return;
+        var hostEl = document.getElementById('chapterList');
+        if (!hostEl) return;
+        var pending = false;
+        new window.MutationObserver(function () {
+            if (pending) return;
+            pending = true;
+            requestAnimationFrame(function () { pending = false; fitHeight(); });
+        }).observe(hostEl, { childList: true, subtree: true });
+    })();
+
     window.__slMsg = {
         render: render,
         open: openConvo,
+        below: function () { return SL_BELOW; },
         state: function () { return { conv: conv, members: Object.keys(members).length, group: groupMsgs.length, dm: dmMsgs.length }; }
     };
 })();
@@ -13592,5 +13696,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59a8ba80ec85a26',t:'MTc5NDUzOTAyOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59a8ba80ec85a26',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
