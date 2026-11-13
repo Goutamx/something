@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.22">
+<html lang="en" data-sl-build="8.23">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4649,7 +4649,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v43';
+                var SW_CACHE = 'studyleague-v44';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -7906,7 +7906,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             var nudge = me ? '' : '<button class="btn secondary nudge-btn" data-uid="' + m.uid + '" data-name="' + escapeHtml(m.displayName || 'Student') + '" type="button" title="Send a nudge">👋 Nudge</button>';
             return '<tr class="' + (me ? 'me' : '') + '">' +
                 '<td class="league-rank">' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)) + '</td>' +
-                '<td><span class="league-player">' + avatar + '<span><span class="league-name">' + escapeHtml(m.displayName || 'Student') + '</span>' + (me ? '<span class="league-you">YOU</span>' : '') + bio + presence + '</span></span></td>' +
+                '<td><span class="league-player">' + avatar + '<span><span class="league-name" data-profile-uid="' + escapeHtml(m.uid || '') + '">' + escapeHtml(m.displayName || 'Student') + '</span>' + (me ? '<span class="league-you">YOU</span>' : '') + bio + presence + '</span></span></td>' +
                 '<td><b>' + (m.xp || 0) + '</b> XP</td>' +
                 '<td>' + (m.percent || 0) + '%<div class="progress-container" style="margin-top:5px;min-width:90px;"><div class="progress-bar" style="width:' + (m.percent || 0) + '%;"></div></div></td>' +
                 '<td>' + (m.focusHidden ? 'Private' : (m.focusWeekMin || 0) + ' min') + '</td>' +
@@ -9829,34 +9829,138 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
 
     /* ---------- Profile pages ---------- */
-    document.addEventListener('click', function(e){
-        var el = e.target.closest ? e.target.closest('[data-profile-uid], .league-name, .league-avatar, .league-avatar-img') : null;
-        if (!el) return;
-        var uid = el.dataset ? el.dataset.profileUid : '';
-        if (!uid) {
-            var tr = el.closest('tr'); var pres = tr ? tr.querySelector('.league-presence') : null;
-            uid = pres ? pres.dataset.uid : '';
+    /* 8.23 -- CAPTURE phase, so a name inside something that already does
+       something (a conversation button, a note card) opens the profile
+       INSTEAD of firing that row's own handler. stopPropagation here is the
+       only way to win that race; in the bubble phase the row has already run.
+       Anything not matched falls straight through, untouched. */
+    function slUidFromEvent(e) {
+        var t = e.target;
+        if (!t || !t.closest) return '';
+        var el = t.closest('[data-profile-uid]');
+        if (el && el.dataset.profileUid) return el.dataset.profileUid;
+        var dm = t.closest('[data-dm]');
+        if (dm && dm.dataset.dm) return dm.dataset.dm;
+        var conv = t.closest('[data-conv]');
+        if (conv) {
+            var parts = (conv.getAttribute('data-conv') || '').split(':');
+            if (parts[0] === 'dm' && parts[1]) return parts[1];
         }
+        el = t.closest('.league-name, .league-avatar, .league-avatar-img');
+        if (el) {
+            if (el.dataset && el.dataset.profileUid) return el.dataset.profileUid;
+            var tr = el.closest('tr'); var pres = tr ? tr.querySelector('.league-presence') : null;
+            if (pres && pres.dataset.uid) return pres.dataset.uid;
+        }
+        return '';
+    }
+    /* Anything the renderers above did not tag is caught here: if the text you
+       clicked is exactly one member's name, that is who you meant. Two members
+       called Madhaw match twice, so this stays silent -- guessing between
+       people who share a name is worse than not opening. */
+    function slUidFromText(t) {
+        if (!t || t.children.length) return '';
+        var name = String(t.textContent || '').trim().toLowerCase();
+        if (!name || name.length > 40) return '';
+        var hits = Object.keys(membersByUid).filter(function (u) {
+            return String((membersByUid[u] || {}).displayName || '').trim().toLowerCase() === name;
+        });
+        return hits.length === 1 ? hits[0] : '';
+    }
+    document.addEventListener('click', function (e) {
+        var uid = slUidFromEvent(e) || slUidFromText(e.target);
         if (!uid || !membersByUid[uid]) return;
+        e.stopPropagation();
+        e.preventDefault();
         openProfile(uid);
-    });
+    }, true);
+    function slPresenceLine(m) {
+        if (!m.lastSeen) return '';
+        var d = m.lastSeen.toDate ? m.lastSeen.toDate() : null;
+        if (!d) return '';
+        var mins = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+        if (mins >= 3) return mins < 60 ? 'Last active ' + mins + 'm ago' : 'Offline';
+        if (m.presenceStatus === 'focusing') {
+            var left = m.focusEndsAt ? Math.max(0, Math.round((Number(m.focusEndsAt) - Date.now()) / 60000)) : 0;
+            return 'Focusing now' + (left ? ' · ' + left + 'm left' : '') +
+                (m.focusChapter ? ' · ' + escapeHtml(m.focusChapter) : '');
+        }
+        return 'Online now';
+    }
     function openProfile(uid) {
         var m = membersByUid[uid]; if (!m) return;
+        var mine = !!(me && uid === me.uid);
+        /* your own name goes to My Profile, which already has the editor */
+        if (mine) {
+            var door = document.querySelector('[data-v2go-quick="profile"]');
+            if (door) { door.click(); return; }
+        }
         var modal = document.getElementById('profileModal'); var body = document.getElementById('profileModalBody'); if (!modal||!body) return;
         var avatar = m.photo ? '<img class="league-avatar-img" src="'+m.photo+'" style="width:58px;height:58px;" alt="">' : '<span class="league-avatar" style="background:'+window.slMonoBg(window.slAvatarColor(m, uid))+';width:58px;height:58px;font-size:30px;">'+escapeHtml(window.slLetter(m.displayName))+'</span>';
         var subjects = (m.subjects||[]).map(subjectName).join(', ') || 'Subjects not shared';
-        body.innerHTML = '<div style="display:flex;gap:14px;align-items:center;margin-bottom:13px;">'+avatar+'<div><div style="font-size:1.2rem;font-weight:800;">'+escapeHtml(m.displayName||'Student')+(me&&uid===me.uid?' (You)':'')+'</div><div class="league-bio">'+escapeHtml([m.bio,m.school,m.classLabel].filter(Boolean).join(' · '))+'</div><div class="league-bio">Stream: '+escapeHtml(m.stream||'Not set')+'</div></div></div>' +
-            '<div class="league-row"><span class="pill"><b>'+(m.xp||0)+'</b>&nbsp;XP</span><span class="pill">'+(m.percent||0)+'% complete</span><span class="pill">'+(m.chaptersDone||0)+'/'+(m.chaptersTotal||0)+' chapters</span><span class="pill">'+(m.focusHidden?'Focus private':(m.focusWeekMin||0)+' focus min/wk')+'</span><span class="pill">🔥 '+(m.streak||0)+' day streak</span></div>' +
-            '<div style="margin-top:13px;"><b>Subjects</b><div class="league-status">'+escapeHtml(subjects)+'</div></div>' +
-            (me&&uid!==me.uid ? '<div class="league-row" style="margin-top:14px;"><button class="btn" id="profileMessageBtn" type="button">Message</button><button class="btn secondary" id="profileNudgeBtn" type="button">👋 Nudge</button></div>' : '');
+
+        /* ---- weekly challenge record ---- */
+        var row = challengeRows.filter(function (r) { return r.uid === uid; })[0] || null;
+        var rank = challengeRows.map(function (r) { return r.uid; }).indexOf(uid) + 1;
+        var weekly = row
+            ? '<div class="league-row" style="margin-top:12px;"><span class="pill"><b>'+(row.points||0)+'</b>&nbsp;&#11088;</span>' +
+              '<span class="pill"><b>'+(row.wins||0)+'</b>&nbsp;wins</span>' +
+              '<span class="pill"><b>'+(row.totalStudy||0)+'</b>&nbsp;study score</span>' +
+              '<span class="pill"><b>'+(row.thisWeek||0)+'</b>&nbsp;this week</span>' +
+              '<span class="pill"><b>'+(row.activeDays||0)+'</b>&nbsp;active days</span></div>'
+            : '<div class="league-status">No weekly record yet.</div>';
+
+        /* ---- head to head, only after you have actually been paired ---- */
+        var h2h = '';
+        if (!mine && row && row.h2h && me) {
+            var h = row.h2h[me.uid];
+            if (h) {
+                var verdict = h.pts > 1 ? 'ahead of you' : h.pts < 1 ? 'behind you' : 'level with you';
+                h2h = '<div style="margin-top:12px;"><b>Head to head with you</b>' +
+                    '<div class="league-status">'+(h.pts||0)+' pts to them, '+(2-(h.pts||0))+' to you · ' +
+                    'combined score difference '+(h.diff>0?'+':'')+(h.diff||0)+' — currently '+verdict+'.</div></div>';
+            }
+        }
+
+        /* ---- notes they have shared ---- */
+        var noteCount = (window.__slNotesBy ? window.__slNotesBy(uid) : []).length;
+
+        var presence = slPresenceLine(m);
+
+        body.innerHTML =
+            '<div style="display:flex;gap:14px;align-items:center;margin-bottom:10px;">'+avatar+
+                '<div><div style="font-size:1.2rem;font-weight:800;">'+escapeHtml(m.displayName||'Student')+(mine?' (You)':'')+'</div>'+
+                '<div class="league-bio">'+escapeHtml([m.bio,m.school,m.classLabel].filter(Boolean).join(' · '))+'</div>'+
+                '<div class="league-bio">'+escapeHtml(m.stream||'Not set')+(rank?' · rank '+rank:'')+
+                    (presence?' · '+presence:'')+'</div></div></div>' +
+            '<div class="league-row"><span class="pill"><b>'+(m.xp||0)+'</b>&nbsp;XP</span>' +
+                '<span class="pill">'+(m.percent||0)+'% complete</span>' +
+                '<span class="pill">'+(m.chaptersDone||0)+'/'+(m.chaptersTotal||0)+' chapters</span>' +
+                '<span class="pill">'+(m.focusHidden?'Focus private':(m.focusWeekMin||0)+' focus min/wk')+'</span>' +
+                '<span class="pill">&#128293; '+(m.streak||0)+' day streak</span></div>' +
+            '<div style="margin-top:12px;"><b>Weekly challenge</b>'+weekly+'</div>' +
+            h2h +
+            '<div style="margin-top:12px;"><b>Subjects</b><div class="league-status">'+escapeHtml(subjects)+'</div></div>' +
+            '<div style="margin-top:12px;"><b>Notes shared</b><div class="league-status">'+noteCount+'</div></div>' +
+            (mine ? '' : '<div class="league-row" style="margin-top:14px;">' +
+                '<button class="btn" id="profileMessageBtn" type="button">Message</button>' +
+                '<button class="btn secondary" id="profileNudgeBtn" type="button">&#128075; Nudge</button>' +
+                '<button class="btn secondary" id="profileNotesBtn" type="button">View their notes</button></div>');
         modal.style.display='flex';
         var msg=document.getElementById('profileMessageBtn');
         if (msg) msg.addEventListener('click', function(){ modal.style.display='none'; var lb=document.getElementById('leagueBtn'); if(lb) lb.click(); setTimeout(function(){ selectDMUser(uid); var c=document.getElementById('socialDMCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); },300); });
         var nud=document.getElementById('profileNudgeBtn');
         if (nud) nud.addEventListener('click', function(){
             if (!db||!me) return; var p=myProfile();
-            db.collection('leagues').doc(leagueCode()).collection('notifications').add({recipientUid:uid, actorUid:me.uid, actorName:p.name||'Student', actorEmoji:p.emoji||'📚', type:'nudge', text:'nudged you — time to study! 👋', read:false, createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
+            db.collection('leagues').doc(leagueCode()).collection('notifications').add({recipientUid:uid, actorUid:me.uid, actorName:p.name||'Student', actorEmoji:p.emoji||'\U0001F4DA', type:'nudge', text:'nudged you — time to study! \U0001F44B', read:false, createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
             nud.textContent='Nudged ✓';
+        });
+        var nb=document.getElementById('profileNotesBtn');
+        if (nb) nb.addEventListener('click', function(){
+            modal.style.display='none';
+            var n = document.querySelector('.v2-nav-item[data-v2go="notes"]');
+            if (n) n.click();
+            setTimeout(function(){ if (window.__slNotesByAuthor) window.__slNotesByAuthor(uid); }, 700);
         });
     }
     document.querySelectorAll('[data-close-profile]').forEach(function(b){ b.addEventListener('click', function(){ document.getElementById('profileModal').style.display='none'; }); });
@@ -9918,6 +10022,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     if (!btn) return;
     var db = null, me = null, notesUnsub = null, notesCache = [], commentsUnsub = null;
     var snTab = '';                       /* 8.2: which subject tab is active ('' = All) */
+    var snAuthor = '';                    /* 8.23: '' = everyone, else one authorUid */
     function snOpenUpload() { var m = document.getElementById('snUploadModal'); if (m) m.style.display = 'flex'; }
     function snCloseUpload() { var m = document.getElementById('snUploadModal'); if (m) m.style.display = 'none'; }
     function code() { return (localStorage.getItem('leagueCode') || '').toUpperCase(); }
@@ -9941,7 +10046,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         var _bg = window.slMonoBg(noteAuthorColour(uid, colour));
         return '<span class="sl-note-author">' +
             '<span class="sl-mono-chip sm" style="background:' + escapeHtml(_bg) + '">' + escapeHtml(window.slLetter(name)) + '</span>' +
-            '<' + tag + ' class="sl-note-author-name">' + escapeHtml(name || 'Student') + '</' + tag + '></span>';
+            '<' + tag + ' class="sl-note-author-name" data-profile-uid="' + escapeHtml(uid || '') + '">' + escapeHtml(name || 'Student') + '</' + tag + '></span>';
     }
     function ensureFB() {
         if (typeof firebase === 'undefined' || typeof LEAGUE_FIREBASE_CONFIG === 'undefined' || !LEAGUE_FIREBASE_CONFIG.apiKey || LEAGUE_FIREBASE_CONFIG.apiKey.indexOf('PASTE_') === 0) return false;
@@ -10098,7 +10203,28 @@ var LEAGUE_FIREBASE_CONFIG = {
             });
         }
 
-        var rows = notesCache.filter(function(n){ return (!snTab || n.subjectKey===snTab) && (!q || (n.title+' '+n.chapter).toLowerCase().indexOf(q)>=0); });
+        window.__slNotesByAuthor = function (uid) {
+            snAuthor = uid || '';
+            var chip = document.getElementById('snAuthorChip');
+            if (!chip) {
+                chip = document.createElement('div');
+                chip.id = 'snAuthorChip'; chip.className = 'league-status';
+                chip.style.marginTop = '8px'; chip.style.display = 'none';
+                var tabs = document.getElementById('snTabs');
+                if (tabs && tabs.parentNode) tabs.parentNode.insertBefore(chip, tabs.nextSibling);
+            }
+            if (!snAuthor) { chip.style.display = 'none'; chip.innerHTML = ''; renderNoteList(); return; }
+            var nm = ((window.__slMembers && window.__slMembers[uid]) || {}).displayName || 'Student';
+            chip.style.display = '';
+            chip.innerHTML = 'Only notes by <b>' + escapeHtml(nm) + '</b> \u00b7 <button type="button" id="snAuthorClear" style="background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;padding:0;">show everyone\u2019s</button>';
+            var clr = document.getElementById('snAuthorClear');
+            if (clr) clr.addEventListener('click', function () { snAuthor = ''; chip.style.display = 'none'; chip.innerHTML = ''; renderNoteList(); });
+            renderNoteList();
+        };
+        window.__slNotesBy = function (uid) {
+            return notesCache.filter(function (n) { return n.authorUid === uid; });
+        };
+        var rows = notesCache.filter(function(n){ return (!snTab || n.subjectKey===snTab) && (!snAuthor || n.authorUid===snAuthor) && (!q || (n.title+' '+n.chapter).toLowerCase().indexOf(q)>=0); });
         rows.sort(function(a,b){
             if (sort==='new') return 0;
             if (sort==='discussed') return (b.commentsCount||0)-(a.commentsCount||0);
@@ -12644,7 +12770,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             if (c.type !== 'group') av = av.replace('class="sl-mav', 'class="sl-cav sl-mav');
             return '<button type="button" class="sl-convo' + (on ? ' on' : '') + '" data-conv="' + c.type + ':' + esc(c.uid) + '">' +
                 av +
-                '<span class="sl-cn"><b>' + esc(c.name) + '</b>' +
+                '<span class="sl-cn"><b' + (c.type === 'dm' ? ' data-profile-uid="' + esc(c.uid) + '"' : '') + '>' + esc(c.name) + '</b>' +
                     '<small>' + (c.type === 'group' && c.preview.indexOf('You: ') !== 0 && c.ts ? '<b>' + esc(firstName(c)) + ':</b> ' : '') + esc(c.preview.slice(0, 90)) + '</small></span>' +
                 '<span class="sl-cmeta"><span class="sl-ctime">' + (c.ts ? ago(c.ts) : '') + '</span>' +
                     (c.unread ? '<span class="sl-unread">' + c.unread + '</span>' : '') + '</span>' +
@@ -12872,7 +12998,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             } else {
                 html.push('<div class="sl-mrow' + (tight ? ' tight' : '') + '" data-msg="' + esc(m.id) + '">' +
                     avatarHtml(member, m.senderUid) +
-                    '<div><div class="sl-mhead"><b>' + esc(m.senderName || (member.displayName || 'Student')) + '</b>' +
+                    '<div><div class="sl-mhead"><b data-profile-uid="' + esc(m.senderUid || '') + '">' + esc(m.senderName || (member.displayName || 'Student')) + '</b>' +
                         '<time>' + hm(ts) + '</time>' +
                         (m.editedAt ? '<span class="sl-edited">edited</span>' : '') + '</div>' +
                     '<span class="sl-bub">' + body + '</span>' + rx + '</div></div>');
@@ -13754,5 +13880,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59c76961cf42b0d',t:'MTc5NDU1OTEzOA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59c76961cf42b0d',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59cb210fab4c1d9',t:'MTc5NDU2MTU3NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59cb210fab4c1d9',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
