@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.14">
+<html lang="en" data-sl-build="8.15">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2726,10 +2726,7 @@ body.v2-nav-open .v2-scrim{ opacity: 1; pointer-events: auto; }
     .l5c-stack{ position: static !important; }
     .focus-grid{ grid-template-columns: minmax(0, 1fr) !important; }
 }
-/* 8.14 fix: one-row top bar needs ~836px of nav next to the brand and the
-   action buttons; below ~1520px it silently clipped (scrollbars are hidden),
-   cutting the Notes tab off. Wrap to the two-row bar earlier instead. */
-@media (max-width: 1520px){
+@media (max-width: 1180px){
     #sidebar{ height: auto; flex-wrap: wrap; padding: 10px 18px !important; gap: 10px; }
     .v2-nav{ order: 3; flex: 1 0 100%; padding: 2px 0 4px !important; }
     .v2-brand-sub{ display: none; }
@@ -4220,7 +4217,7 @@ tr.sl-ghost{ display:none !important; }
        a fallback for the moment before it runs. */
     @media (min-width:901px){
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(480px, calc(100vh + 104px), 1600px); }
+            height:clamp(480px, calc(100vh - 196px + var(--sl-below, 300px)), 1600px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
@@ -4352,40 +4349,14 @@ tr.sl-ghost{ display:none !important; }
 <!-- Loading Screen -->
 <div id="app-loader">
     <div class="loader-center">
-        <svg class="loader-logo" viewBox="0 0 512 512" role="img" aria-label="StudyLeague logo" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="slgLoaderGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#7683EA"/>
-                    <stop offset=".45" stop-color="#5E6AD2"/>
-                    <stop offset="1" stop-color="#3F47A0"/>
-                </linearGradient>
-            </defs>
-            <rect width="512" height="512" rx="112" fill="url(#slgLoaderGrad)"/>
-            <polygon points="256.0,52.0 266.6,81.4 297.8,82.4 273.1,101.6 281.9,131.6 256.0,114.0 230.1,131.6 238.9,101.6 214.2,82.4 245.4,81.4" fill="#FFD166"/>
-            <rect x="126" y="300" width="64" height="92" rx="14" fill="#FFFFFF"/>
-            <rect x="224" y="240" width="64" height="152" rx="14" fill="#FFFFFF"/>
-            <rect x="322" y="174" width="64" height="218" rx="14" fill="#FFFFFF"/>
-        </svg>
+        <img src="studyleague-logo.png" alt="StudyLeague logo" class="loader-logo">
     </div>
 </div>
 
 <div id="sidebar">
     <!-- ===== V2 layout: top navigation ===== -->
     <div class="v2-brand">
-        <svg class="v2-brand-logo" viewBox="0 0 512 512" role="img" aria-label="StudyLeague logo" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="slgBrandGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#7683EA"/>
-                    <stop offset=".45" stop-color="#5E6AD2"/>
-                    <stop offset="1" stop-color="#3F47A0"/>
-                </linearGradient>
-            </defs>
-            <rect width="512" height="512" rx="112" fill="url(#slgBrandGrad)"/>
-            <polygon points="256.0,52.0 266.6,81.4 297.8,82.4 273.1,101.6 281.9,131.6 256.0,114.0 230.1,131.6 238.9,101.6 214.2,82.4 245.4,81.4" fill="#FFD166"/>
-            <rect x="126" y="300" width="64" height="92" rx="14" fill="#FFFFFF"/>
-            <rect x="224" y="240" width="64" height="152" rx="14" fill="#FFFFFF"/>
-            <rect x="322" y="174" width="64" height="218" rx="14" fill="#FFFFFF"/>
-        </svg>
+        <img src="studyleague-logo.png" alt="" class="v2-brand-logo">
         <div class="v2-brand-text">
             <div class="v2-brand-name">StudyLeague</div>
             <div class="v2-brand-sub" id="v2BrandSub">Class 12 &middot; League</div>
@@ -4665,7 +4636,7 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v35 · if this line is missing you are on an older copy</div>
+            <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>8.7</b> · offline cache studyleague-v36 · if this line is missing you are on an older copy</div>
         </div>
     </div>
 </div>
@@ -5538,7 +5509,7 @@ tr.sl-ghost{ display:none !important; }
         body = 'Ready for the next focus session?';
       }
       try {
-        new Notification(title, { body: body, icon: 'icon-192.png' });
+        new Notification(title, { body: body, icon: 'studyleague-logo.png' });
       } catch (e) {}
     }
 
@@ -9215,14 +9186,6 @@ var LEAGUE_FIREBASE_CONFIG = {
             paintFeed();
         }
     }
-    /* 8.14 fix: this module is an IIFE, so publishFeed/retractFeed/subjectName
-       were invisible to the rest of the app. Ticking an exam chapter asked
-       `typeof publishFeed === 'function'` (always false) and publishing a
-       shared note called publishFeed inside a try/catch (ReferenceError was
-       swallowed) — so neither ever reached the league feed. Expose them. */
-    window.publishFeed = publishFeed;
-    window.retractFeed = retractFeed;
-    window.subjectName = subjectName;
 
 
     /* ---------- live “studying now”: pills, tap one for the full detail ---------- */
@@ -13128,6 +13091,13 @@ var LEAGUE_FIREBASE_CONFIG = {
        Phones are unaffected: fitHeight() skips them (width <= 900). */
     var SL_BELOW = 300;
 
+    /* One number, one source of truth. The stylesheet used to hard-code the
+       300 case (calc(100vh + 104px)), so changing SL_BELOW here left the CSS
+       still rendering the OLD height whenever the inline style was absent —
+       the "set it to 100, still looks like 300" bug. Publish it instead. */
+    try { document.documentElement.style.setProperty('--sl-below', SL_BELOW + 'px'); }
+    catch (e) {}
+
     function fitHeight() {
         var m = $('slGroupChat');
         if (!m || !m.classList.contains('sl-fullbleed')) {
@@ -13329,9 +13299,17 @@ var LEAGUE_FIREBASE_CONFIG = {
                 host.innerHTML = '<div class="sl-msgr sl-fullbleed" id="slGroupChat" data-sl-skel="1">' +
                     '<div class="sl-rail-empty" style="padding:40px 20px;text-align:center">Opening your league chat…</div>' +
                     '</div>';
+                /* 8.15: this path used to return WITHOUT sizing the box, so it
+                   fell through to the stylesheet's fallback and stayed there —
+                   and no refits were scheduled here, so it never corrected.
+                   Re-entering the tab is exactly when this branch runs. */
+                fitHeight();
+                [60, 200, 500, 1200].forEach(function (d) { setTimeout(fitHeight, d); });
                 return;
             }
             if (origRender) origRender();
+            /* legacy UI is not full-bleed: fitHeight() clears the compact header */
+            fitHeight();
             return;
         }
         var list = document.getElementById('chapterList');
@@ -13614,5 +13592,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59abadabb964bda',t:'MTc5NDU0MDk2Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59abadabb964bda',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59a8ba80ec85a26',t:'MTc5NDUzOTAyOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59a8ba80ec85a26',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
