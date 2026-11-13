@@ -1,0 +1,6 @@
+{
+  "build": "8.20",
+  "sw": "studyleague-v41",
+  "slBelow": 100,
+  "note": "Bump \"build\" and \"sw\" together with every release. The Settings footer reads this file to tell a stale deploy from a stale browser cache."
+}

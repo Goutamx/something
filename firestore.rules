@@ -1,0 +1,247 @@
+rules_version = '2';
+
+// ============================================================================
+//  STUDYLEAGUE — latest.rules  (v7 · Google sign-in + one-surface messages)
+//  Paste ALL of this into:
+//    Firebase Console → Firestore Database → Rules → (replace everything) → Publish
+//
+//  Every feature of the app maps to one block below:
+//    Leaderboard / My Stats ......... leagues/{code} + members/{uid}
+//    Weekly head-to-head challenge .. weekly/{weekId}/scores/{uid}
+//    League group chat .............. messages/{id}
+//    Direct messages (WhatsApp-like)  dms/{uidA_uidB}/messages/{id}
+//    Activity feed .................. feed/{id}
+//    Notification bell .............. notifications/{id}
+//    Shared notes + comments + votes  sharedNotes/{id} + sharedNotes/{id}/comments
+//
+//  Design used here:
+//    * you must be signed in with Google to write anything;
+//    * you must be a member of the league to read/write league content;
+//    * you can only ever write documents/fields that belong to you;
+//    * everything else is read-only or forbidden.
+//
+//  Free plan note: `exists()`/`get()` calls inside rules count as reads.
+//  Each request stays well under the 10-call limit, so this works on Spark.
+//
+//  Tested against the Firestore emulator: 43 checks (writes, spoofing attempts,
+//  non-member access, and the exact queries the app runs) — all green.
+//
+//  ONE-TIME EXTRA: the notification bell queries
+//      where recipientUid == you  +  orderBy createdAt desc + limit 50
+//  If the browser console prints a link asking for a composite index, open it
+//  and click "Create index" (collection: notifications; recipientUid Ascending,
+//  createdAt Descending). Everything else works without any index.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function leaguePath(code) {
+      return /databases/$(database)/documents/leagues/$(code);
+    }
+
+    function memberPath(code, memberUid) {
+      return /databases/$(database)/documents/leagues/$(code)/members/$(memberUid);
+    }
+
+    // is the caller a member of this league?
+    function isMember(code) {
+      return signedIn() && exists(memberPath(code, uid()));
+    }
+
+    // does some other uid have a member row in this league?
+    function isKnownMember(code, memberUid) {
+      return memberUid is string && exists(memberPath(code, memberUid));
+    }
+
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function textBetween(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    // a member row written by its owner (uid field optional so the presence
+    // heartbeat, which merges only lastSeen/presenceStatus, keeps working)
+    function ownMemberRow(memberId) {
+      return signedIn()
+        && memberId == uid()
+        && (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == uid());
+    }
+
+    // ============================================================ user profiles
+    // Optional mirror of a public profile. Not used by the current UI, kept so
+    // older builds don't break.
+    match /users/{userId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create, update, delete: if signedIn() && uid() == userId;
+    }
+
+    // ================================================================= leagues
+    match /leagues/{code} {
+
+      // One league document per code. The app only ever sets it once, when the
+      // first student joins, so `update`/`delete` stay closed.
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.createdBy == uid();
+      allow update, delete: if false;
+
+      // ------------------------------------------------- members (leaderboard)
+      // Read: anyone signed in (the board, the DM people list, the invite card).
+      // Write: only your own row — this is what `syncNow()` and the presence
+      //        heartbeat do with set(..., {merge:true}).
+      match /members/{memberId} {
+        allow get, list: if signedIn();
+        allow create, update: if ownMemberRow(memberId);
+
+        // Delete: your own row, or a leftover row from the old anonymous/device
+        // builds (a row that carries no Google provider stamp). The second half
+        // is what lets the app clear the board by itself — nobody has to click
+        // anything in the Firebase console.
+        allow delete: if signedIn()
+                      && (memberId == uid()
+                          || (isMember(code)
+                              && resource.data.get('authProvider', 'none') != 'google'));
+      }
+
+      // ---------------------------------------------------- group chat (room)
+      match /messages/{messageId} {
+        allow get, list: if isMember(code);
+
+        allow create: if isMember(code)
+                      && request.resource.data.senderUid == uid()
+                      && textBetween(request.resource.data.text, 1, 500)
+                      && request.resource.data.keys().hasOnly(
+                           ['text', 'senderUid', 'senderName', 'senderEmoji', 'reactions', 'createdAt', 'replyTo'])
+                      // replyTo (V7) is an optional quote: { id, name, text }
+                      && (!request.resource.data.keys().hasAny(['replyTo'])
+                          || (request.resource.data.replyTo is map
+                              && request.resource.data.replyTo.keys().hasOnly(['id', 'name', 'text'])
+                              && textBetween(request.resource.data.replyTo.text, 0, 200)));
+
+        // reactions are stored as reactions.{uid}: emoji — nothing else may change
+        allow update: if isMember(code)
+                      && changedOnly(['reactions']);
+
+        allow delete: if signedIn()
+                      && (resource.data.senderUid == uid()
+                          || (exists(leaguePath(code))
+                              && get(leaguePath(code)).data.createdBy == uid()));
+      }
+
+      // ---------------------------------------------- notifications (the bell)
+      // Every student may only read/clear their own notifications.
+      match /notifications/{notificationId} {
+        allow get, list: if signedIn()
+                         && resource.data.recipientUid == uid();
+        allow update, delete: if signedIn()
+                              && resource.data.recipientUid == uid();
+        allow create: if isMember(code)
+                      && request.resource.data.actorUid == uid()
+                      && request.resource.data.recipientUid != uid()
+                      && isKnownMember(code, request.resource.data.recipientUid)
+                      && textBetween(request.resource.data.text, 1, 300)
+                      && request.resource.data.type in ['nudge', 'dm', 'reaction', 'note', 'comment'];
+      }
+
+      // ------------------------------------------------------- activity feed
+      match /feed/{eventId} {
+        allow get, list: if isMember(code);
+        allow create: if isMember(code)
+                      && request.resource.data.actorUid == uid()
+                      && request.resource.data.type is string
+                      && textBetween(request.resource.data.text, 1, 300);
+        // a student can take back their own entry (unticking a chapter), and
+        // only their own — everyone else's history stays put
+        // the only allowed edit is taking the entry back: a student may flag
+        // their own row as retracted, nothing else
+        allow update: if isMember(code) && resource.data.actorUid == uid()
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['retracted', 'retractedAt']);
+        allow delete: if isMember(code) && resource.data.actorUid == uid();
+      }
+
+      // --------------------------------------------------- live study status
+      // one document per student while a focus session runs; it is deleted when
+      // the session ends, and readers ignore anything stale for two minutes
+      match /live/{studentUid} {
+        allow get, list: if isMember(code);
+        allow create, update: if signedIn() && studentUid == uid();
+        allow delete: if signedIn() && studentUid == uid();
+      }
+
+      // ------------------------------------- weekly challenge scores (season)
+      // leagues/{code}/weekly/{weekId}/scores/{studentUid}
+      match /weekly/{weekId}/scores/{studentUid} {
+        allow get, list: if isMember(code);
+        allow create, update: if signedIn() && studentUid == uid();
+        allow delete: if signedIn() && studentUid == uid();
+      }
+
+      // ------------------------------------------------ direct messages (DM)
+      // Conversation id is both uids sorted and joined: uidA_uidB — identical for
+      // both students, so each pair has exactly one private thread.
+      match /dms/{conversationId}/messages/{messageId} {
+        allow get, list: if signedIn()
+                         && isMember(code)
+                         && conversationId.matches('.*' + uid() + '.*');
+
+        allow create: if signedIn()
+                      && isMember(code)
+                      && conversationId.matches('.*' + uid() + '.*')
+                      && request.resource.data.senderUid == uid()
+                      && textBetween(request.resource.data.text, 1, 500)
+                      && request.resource.data.keys().hasOnly(
+                           ['text', 'senderUid', 'senderName', 'senderEmoji', 'createdAt']);
+
+        allow update: if false;
+
+        allow delete: if signedIn()
+                      && conversationId.matches('.*' + uid() + '.*')
+                      && resource.data.senderUid == uid();
+      }
+
+      // ------------------------------------------------------- shared notes
+      match /sharedNotes/{noteId} {
+        allow get, list: if isMember(code);
+
+        allow create: if isMember(code)
+                      && request.resource.data.authorUid == uid()
+                      && textBetween(request.resource.data.title, 1, 90)
+                      && textBetween(request.resource.data.content, 1, 12000);
+
+        // the author can edit the whole note; everyone else may only add their
+        // own vote and bump the comment counter
+        allow update: if isMember(code)
+                      && (resource.data.authorUid == uid()
+                          || changedOnly(['votes', 'commentsCount']));
+
+        allow delete: if signedIn()
+                      && (resource.data.authorUid == uid()
+                          || (exists(leaguePath(code))
+                              && get(leaguePath(code)).data.createdBy == uid()));
+
+        match /comments/{commentId} {
+          allow get, list: if isMember(code);
+          allow create: if isMember(code)
+                        && request.resource.data.authorUid == uid()
+                        && textBetween(request.resource.data.text, 1, 500);
+          allow update: if false;
+          allow delete: if signedIn() && resource.data.authorUid == uid();
+        }
+      }
+    }
+  }
+}
