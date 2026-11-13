@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.24">
+<html lang="en" data-sl-build="8.25">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1864,7 +1864,14 @@
         .league-avatar { width:38px; height:38px; flex:none; border-radius:50%; display:grid; place-items:center; font-size:18px; color:#fff; }
         .league-avatar-img { width:38px; height:38px; flex:none; border-radius:50%; object-fit:cover; border:1px solid var(--l5c-border); }
         .league-bio { color:var(--text-muted); font-size:.78rem; margin-top:2px; max-width:260px; }
-        .league-presence { font-size:.78rem; margin-top:3px; color:var(--text-muted); min-height:1em; }
+        /* 8.25: a dot on the avatar, so presence costs no vertical space and
+           cannot be wiped by a re-render */
+        .sl-av-wrap { position:relative; display:inline-flex; flex:0 0 auto; }
+        .sl-pres-dot { position:absolute; right:-2px; bottom:-2px; width:9px; height:9px;
+            border-radius:50%; border:2px solid var(--bg-card); }
+        .sl-pres-dot.is-focusing { background:#D97706; }
+        .sl-pres-dot.is-online { background:#2E9E5B; }
+        .sl-pres-dot.is-away { background:#B9B9B4; }
         .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .profile-grid label { display:grid; gap:6px; font-size:.84rem; font-weight:600; color:var(--text-muted); }
         .profile-colors { display:flex; gap:7px; margin-top:7px; }
@@ -3455,6 +3462,8 @@ body.sl-hold #subject-subtitle{ color: transparent !important; }
     align-self:flex-end; background:var(--c-active); border-color:var(--c-active); color:var(--c-active-ink);
 }
 .sl-msg-meta{ font-size:.68rem; font-weight:650; letter-spacing:.02em; opacity:.62; margin-bottom:3px; }
+.sl-msgs{ gap:8px; }
+.sl-msg.is-tight{ margin-top:-5px; }
 .sl-msg-body{ white-space:pre-wrap; word-break:break-word; }
 .sl-msg-actions{ display:flex; gap:4px; margin-top:6px; }
 .sl-msg-actions .sl-react{ opacity:.72; transition:opacity .12s ease, background .12s ease; }
@@ -4651,7 +4660,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v45';
+                var SW_CACHE = 'studyleague-v46';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -7870,6 +7879,33 @@ var LEAGUE_FIREBASE_CONFIG = {
                 setStatus('Live — updates automatically when anyone studies ✓', 'ok');
             }, function (e) { setStatus('Leaderboard error: ' + e.message, 'err'); });
     }
+    /* 8.25 -- presence is the board's own job. It used to be written by a
+       second listener after renderBoard() had already rebuilt the table, so
+       the next render wiped it: the label showed for one frame every 20s and
+       was blank the rest of the time. Rendering it here means one source of
+       truth and nothing left to wipe. */
+    function slPresMs(v) {
+        if (!v) return 0;
+        if (typeof v === 'number') return v;
+        if (v.toMillis) return v.toMillis();
+        if (v.toDate) return v.toDate().getTime();
+        var d = new Date(v); return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+    function slPresState(m) {
+        if (!m || !m.lastSeen) return null;
+        var mins = Math.max(0, Math.round((Date.now() - slPresMs(m.lastSeen)) / 60000));
+        if (mins >= 60) return { kind: 'away', label: 'Offline' };
+        if (mins >= 3) return { kind: 'away', label: 'Last active ' + mins + 'm ago' };
+        /* focusHidden hides what someone is working on -- show them as present,
+           never as focusing */
+        if (m.presenceStatus === 'focusing' && !m.focusHidden) {
+            var left = m.focusEndsAt ? Math.max(0, Math.round((slPresMs(m.focusEndsAt) - Date.now()) / 60000)) : 0;
+            return { kind: 'focusing', label: 'Focusing' + (left ? ' · ' + left + 'm left' : '') +
+                (m.focusChapter ? ' · ' + m.focusChapter : '') };
+        }
+        return { kind: 'online', label: 'Online now' };
+    }
+
     function renderBoard() {
         var body = document.getElementById('leagueBoardBody');
         if (!body) return;
@@ -7900,15 +7936,20 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (!rows.length) { body.innerHTML = '<tr><td colspan="6" class="league-updated">No members yet — share your league code with your friend.</td></tr>'; return; }
         body.innerHTML = rows.map(function (m, i) {
             var me = currentUser && m.uid === currentUser.uid;
+            var uidAttr = ' data-profile-uid="' + escapeHtml(m.uid || '') + '"';
             var avatar = m.photo
-                ? '<img class="league-avatar-img" src="' + m.photo + '" alt="">'
-                : '<span class="league-avatar" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColor(m, m.uid))) + ';font-size:19px">' + escapeHtml(window.slLetter(m.displayName)) + '</span>';
-            var presence = '<div class="league-presence" data-uid="' + m.uid + '"></div>';
+                ? '<img class="league-avatar-img" src="' + m.photo + '" alt=""' + uidAttr + '>'
+                : '<span class="league-avatar" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColor(m, m.uid))) + ';font-size:19px"' + uidAttr + '>' + escapeHtml(window.slLetter(m.displayName)) + '</span>';
+            /* one dot instead of a line of text under the name */
+            var pres = slPresState(m);
+            var dot = pres ? '<i class="sl-pres-dot is-' + pres.kind + '" title="' + escapeHtml(pres.label) +
+                '" aria-label="' + escapeHtml(pres.label) + '"></i>' : '';
+            var avatarWrap = '<span class="sl-av-wrap">' + avatar + dot + '</span>';
             var bio = (m.bio || m.school) ? '<div class="league-bio">' + escapeHtml([m.bio, m.school].filter(Boolean).join(' · ')) + '</div>' : '';
             var nudge = me ? '' : '<button class="btn secondary nudge-btn" data-uid="' + m.uid + '" data-name="' + escapeHtml(m.displayName || 'Student') + '" type="button" title="Send a nudge">👋 Nudge</button>';
             return '<tr class="' + (me ? 'me' : '') + '">' +
                 '<td class="league-rank">' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)) + '</td>' +
-                '<td><span class="league-player">' + avatar + '<span><span class="league-name" data-profile-uid="' + escapeHtml(m.uid || '') + '">' + escapeHtml(m.displayName || 'Student') + '</span>' + (me ? '<span class="league-you">YOU</span>' : '') + bio + presence + '</span></span></td>' +
+                '<td><span class="league-player">' + avatarWrap + '<span><span class="league-name" data-profile-uid="' + escapeHtml(m.uid || '') + '">' + escapeHtml(m.displayName || 'Student') + '</span>' + (me ? '<span class="league-you">YOU</span>' : '') + bio + '</span></span></td>' +
                 '<td><b>' + (m.xp || 0) + '</b> XP</td>' +
                 '<td>' + (m.percent || 0) + '%<div class="progress-container" style="margin-top:5px;min-width:90px;"><div class="progress-bar" style="width:' + (m.percent || 0) + '%;"></div></div></td>' +
                 '<td>' + (m.focusHidden ? 'Private' : (m.focusWeekMin || 0) + ' min') + '</td>' +
@@ -8396,46 +8437,6 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     setInterval(heartbeat, 60000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) heartbeat(); });
-    function refreshPresenceLabels() {
-        document.querySelectorAll('.league-presence').forEach(function (el) {
-            var row = el.closest('tr');
-            // presence text is rendered from the member snapshot by data attributes set below
-            var data = el.dataset;
-            if (!data.ts) return;
-            var d = new Date(Number(data.ts));
-            var mins = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
-            if (mins >= 3) { el.textContent = mins < 60 ? '⚪ Last active ' + mins + 'm ago' : '⚪ Offline'; return; }
-            if (data.status === 'focusing') {
-                var left = data.ends ? Math.max(0, Math.round((Number(data.ends) - Date.now()) / 60000)) : 0;
-                el.textContent = '🔥 Focusing' + (left ? ' · ' + left + 'm left' : '') + (data.chapter ? ' · ' + data.chapter : '');
-            } else el.textContent = '🟢 Online now';
-            if (row) {}
-        });
-    }
-    setInterval(refreshPresenceLabels, 30000);
-
-    // Read member docs to feed presence labels + focus privacy
-    var membersWatchCode = '', membersUnsub = null;
-    function watchMembers() {
-        var code = myLeague();
-        if (!db || !code || code === membersWatchCode) return;
-        membersWatchCode = code;
-        if (membersUnsub) membersUnsub();
-        membersUnsub = db.collection('leagues').doc(code).collection('members').onSnapshot(function (snap) {
-            var byUid = {};
-            snap.forEach(function (doc) { byUid[doc.id] = doc.data(); });
-            document.querySelectorAll('.league-presence').forEach(function (el) {
-                var m = byUid[el.dataset.uid];
-                if (!m || !m.lastSeen) { el.textContent = ''; return; }
-                var d = m.lastSeen.toDate ? m.lastSeen.toDate() : new Date(m.lastSeen);
-                el.dataset.ts = d.getTime(); el.dataset.status = m.presenceStatus || '';
-                el.dataset.ends = m.focusEndsAt || '';
-                el.dataset.chapter = (m.focusChapter || '').slice(0, 60);
-            });
-            refreshPresenceLabels();
-        }, function () {});
-    }
-
     /* ---------------- Notifications inbox ---------------- */
     var inboxUnsub = null, inboxCode = '';
     function notify(recipientUid, type, text) {
@@ -8658,7 +8659,6 @@ var LEAGUE_FIREBASE_CONFIG = {
     // League standings already carry lastSeen/presence fields via heartbeat;
     // this observer keeps the labels fresh as snapshots arrive.
     setInterval(function () {
-        watchMembers();
         injectProfileCard();
         injectChatCard();
         applyPendingInvite();
@@ -12337,13 +12337,24 @@ var LEAGUE_FIREBASE_CONFIG = {
                     ' — make sure latest.rules is published in Firebase.';
             });
     }
+    /* 8.25 -- show the sender line only at the start of a burst. A time under
+       every single message is noise; on the first of a run from the same
+       person (or after a lull) it is information. */
+    function slBurstStart(m, prev) {
+        if (!prev) return true;
+        if ((prev.senderUid || '') !== (m.senderUid || '')) return true;
+        var a = slPresMs(prev.createdAt), b = slPresMs(m.createdAt);
+        return (a && b && (b - a) > 5 * 60000);
+    }
+
     function renderChat() {
         var box = $('slGroupMsgs');
         if (!box) return;
         if (!chatMsgs.length) { box.innerHTML = '<div class="sl-empty">No messages yet — say hello 👋</div>'; return; }
         var nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
-        box.innerHTML = chatMsgs.map(function (m) {
+        box.innerHTML = chatMsgs.map(function (m, mi) {
             var mine = me && m.senderUid === me.uid;
+            var meta = slBurstStart(m, chatMsgs[mi - 1]);
             var reactions = m.reactions || {};
             var counts = {};
             Object.keys(reactions).forEach(function (uid) { counts[reactions[uid]] = (counts[reactions[uid]] || 0) + 1; });
@@ -12351,9 +12362,9 @@ var LEAGUE_FIREBASE_CONFIG = {
                 return '<button type="button" class="sl-react" data-msg="' + m.id + '" data-emoji="' + em + '">' + em +
                     (counts[em] ? '<i>' + counts[em] + '</i>' : '') + '</button>';
             }).join('');
-            return '<div class="sl-msg' + (mine ? ' me' : '') + '">' +
-                '<div class="sl-msg-meta">' + (mine ? 'You' : '<span class="sl-mono-chip sm" style="background:' + esc(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + esc(window.slLetter(m.senderName)) + '</span>' + esc(m.senderName || 'Student')) +
-                    ' · ' + ago(m.createdAt) + '</div>' +
+            return '<div class="sl-msg' + (mine ? ' me' : '') + (meta ? '' : ' is-tight') + '">' +
+                (meta ? '<div class="sl-msg-meta">' + (mine ? 'You' : '<span class="sl-mono-chip sm" style="background:' + esc(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + esc(window.slLetter(m.senderName)) + '</span>' + esc(m.senderName || 'Student')) +
+                    ' · ' + ago(m.createdAt) + '</div>' : '') +
                 '<div class="sl-msg-body">' + esc(m.text || '') + '</div>' +
                 '<div class="sl-msg-actions">' + react +
                     (mine ? '<button type="button" class="sl-del" data-del="' + m.id + '" title="Delete">✕</button>' : '') + '</div>' +
@@ -12431,10 +12442,11 @@ var LEAGUE_FIREBASE_CONFIG = {
             box.innerHTML = '<div class="sl-empty">No messages with ' + esc(who.displayName || 'this classmate') + ' yet — say hi 👋</div>';
             return;
         }
-        box.innerHTML = dmMsgs.map(function (m) {
+        box.innerHTML = dmMsgs.map(function (m, mi) {
             var mine = me && m.senderUid === me.uid;
-            return '<div class="sl-msg' + (mine ? ' me' : '') + '">' +
-                '<div class="sl-msg-meta">' + (mine ? 'You' : esc(m.senderName || 'Student')) + ' · ' + ago(m.createdAt) + '</div>' +
+            var meta = slBurstStart(m, dmMsgs[mi - 1]);
+            return '<div class="sl-msg' + (mine ? ' me' : '') + (meta ? '' : ' is-tight') + '">' +
+                (meta ? '<div class="sl-msg-meta">' + ago(m.createdAt) + '</div>' : '') +
                 '<div class="sl-msg-body">' + esc(m.text || '') + '</div></div>';
         }).join('');
         box.scrollTop = box.scrollHeight;
@@ -13027,7 +13039,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         /* 8.12: no board tile in the thread. It was a Direction-B leftover
            and the chosen direction (A, full-bleed chat) has no tile. */
 
-        list.forEach(function (m) {
+        list.forEach(function (m, mi) {
             var ts = millis(m.createdAt);
             var dk = dayKey(ts);
             if (!prev || prev.day !== dk) {
@@ -13041,6 +13053,14 @@ var LEAGUE_FIREBASE_CONFIG = {
             var mine = m.senderUid === me.uid;
             var tight = prev && prev.sender === m.senderUid && (ts - prev.ts) < 5 * 60000;
             prev.sender = m.senderUid; prev.ts = ts;
+            /* Does this message END the run? Your own stamp goes on the last
+               bubble of a burst: that is where "Seen" means something, and it
+               stops one time per message being printed down the screen. */
+            var next = list[mi + 1];
+            var endsRun = !next ||
+                next.senderUid !== m.senderUid ||
+                (millis(next.createdAt) - ts) >= 5 * 60000 ||
+                dayKey(millis(next.createdAt)) !== dk;
 
             var member = members[m.senderUid] || {};
             var reactions = m.reactions || {};
@@ -13062,7 +13082,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             if (mine) {
                 html.push('<div class="sl-mine" data-msg="' + esc(m.id) + '">' +
                     '<span class="sl-bub">' + body + '</span>' + rx +
-                    '<span class="sl-stamp">' + hm(ts) + ' · ' + (m.pending ? 'sending…' : seenLabel(m)) + '</span></div>');
+                    (endsRun ? '<span class="sl-stamp">' + hm(ts) + ' · ' +
+                        (m.pending ? 'sending…' : seenLabel(m)) + '</span>' : '') + '</div>');
             } else {
                 html.push('<div class="sl-mrow' + (tight ? ' tight' : '') + '" data-msg="' + esc(m.id) + '">' +
                     avatarHtml(member, m.senderUid) +
@@ -13948,5 +13969,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59d3fba8de8f2de',t:'MTc5NDU2NzM3Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59d3fba8de8f2de',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59dfbf58d5fd920',t:'MTc5NDU3NTA4Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59dfbf58d5fd920',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
