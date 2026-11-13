@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.17">
+<html lang="en" data-sl-build="8.18">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13184,7 +13184,22 @@ var LEAGUE_FIREBASE_CONFIG = {
         }
         // phones keep the stylesheet's own height rule
         if (window.innerWidth <= 900) { m.style.height = ''; return; }
-        var top = m.getBoundingClientRect().top + (window.pageYOffset || 0);
+        /* 8.18 -- measure from the top of the SCROLL CONTENT, not the viewport.
+           The app scrolls inside #main (overflow-y:auto); the window itself
+           never scrolls, so window.pageYOffset is always 0 and compensated
+           nothing. getBoundingClientRect().top shrinks by #main.scrollTop once
+           the user scrolls down to the composer (the box ends SL_BELOW past
+           the fold on purpose). Every re-measure that landed while scrolled —
+           the refits scheduled on re-entry, the MutationObserver repaint when
+           Firestore reconnects after a tab switch, S.refresh() — therefore
+           computed a BIGGER height. That is why the box was the right size on
+           reload (scroll forced to 0) but grew every time you left the tab and
+           came back. Adding the scroller's own scrollTop cancels the scroll
+           out, so the height is the same number at any scroll position. */
+        var scroller = $('main');
+        var top = m.getBoundingClientRect().top
+            + (scroller ? scroller.scrollTop : 0)
+            + (window.pageYOffset || 0);
         /* Deliberately taller than the screen: the bottom edge lands SL_BELOW
            pixels below the fold, and the user scrolls to see the rest. #main is
            the scroll container (overflow-y:auto), so this becomes real scroll
@@ -13696,5 +13711,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59b40935f4c91be',t:'MTc5NDU0NjQ0MA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59b40935f4c91be',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
