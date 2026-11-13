@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.20">
+<html lang="en" data-sl-build="8.22">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4636,8 +4636,8 @@ tr.sl-ghost{ display:none !important; }
             </div>
             <div class="league-status" id="settingsStatus"></div>
             <div class="settings-row"><span>Force update <small style="display:block;">Clears this browser's offline copy and loads the newest version</small></span><button class="btn secondary" id="slForceUpdate" type="button">Reload newest</button></div>
-                        <div class="league-status" id="slBuildLine" style="opacity:.7;font-size:.72rem;margin-top:6px;">App build <b>&mdash;</b></div>
-            <div class="league-status" id="slUpdateLine" style="font-size:.72rem;margin-top:4px;"></div>
+                        <div class="league-status" id="slBuildLine" style="opacity:.55;font-size:.66rem !important;margin-top:6px;">&nbsp;</div>
+            <div class="league-status" id="slUpdateLine" style="font-size:.66rem !important;margin-top:3px;"></div>
             <script>
             /* 8.16 -- this line used to have "App build 8.7" typed into it, so it
                stayed at 8.7 through every later release and could not be used to
@@ -4649,7 +4649,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v41';
+                var SW_CACHE = 'studyleague-v43';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -4660,13 +4660,13 @@ tr.sl-ghost{ display:none !important; }
                     var build = document.documentElement.getAttribute('data-sl-build') || 'unknown';
                     var msg = window.__slMsg;
                     var below = (msg && typeof msg.below === 'function') ? msg.below() : null;
-                    var txt = 'App build <b>' + build + '</b>';
-                    if (below !== null) {
-                        txt += ' · messages box <b>' + below + 'px</b> below the fold';
-                        if (window.innerWidth <= 900) txt += ' (narrow windows always fit)';
-                    }
-                    txt += ' · offline cache ' + SW_CACHE;
-                    txt += ' · if this line is missing you are on an older copy';
+                    /* 8.22 -- short enough to read at a glance. Only quote the
+                       box figure when it is actually in force: below 900px wide
+                       fitHeight() stands down and the box always fits, so a
+                       number there would be misleading. */
+                    var txt = 'v<b>' + build + '</b>';
+                    if (below !== null && window.innerWidth > 900) txt += ' · box <b>' + below + 'px</b>';
+                    txt += ' · cache ' + SW_CACHE.replace('studyleague-', '');
                     el.innerHTML = txt;
                 }
                 function checkUpdate() {
@@ -4682,13 +4682,11 @@ tr.sl-ghost{ display:none !important; }
                             var latest = (j && j.build) ? String(j.build) : '';
                             if (!latest) { out.textContent = ''; return; }
                             if (num(latest) > num(mine)) {
-                                out.innerHTML = 'The site has a newer build: <b>' + latest +
-                                    '</b> — this tab is running ' + mine +
-                                    '. Tap <b>Reload newest</b> above.';
-                                out.style.color = '#B45309';
+                                out.innerHTML = 'Newer on the site: <b>' + latest + '</b> — tap <b>Reload newest</b>';
+                                out.style.setProperty('color', '#B45309', 'important');
                             } else {
-                                out.innerHTML = 'Up to date — the site is serving <b>' + latest + '</b>.';
-                                out.style.color = '';
+                                out.innerHTML = 'Up to date';
+                                out.style.removeProperty('color');
                             }
                         })
                         .catch(function () {
@@ -8808,6 +8806,27 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     var regStreamEl = document.getElementById('regStream');
     if (regStreamEl) regStreamEl.addEventListener('change', renderRegSubjects);
+    /* 8.21 -- the chosen subjects feed far more than one tab: Subjects, Focus,
+       Exams, the Notes subject tabs, Planner and the weekly contest stream all
+       read them. Re-rendering the Subjects tab in place left the rest built
+       from the old list, so saving now reloads the app, which is what the user
+       asked for and what actually gets every tab right.
+
+       The cache-busted URL stops the browser or the service worker handing back
+       the page that was already on screen; file:// takes no query, so it gets a
+       plain reload. The short delay lets the write to Firestore get underway
+       and lets the confirmation text be seen. */
+    function slReloadAfterSubjects() {
+        setTimeout(function () {
+            if (/^https?:/i.test(location.href)) {
+                var u = location.href.split('#')[0].split('?')[0];
+                location.replace(u + '?slsaved=' + Date.now());
+            } else {
+                location.reload();
+            }
+        }, 800);
+    }
+
     var regSaveBtn = document.getElementById('regSave');
     if (regSaveBtn) regSaveBtn.addEventListener('click', function(){
         var subjects = Array.prototype.slice.call(document.querySelectorAll('.reg-subject-check:checked')).map(function(x){return x.value;});
@@ -8818,6 +8837,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         applyRegistration();
         if (window.slRefreshSubjects) window.slRefreshSubjects();
         if (typeof renderSubjectProgress === 'function') renderSubjectProgress();
+        slReloadAfterSubjects();
     });
     setTimeout(function(){
         applyRegistration();
@@ -8858,7 +8878,8 @@ var LEAGUE_FIREBASE_CONFIG = {
             saveRegistration({stream:document.getElementById('cfgStream').value, subjects:subjects, completed:true});
             applyRegistration(); renderSubjectProgress();
             if (window.slRefreshSubjects) window.slRefreshSubjects();
-            var st=document.getElementById('settingsStatus'); if(st) st.textContent='Subjects saved ✓ (contest stream applies next Monday)';
+            var st=document.getElementById('settingsStatus'); if(st) st.textContent='Subjects saved ✓ (contest stream applies next Monday) — reloading…';
+            slReloadAfterSubjects();
         });
 
         var act = document.createElement('div');
@@ -13733,5 +13754,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 })();
 </script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a59c76961cf42b0d',t:'MTc5NDU1OTEzOA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a59c76961cf42b0d',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
