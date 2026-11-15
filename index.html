@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.30">
+<html lang="en" data-sl-build="8.32">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4331,6 +4331,19 @@ tr.sl-ghost{ display:none !important; }
             if (c) return c;
             return window.slTint(uid || (m && m.uid) || (m && m.displayName) || '');
         };
+        /* 8.31 -- resolve a colour from a UID ALONE, by looking the member up
+           first. Six places used `x.avatarColor || slTint(uid)`, which only
+           works when the object in hand happens to carry avatarColor. Live
+           docs and message docs do not, so the same person came out a
+           different colour on each screen. Every avatar now goes through
+           here: your own card, board, strip, feed, messages, profile. */
+        window.slAvatarColourFor = function (uid) {
+            var m = (window.__slMembers && window.__slMembers[uid]) || null;
+            if (!m && window.slMyUid && window.slMyUid() === uid) {
+                try { m = JSON.parse(localStorage.getItem('leagueProfile') || '{}') || null; } catch (e) { m = null; }
+            }
+            return window.slAvatarColor(m, uid);
+        };
         /* the signed-in uid, for your own cards (your colour lives in
            localStorage, not in the member doc you read off the board) */
         window.slMyUid = function () {
@@ -4678,7 +4691,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v49';
+                var SW_CACHE = 'studyleague-v51';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -4705,7 +4718,7 @@ tr.sl-ghost{ display:none !important; }
                     if (!/^https?:/i.test(location.href)) { out.textContent = ''; return; }
                     var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
                     out.textContent = 'Checking for a newer build…';
-                    fetch(base + 'version.json?t=' + Date.now(), { cache: 'no-store' })
+                    fetch(base + 'newversion.json?t=' + Date.now(), { cache: 'no-store' })
                         .then(function (r) { return r.json(); })
                         .then(function (j) {
                             var latest = (j && j.build) ? String(j.build) : '';
@@ -4792,6 +4805,241 @@ tr.sl-ghost{ display:none !important; }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   8.32 — REMOTE WIPE
+
+   Nothing outside a device can clear that device's own storage: no
+   server reaches into another machine's localStorage, and no Firestore
+   rule touches it. What CAN be published from one place is an order,
+   and the app can obey it the next time it opens.
+
+   Two of them, so a routine reset never needs the global switch:
+
+     appConfig/global     { wipeAt, lock }   -> every device
+     wipeConfig/{CODE}    { wipeAt, lock }   -> only members of CODE
+
+   Both live OUTSIDE leagues/, because deleting a league must not
+   destroy the switch that is meant to reset it. The Firestore rules
+   have to keep both readable even while everything else is denied,
+   or the order can never be delivered.
+
+   This block is placed directly after the Firestore SDK tag on purpose.
+   Anything that runs later has already had the chance to sync, and a
+   device holding stale local state is exactly what deletes are
+   protecting against.
+   ============================================================ */
+(function () {
+    var SEEN_G = 'slWipeSeenGlobal';
+    var SEEN_L = 'slWipeSeenLeague';
+
+    /* The device's local data. The two slWipeSeen* stamps are deliberately
+       NOT in this list: they record that this device has already obeyed an
+       order, and clearing them would make it obey the same order forever. */
+    var KEYS = ['activityRegistry', 'appRegistration', 'appSettings',
+        'challengeFinalizedWeek', 'challengeLock', 'examPrepData', 'feedIds',
+        'feedPublished', 'focusSessions', 'focusSettings', 'focusTimerState',
+        'knownFocusSessions', 'leagueCode', 'leagueProfile', 'slAuthDismissed',
+        'slBuildSeen', 'slDidUntick', 'slFreezeLog', 'slSyncedUid',
+        'studyEvents', 'syllabusProgress', 'todoData'];
+
+    function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+    function ms(v) {
+        if (!v) return 0;
+        if (typeof v === 'number') return v;
+        try { if (typeof v.toMillis === 'function') return v.toMillis(); } catch (e) {}
+        if (typeof v.seconds === 'number') return v.seconds * 1000;
+        return num(v);
+    }
+
+    function wipeLocal(why) {
+        try { KEYS.forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+        try { sessionStorage.removeItem('pendingInvite'); } catch (e) {}
+        try {
+            if (window.caches && caches.keys) {
+                caches.keys().then(function (ks) {
+                    ks.forEach(function (k) { try { caches.delete(k); } catch (e) {} });
+                });
+            }
+        } catch (e) {}
+        try {
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                navigator.serviceWorker.getRegistrations().then(function (rs) {
+                    rs.forEach(function (r) { try { r.unregister(); } catch (e) {} });
+                });
+            }
+        } catch (e) {}
+        try { if (window.firebase && firebase.auth) firebase.auth().signOut(); } catch (e) {}
+        window.__slWiped = why;
+    }
+
+    /* ---------------------------------------------------------------- lock
+       Firestore RULES are the authoritative lock. This is the belt to their
+       braces: it stops a device writing stale local state back during the
+       window before new rules are published, or if rules were left open by
+       mistake.
+
+       The wrapper is installed at parse time so that every module's
+       `db = firebase.firestore()` is already the guarded object -- if it
+       were installed later, modules would have captured the real one and
+       the lock would miss them. It stays a pass-through until an order
+       actually says otherwise. */
+    var lockedNow = false;
+    var WRITE = { set: 1, update: 1, add: 1, 'delete': 1, commit: 1 };
+
+    function isRef(o) {
+        /* Only Firestore handles get wrapped. Wrapping everything would
+           catch Promises too, and `await` on a proxied promise is asking
+           for trouble. */
+        return !!o && typeof o === 'object' && (
+            typeof o.collection === 'function' ||
+            typeof o.doc === 'function' ||
+            typeof o.commit === 'function' ||
+            typeof o.set === 'function');
+    }
+
+    function guard(o) {
+        if (!isRef(o)) return o;
+        return new Proxy(o, {
+            get: function (t, k) {
+                var v = t[k];
+                if (typeof v !== 'function') return v;
+                if (WRITE[k]) {
+                    return function () {
+                        if (lockedNow) {
+                            return Promise.reject(new Error('StudyLeague is locked by the admin'));
+                        }
+                        return v.apply(t, arguments);
+                    };
+                }
+                if (k === 'runTransaction') {
+                    return function (fn) {
+                        return v.call(t, function (tx) { return fn(guard(tx)); });
+                    };
+                }
+                return function () {
+                    var r = v.apply(t, arguments);
+                    return isRef(r) ? guard(r) : r;
+                };
+            }
+        });
+    }
+
+    /* Armed at parse time so that every module's `db = firebase.firestore()`
+       is the guarded object from the start -- a lock installed after the
+       network read would miss anything that had already captured one. It
+       stays a pass-through until an order engages it. */
+    function arm() {
+        if (!window.firebase || typeof firebase.firestore !== 'function') return;
+        if (firebase.__slLockInstalled) return;
+        var origFs = firebase.firestore;
+        var wrapper = function () { return guard(origFs.apply(firebase, arguments)); };
+        try {
+            Object.keys(origFs).forEach(function (k) {
+                try { wrapper[k] = origFs[k]; } catch (e) {}     // FieldValue and friends
+            });
+        } catch (e) {}
+        wrapper.__slLockInstalled = true;
+        try { firebase.firestore = wrapper; } catch (e) {}
+    }
+
+    function engage() { arm(); lockedNow = true; banner(); }
+
+    function banner() {
+        var show = function () {
+            try {
+                if (document.getElementById('slWipeBanner')) return;
+                var b = document.createElement('div');
+                b.id = 'slWipeBanner';
+                b.textContent = 'This league has been reset by the admin. Saved data on this device has been cleared.';
+                b.setAttribute('style', 'position:fixed;left:0;right:0;top:0;z-index:2147483000;' +
+                    'padding:10px 14px;background:#7f1d1d;color:#fff;' +
+                    'font:600 13px/1.4 system-ui,-apple-system,sans-serif;text-align:center');
+                document.body.appendChild(b);
+            } catch (e) {}
+        };
+        if (document.body) show();
+        else document.addEventListener('DOMContentLoaded', show);
+    }
+
+    function readConf(coll, id) {
+        return new Promise(function (res) {
+            var done = false;
+            function fin(v) { if (done) return; done = true; res(v); }
+            setTimeout(function () { fin(null); }, 8000);          // never hang the page
+            try {
+                firebase.firestore().collection(coll).doc(id).get().then(function (d) {
+                    fin(d && d.exists ? (d.data() || null) : null);
+                }, function () { fin(null); });
+            } catch (e) { fin(null); }
+        });
+    }
+
+    var tries = 0;
+    function go() {
+        if (!window.firebase || typeof firebase.firestore !== 'function') {
+            if (++tries < 40) setTimeout(go, 250);      // the SDK is still loading
+            return;
+        }
+        var code = '';
+        try { code = localStorage.getItem('leagueCode') || ''; } catch (e) {}
+        var seenG = 0, seenL = 0;
+        try {
+            seenG = num(localStorage.getItem(SEEN_G));
+            seenL = num(localStorage.getItem(SEEN_L));
+        } catch (e) {}
+
+        var jobs = [readConf('appConfig', 'global')];
+        jobs.push(code ? readConf('wipeConfig', code) : Promise.resolve(null));
+
+        Promise.all(jobs).then(function (r) {
+            var g = r[0] || {}, l = r[1] || {};
+            var gAt = ms(g.wipeAt), lAt = ms(l.wipeAt);
+
+            /* An order is obeyed once. Record the stamp BEFORE clearing, and
+               keep it out of the key list, or the reload starts all over. */
+            try {
+                localStorage.setItem(SEEN_G, String(gAt));
+                if (code) localStorage.setItem(SEEN_L, String(lAt));
+            } catch (e) {}
+
+            if (g.lock || l.lock) engage();
+
+            /* A league order binds only devices that belong to that league --
+               which is exactly the ones still holding its code locally. */
+            var hit = gAt > seenG ? 'global' : (code && lAt > seenL ? 'league' : '');
+            window.__slWipeChecked = true;
+            if (!hit) return;
+
+            wipeLocal(hit);
+            /* give the async cache and service-worker removals a moment to
+               settle, then come back clean */
+            setTimeout(function () {
+                try { location.replace(location.href.split('#')[0]); }
+                catch (e) { try { location.reload(); } catch (e2) {} }
+            }, 400);
+        });
+    }
+
+    window.slWipe = {
+        keys: KEYS,
+        wipeNow: wipeLocal,
+        lock: engage,
+        seen: function () {
+            try {
+                return {
+                    global: num(localStorage.getItem(SEEN_G)),
+                    league: num(localStorage.getItem(SEEN_L))
+                };
+            } catch (e) { return { global: 0, league: 0 }; }
+        }
+    };
+
+    arm();          // before any other script can capture firebase.firestore()
+    go();
+})();
+</script>
+
 <script>
     // THEME
     function updateThemeButton(theme) {
@@ -5534,18 +5782,16 @@ tr.sl-ghost{ display:none !important; }
     }
 
     function pauseTimer() {
-      try { if (window.slLive) window.slLive.stop(); } catch (e) {}
+      /* 8.31 -- was slLive.stop(), which erased you from the board entirely */
       if (!timerState.running) return;
       var now = Date.now();
       var seg = Math.max(0, now - (timerState.startTime || now));
       timerState.accumulatedMs += seg;
       timerState.remainingMs = Math.max(0, (timerState.endTime || now) - now);
       timerState.running = false;
-      timerState.startTime = null;
-      timerState.endTime = null;
-      saveTimerState();
       if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
       updateFocusUI();
+      try { if (window.slLive && window.slLive.paused) window.slLive.paused(); } catch (e) {}
     }
 
     function resetTimer() {
@@ -7997,7 +8243,30 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (v.toDate) return v.toDate().getTime();
         var d = new Date(v); return isNaN(d.getTime()) ? 0 : d.getTime();
     }
+    function liveIsPausedRemote(it) { return !!(it && it.state === 'paused') && Number(it.remainingMs || 0) > 0; }
+
     function slPresState(m) {
+        /* 8.31 -- the live doc knows about a pause immediately; the member doc
+           only catches up on the next heartbeat, up to a minute later. */
+        var live = null;
+        try {
+            var items = (window.__slLive && window.__slLive.items) || [];
+            for (var li = 0; li < items.length; li++) {
+                if (items[li] && items[li].uid === (m && m.uid)) { live = items[li]; break; }
+            }
+        } catch (e) {}
+        if (live && liveIsPausedRemote(live)) {
+            var leftP = Math.max(0, Math.round(Number(live.remainingMs || 0) / 60000));
+            return { kind: 'online', label: 'Paused a focus timer' + (leftP ? ' \u00b7 ' + leftP + 'm left' : '') };
+        }
+        /* 8.31 -- someone mid-session should read as focusing straight away,
+           not up to a minute later when their heartbeat lands. focusHidden
+           still wins: it hides what they are working on. */
+        if (live && !liveIsPausedRemote(live) && Number(live.endAt) > Date.now() && !(m && m.focusHidden)) {
+            var leftA = Math.max(0, Math.round((Number(live.endAt) - Date.now()) / 60000));
+            return { kind: 'focusing', label: 'Focusing' + (leftA ? ' \u00b7 ' + leftA + 'm left' : '') +
+                (live.chapter ? ' \u00b7 ' + live.chapter : (live.target ? ' \u00b7 ' + live.target : '')) };
+        }
         if (!m || !m.lastSeen) return null;
         var mins = Math.max(0, Math.round((Date.now() - slPresMs(m.lastSeen)) / 60000));
         if (mins >= 60) return { kind: 'away', label: 'Offline' };
@@ -8799,7 +9068,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             }).join('');
             return '<div class="chat-msg' + (mine ? ' me' : '') + '">' +
                 (mine ? '<button class="chat-del" data-del="' + m.id + '" title="Delete message">✕</button>' : '') +
-                '<div class="chat-meta">' + (window.slMonoChip ? '' : '') + '<span class="sl-mono-chip sm" style="background:' + escapeHtml(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + escapeHtml(window.slLetter(m.senderName)) + '</span>' + escapeHtml(m.senderName || 'Student') + ' · ' + ago(m.createdAt) + '</div>' +
+                '<div class="chat-meta">' + (window.slMonoChip ? '' : '') + '<span class="sl-mono-chip sm" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColourFor(m.senderUid))) + '">' + escapeHtml(window.slLetter(m.senderName)) + '</span>' + escapeHtml(m.senderName || 'Student') + ' · ' + ago(m.createdAt) + '</div>' +
                 '<div>' + escapeHtml(m.text || '') + '</div>' +
                 '<div class="chat-reactions">' + reactBtns + '</div></div>';
         }).join('');
@@ -9521,6 +9790,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                 uid: me.uid,
                 name: (p.name || 'Student').slice(0, 30),
                 emoji: p.emoji || '📚',
+                avatarColor: p.avatarColor || '',
                 target: (t.display || t.customText || '').slice(0, 60),
                 subjectKey: t.subjectKey || '',
                 subKey: t.subSubjectKey || '',
@@ -9531,6 +9801,41 @@ var LEAGUE_FIREBASE_CONFIG = {
                 updatedAt: Date.now()
             }, { merge: true }).catch(function () {});
             if (!liveBeatTimer) liveBeatTimer = setInterval(liveBeat, 60000);
+        } catch (e) {}
+    }
+
+    /* 8.31 -- pausing used to delete the live document, so the person simply
+       disappeared from the board and the feed even though they were sitting
+       right there with 25 minutes still on the clock. A pause is published
+       instead: green on the board, "paused · 25 min left" in the strip. */
+    function livePublishPaused() {
+        try {
+            if (!db || !me) return;
+            var code = leagueCode(); if (!code) return;
+            if (liveSettings().sharePresence === false) return;
+            if (typeof timerState === 'undefined' || !timerState) return;
+            if (timerState.mode !== 'focus' || timerState.running) return;
+            var rem = Number(timerState.remainingMs || 0);
+            if (rem <= 0) { liveStop(); return; }
+            var p = myProfile();
+            var t = liveSettings().shareFocusChapter ? (timerState.target || {}) : {};
+            db.collection('leagues').doc(code).collection('live').doc(me.uid).set({
+                uid: me.uid,
+                name: (p.name || 'Student').slice(0, 30),
+                emoji: p.emoji || '📚',
+                avatarColor: p.avatarColor || '',
+                target: (t.display || t.customText || '').slice(0, 60),
+                subjectKey: t.subjectKey || '',
+                subKey: t.subSubjectKey || '',
+                chapter: t.chapter || '',
+                state: 'paused',
+                remainingMs: rem,
+                elapsedMs: Number(timerState.accumulatedMs || 0),
+                startedAt: Number(timerState.startTime || Date.now()),
+                endAt: 0,                       // 8.31: merge would keep the old one
+                minutes: Math.max(1, Math.round(rem / 60000)),
+                updatedAt: Date.now()
+            }, { merge: true }).catch(function () {});
         } catch (e) {}
     }
 
@@ -9554,7 +9859,13 @@ var LEAGUE_FIREBASE_CONFIG = {
         } catch (e) {}
     }
 
-    function liveLeftMs(it) { return Math.max(0, Number(it && it.endAt || 0) - Date.now()); }
+    /* a paused clock is not counting down: the remaining time is the number
+       that was frozen when they paused */
+    function liveIsPaused(it) { return !!(it && it.state === 'paused'); }
+    function liveLeftMs(it) {
+        if (liveIsPaused(it)) return Math.max(0, Number(it.remainingMs || 0));
+        return Math.max(0, Number(it && it.endAt || 0) - Date.now());
+    }
     /* 8.24 -- a session used to disappear after two quiet minutes. Browsers
        throttle timers in a background tab, so one missed 60s beat and a
        still-running session vanished from everyone else's feed while the
@@ -9562,8 +9873,15 @@ var LEAGUE_FIREBASE_CONFIG = {
        not run out, the session is running. Staleness now dims the pill and is
        reported -- it no longer deletes the person from the board. */
     function liveStaleMs(it) { return Date.now() - Number((it && it.updatedAt) || 0); }
+    function liveFreshPaused(it) {
+        if (!liveIsPaused(it)) return false;
+        if (Number(it.remainingMs || 0) <= 0) return false;
+        return liveStaleMs(it) <= 15 * 60000;
+    }
     function liveFresh(it) {
-        if (!it || !it.endAt) return false;
+        if (!it) return false;
+        if (liveIsPaused(it)) return liveFreshPaused(it);
+        if (!it.endAt) return false;
         if (liveLeftMs(it) <= 0) return false;                       // timer finished
         if (liveStaleMs(it) > 15 * 60000) return false;              // silent a long while
         return true;
@@ -9574,7 +9892,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     }
     function liveItems() {
         var all = (window.__slLive && window.__slLive.items) ? window.__slLive.items : [];
-        return all.filter(liveFresh).sort(function (a, b) { return Number(a.endAt) - Number(b.endAt); });
+        return all.filter(liveFresh).sort(function (a, b) { return liveLeftMs(a) - liveLeftMs(b); });
     }
 
     function paintLive() {
@@ -9586,31 +9904,42 @@ var LEAGUE_FIREBASE_CONFIG = {
         var now = Date.now();
         var pills = items.map(function (it) {
             var mine = (me && it.uid === me.uid);
-            var mins = Math.max(0, Math.round((Number(it.endAt) - now) / 60000));
+            var mins = Math.max(0, Math.round(liveLeftMs(it) / 60000));
             var stale = liveStaleMs(it) > 180000;
             return '<button type="button" class="sl-now-pill' + (liveOpen === it.uid ? ' is-open' : '') + (stale ? ' is-stale' : '') +
                 '" title="' + (stale ? 'Last update ' + Math.round(liveStaleMs(it) / 60000) + 'm ago' : '') + '" data-live="' + escapeHtml(it.uid) + '" aria-expanded="' + (liveOpen === it.uid ? 'true' : 'false') + '">' +
-                '<span class="sl-now-av" style="background:' + escapeHtml(window.slMonoBg(it.avatarColor || window.slTint(it.uid))) + ';color:#fff;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(it.name)) + '</span>' +
+                '<span class="sl-now-av" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColourFor(it.uid))) + ';color:#fff;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(it.name)) + '</span>' +
                 '<b>' + escapeHtml(it.name || 'Student') + (mine ? ' (you)' : '') + '</b>' +
                 (it.target ? '<span class="sl-now-tg">' + escapeHtml(it.target) + '</span>' : '') +
-                '<span class="sl-now-left" data-end="' + Number(it.endAt) + '">' + mins + 'm left</span>' +
+                '<span class="sl-now-left"' + (liveIsPaused(it) ? ' data-paused="1" data-remaining="' + Number(it.remainingMs || 0) + '"' : ' data-end="' + Number(it.endAt || 0) + '"') + '>' +
+                    (liveIsPaused(it) ? 'paused \u00b7 ' + mins + 'm left' : mins + 'm left') + '</span>' +
             '</button>';
         }).join('');
         var d = items.filter(function (x) { return x.uid === liveOpen; })[0];
         var detail = '';
         if (d) {
-            var total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
-            var doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            var total, doneM;
+            if (liveIsPaused(d)) {
+                var remP = Math.max(0, Number(d.remainingMs || 0));
+                var ranP = Math.max(0, Number(d.elapsedMs || 0));
+                total = Math.max(1, (ranP + remP) / 60000);
+                doneM = Math.min(total, ranP / 60000);
+            } else {
+                total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
+                doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            }
             var pct = Math.max(4, Math.min(100, Math.round(doneM / total * 100)));
             detail = '<div class="sl-now-detail">' +
-                '<span class="sl-now-av lg" style="background:' + escapeHtml(window.slMonoBg(d.avatarColor || window.slTint(d.uid))) + ';color:#fff;font-weight:800;font-size:17px;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(d.name)) + '</span>' +
+                '<span class="sl-now-av lg" style="background:' + escapeHtml(window.slMonoBg(window.slAvatarColourFor(d.uid))) + ';color:#fff;font-weight:800;font-size:17px;text-shadow:0 1px 2px rgba(0,0,0,.2)">' + escapeHtml(window.slLetter(d.name)) + '</span>' +
                 '<span class="sl-now-dbody">' +
                     '<span class="sl-now-dt"><b>' + escapeHtml(d.name || 'Student') + '</b> is ' + (d.target ? 'studying' : 'in a focus session') +
                         (d.target ? ' <b>' + escapeHtml(d.target) + '</b>' : '') + '</span>' +
                     '<span class="sl-now-dsub">' + Math.floor(doneM) + ' min in · <b>' + Math.ceil(Math.max(0, total - doneM)) + ' min to go</b> · started ' + liveClock(d.startedAt) + ' · ends ' + liveClock(d.endAt) + '</span>' +
                     '<span class="sl-now-bar"><i style="width:' + pct + '%"></i></span>' +
                 '</span>' +
-                '<span class="sl-now-chip" data-end="' + Number(d.endAt) + '">' + Math.max(0, Math.round((Number(d.endAt) - now) / 60000)) + 'm left</span>' +
+                '<span class="sl-now-chip"' + (liveIsPaused(d) ? ' data-paused="1" data-remaining="' + Number(d.remainingMs || 0) + '"' : ' data-end="' + Number(d.endAt || 0) + '"') + '>' +
+                    (liveIsPaused(d) ? 'paused \u00b7 ' + Math.max(0, Math.round(Number(d.remainingMs || 0) / 60000)) + 'm left'
+                                     : Math.max(0, Math.round((Number(d.endAt) - now) / 60000)) + 'm left') + '</span>' +
                 (d.uid ? '<button type="button" class="sl-now-chip" data-profile-uid="' + escapeHtml(d.uid) + '" style="cursor:pointer;">View profile</button>' : '') +
             '</div>';
         }
@@ -9626,16 +9955,29 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (!items.length) { if (host.style.display !== 'none') paintLive(); return; }
         var now = Date.now();
         Array.prototype.forEach.call(host.querySelectorAll('[data-end]'), function (el) {
-            var end = Number(el.getAttribute('data-end')) || 0;
-            var mins = Math.max(0, Math.round((end - now) / 60000));
-            var txt = mins + 'm left';
+            var txt;
+            if (el.getAttribute('data-paused') === '1') {
+                /* a paused clock is frozen: the tick must not count it down */
+                txt = 'paused \u00b7 ' + Math.max(0, Math.round((Number(el.getAttribute('data-remaining')) || 0) / 60000)) + 'm left';
+            } else {
+                var end = Number(el.getAttribute('data-end')) || 0;
+                txt = Math.max(0, Math.round((end - now) / 60000)) + 'm left';
+            }
             if (el.textContent !== txt) el.textContent = txt;      // no reflow unless the minute changed
         });
         var bar = host.querySelector('.sl-now-bar > i');
         var d = items.filter(function (x) { return x.uid === liveOpen; })[0];
         if (bar && d) {
-            var total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
-            var doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            var total, doneM;
+            if (liveIsPaused(d)) {
+                var remP = Math.max(0, Number(d.remainingMs || 0));
+                var ranP = Math.max(0, Number(d.elapsedMs || 0));
+                total = Math.max(1, (ranP + remP) / 60000);
+                doneM = Math.min(total, ranP / 60000);
+            } else {
+                total = Math.max(1, (Number(d.endAt) - Number(d.startedAt)) / 60000);
+                doneM = Math.min(total, Math.max(0, (now - Number(d.startedAt)) / 60000));
+            }
             bar.style.width = Math.max(4, Math.min(100, Math.round(doneM / total * 100))) + '%';
         }
     }
@@ -9656,7 +9998,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         } catch (e) {}
     }
 
-    try { window.slLive = { publish: livePublish, stop: liveStop, paint: paintLive, start: startLiveListener,
+    try { window.slLive = { publish: livePublish, paused: livePublishPaused, stop: liveStop, paint: paintLive, start: startLiveListener,
         refreshActivity: function () { if (!feedUnsub) startFeedListener(); startLiveListener(); paintLive(); } }; } catch (e) {}
     window.addEventListener('online', function () { if (!feedUnsub) startFeedListener(); startLiveListener(); livePublish(); });
 
@@ -10541,7 +10883,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* PWA: register service worker only on the hosted app (index page) */
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
         if (/(\/|\/index\.html)$/.test(location.pathname)) {
-            navigator.serviceWorker.register('sw.js').catch(function(){});
+            navigator.serviceWorker.register('newsw.js').catch(function(){});
         }
     }
 })();
@@ -12515,7 +12857,7 @@ var LEAGUE_FIREBASE_CONFIG = {
         box.innerHTML = others.map(function (u) {
             var m = real[u];
             return '<button type="button" class="sl-person' + (u === dmUser ? ' is-active' : '') + '" data-dm-uid="' + esc(u) + '">' +
-                '<span class="sl-person-av" style="background:' + esc(window.slMonoBg(m.avatarColor || window.slTint(u))) + ';font-size:15px">' + esc(window.slLetter(m.displayName)) + '</span>' +
+                '<span class="sl-person-av" style="background:' + esc(window.slMonoBg(window.slAvatarColourFor(u))) + ';font-size:15px">' + esc(window.slLetter(m.displayName)) + '</span>' +
                 '<span class="sl-person-t"><b>' + esc(m.displayName || 'Student') + '</b>' +
                 '<small>' + (m.percent || 0) + '% · ' + (m.xp || 0) + ' XP</small></span></button>';
         }).join('');
@@ -12568,7 +12910,7 @@ var LEAGUE_FIREBASE_CONFIG = {
                     (counts[em] ? '<i>' + counts[em] + '</i>' : '') + '</button>';
             }).join('');
             return '<div class="sl-msg' + (mine ? ' me' : '') + (meta ? '' : ' is-tight') + '">' +
-                (meta ? '<div class="sl-msg-meta">' + (mine ? 'You' : '<span class="sl-mono-chip sm" style="background:' + esc(window.slMonoBg(m.senderColor || window.slTint(m.senderUid))) + '">' + esc(window.slLetter(m.senderName)) + '</span>' + esc(m.senderName || 'Student')) +
+                (meta ? '<div class="sl-msg-meta">' + (mine ? 'You' : '<span class="sl-mono-chip sm" style="background:' + esc(window.slMonoBg(window.slAvatarColourFor(m.senderUid))) + '">' + esc(window.slLetter(m.senderName)) + '</span>' + esc(m.senderName || 'Student')) +
                     ' · ' + ago(m.createdAt) + '</div>' : '') +
                 '<div class="sl-msg-body">' + esc(m.text || '') + '</div>' +
                 '<div class="sl-msg-actions">' + react +
@@ -13003,7 +13345,12 @@ var LEAGUE_FIREBASE_CONFIG = {
         Object.keys(members).forEach(function (u) {
             if (u === me.uid) return;
             var m = members[u];
-            var lastDm = (conv.type === 'dm' && conv.uid === u && dmMsgs.length) ? dmMsgs[dmMsgs.length - 1] : null;
+            /* 8.31 -- only the OPEN conversation used to have a timestamp, so
+               every other chat sorted as 0 and the rail stayed in whatever
+               order the member map yielded. Use the real last message. */
+            var lastDm = (conv.type === 'dm' && conv.uid === u && dmMsgs.length)
+                ? dmMsgs[dmMsgs.length - 1]
+                : (dmLast[u] || null);
             out.push({
                 type: 'dm', uid: u,
                 name: m.displayName || 'Student',
@@ -13014,14 +13361,46 @@ var LEAGUE_FIREBASE_CONFIG = {
             });
         });
         out.sort(function (a, b) {
-            if (a.type !== b.type) return a.type === 'group' ? -1 : 1;
-            return b.ts - a.ts;
+            if (a.type !== b.type) return a.type === 'group' ? -1 : 1;   // group pinned
+            return (Number(b.ts) || 0) - (Number(a.ts) || 0);            // newest first
         });
         return out;
     }
 
+    /* 8.31 -- a live listener per classmate, capped at one document each.
+       This replaced a polling version: the promises from one-shot reads never
+       settled under test, and polling would have meant a query every few
+       seconds for a list that barely changes. A limit(1) listener is the
+       cheapest thing Firestore offers and keeps the rail honest on its own. */
+    var dmLast = {}, dmLastSubs = {}, dmLastCode = '';
+    function refreshDmLasts() {
+        try {
+            if (!db || !me) return;
+            var code = nowCode(); if (!code) return;
+            if (dmLastCode !== code) {                 // league changed: drop the lot
+                Object.keys(dmLastSubs).forEach(function (u) {
+                    try { if (dmLastSubs[u]) dmLastSubs[u](); } catch (e) {}
+                    delete dmLastSubs[u];
+                });
+                dmLast = {}; dmLastCode = code;
+            }
+            Object.keys(members || {}).forEach(function (u) {
+                if (u === me.uid || dmLastSubs[u]) return;
+                dmLastSubs[u] = db.collection('leagues').doc(code).collection('dms').doc(dmId(me.uid, u))
+                    .collection('messages').orderBy('createdAt', 'desc').limit(1)
+                    .onSnapshot(function (snap) {
+                        var d = null;
+                        try { snap.forEach(function (doc) { d = doc.data(); }); } catch (e) {}
+                        dmLast[u] = d;
+                        renderRail();
+                    }, function () {});
+            });
+        } catch (e) {}
+    }
+
     /* --------------------------------------------------------------- paint */
     function renderRail() {
+        refreshDmLasts();
         if (!alive()) return;
         var list = $('slConvos');
         if (!list) return;
@@ -13600,7 +13979,7 @@ var LEAGUE_FIREBASE_CONFIG = {
             (others.length ? others.map(function (u) {
                 var m = members[u];
                 return '<button type="button" class="sl-sheet-row" data-new="' + esc(u) + '">' +
-                    '<span class="sl-mav" style="width:22px;height:22px;border-radius:6px;font-size:11px;background:' + esc(window.slMonoBg(m.avatarColor || tint(u))) + '">' +
+                    '<span class="sl-mav" style="width:22px;height:22px;border-radius:6px;font-size:11px;background:' + esc(window.slMonoBg(window.slAvatarColourFor(u))) + '">' +
                     esc(window.slLetter(m.displayName)) + '</span> ' + esc(m.displayName || 'Student') + '</button>';
             }).join('') : '<div class="sl-sheet-note">No classmates yet — invite someone from My Profile.</div>') +
             '</div>';
@@ -14175,5 +14554,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 </script>
 
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5ac4b7baa352160',t:'MTc5NDcyNTE0NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5ac4b7baa352160',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
