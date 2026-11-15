@@ -1,5 +1,5 @@
-// StudyLeague service worker - build 8.32 (offline app shell)
-const CACHE = 'studyleague-v51';
+// StudyLeague service worker - build 8.33 (offline app shell)
+const CACHE = 'studyleague-v52';
 const ASSETS = ['./', './newindex.html', './newversion.json', './manifest.webmanifest', './icon-192.png', './icon-512.png', './studyleague-logo.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
