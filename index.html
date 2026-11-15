@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.32">
+<html lang="en" data-sl-build="8.33">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4691,7 +4691,7 @@ tr.sl-ghost{ display:none !important; }
                and a stale browser cache look identical from here. Ask the site
                what it is actually serving and say which one it is. */
             (function () {
-                var SW_CACHE = 'studyleague-v51';
+                var SW_CACHE = 'studyleague-v52';
                 function num(v) {
                     var p = String(v || '').split('.');
                     return (parseInt(p[0], 10) || 0) * 1000 + (parseInt(p[1], 10) || 0);
@@ -4804,6 +4804,126 @@ tr.sl-ghost{ display:none !important; }
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ============================================================
+   8.33 — ONE DEVICE, TWO PEOPLE
+
+   A Google account is a key, not a suitcase. It gives the app an id
+   and a suggested first name; everything else -- the name on your
+   row, your subjects, your focus minutes, your ticks -- is a file
+   on the DEVICE. Signing out used to clear none of it, so signing
+   in as someone else published the last person's life under the
+   new person's id.
+
+   So: each person's data is kept in a vault under their own id, and
+   the vault is swapped when the signed-in account changes.
+
+   Deliberately a swap and not a transparent shim over localStorage.
+   The app already replaces window.localStorage with its own
+   storage-fallback object, and intercepting every read would sit
+   between the app and data it touches constantly. Changing the
+   data at the one moment that matters is much less to break.
+
+   Must run after the Firebase auth SDK and before anything reads
+   storage, which is why it sits here rather than further down.
+   ============================================================ */
+(function () {
+    /* What belongs to a PERSON. Anything not on this list belongs to the
+       device and is shared: theme, the league code, the sign-in prompt
+       dismissal, and the remote-wipe bookkeeping. */
+    var PERSONAL = ['activityRegistry', 'appRegistration', 'appSettings',
+        'challengeFinalizedWeek', 'challengeLock', 'examPrepData', 'feedIds',
+        'feedPublished', 'focusSessions', 'focusSettings', 'focusTimerState',
+        'knownFocusSessions', 'leagueProfile', 'slDidUntick', 'slFreezeLog',
+        'slSyncedUid', 'studyEvents', 'syllabusProgress', 'todoData'];
+
+    var VAULT = 'slVault:';
+    var LAST = 'slLastUid';
+
+    function get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function put(k, v) {
+        try { if (v === null) window.localStorage.removeItem(k); else window.localStorage.setItem(k, v); } catch (e) {}
+    }
+
+    function snapshot() {
+        var out = {};
+        PERSONAL.forEach(function (k) { var v = get(k); if (v !== null) out[k] = v; });
+        return out;
+    }
+    function stash(uid) {
+        var snap = snapshot();
+        if (!Object.keys(snap).length) return;
+        put(VAULT + uid, JSON.stringify(snap));
+    }
+    /* Set each key to whatever the vault holds for this person, and clear the
+       ones it does not. Deliberately NOT "clear everything, then write" -- if
+       the vault could not be read for any reason, wiping first would destroy
+       the only copy there is. */
+    function restore(uid) {
+        var snap = null;
+        var raw = get(VAULT + uid);
+        try { snap = raw ? JSON.parse(raw) : null; } catch (e) { snap = null; }
+        PERSONAL.forEach(function (k) {
+            if (snap && Object.prototype.hasOwnProperty.call(snap, k)) put(k, snap[k]);
+            else put(k, null);
+        });
+    }
+
+    var activeUid = '';
+    function onUid(uid) {
+        if (!uid || uid === activeUid) return;
+        var prev = get(LAST) || '';
+        activeUid = uid;
+        if (prev === uid) return;                    // same person back again
+
+        if (prev) stash(prev);                       // put the last person away
+        else stash(uid);                             // first run after this upgrade:
+                                                     // whatever is here belongs to
+                                                     // whoever is signing in now
+        restore(uid);
+        put(LAST, uid);
+        if (prev) {
+            /* the app has already read the old person's data into memory */
+            try { location.replace(location.href.split('#')[0]); }
+            catch (e) { try { location.reload(); } catch (e2) {} }
+        }
+    }
+
+    var tries = 0;
+    function go() {
+        if (!window.firebase || typeof firebase.auth !== 'function') {
+            if (++tries < 40) setTimeout(go, 250);
+            return;
+        }
+        try {
+            firebase.auth().onAuthStateChanged(function (u) { onUid(u && u.uid); });
+            var cur = firebase.auth().currentUser;
+            if (cur && cur.uid) onUid(cur.uid);
+        } catch (e) {}
+    }
+
+    window.slVault = {
+        personal: PERSONAL,
+        snapshot: snapshot,
+        stash: stash,
+        restore: restore,
+        /* what the remote wipe needs to know about: vaults are people too */
+        vaultKeys: function () {
+            var out = [];
+            try {
+                for (var i = 0; i < window.localStorage.length; i++) {
+                    var k = window.localStorage.key(i);
+                    if (k && k.indexOf(VAULT) === 0) out.push(k);
+                }
+            } catch (e) {}
+            return out;
+        }
+    };
+
+    go();
+})();
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ============================================================
@@ -4844,6 +4964,10 @@ tr.sl-ghost{ display:none !important; }
         'studyEvents', 'syllabusProgress', 'todoData'];
 
     function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+    /* What the Firebase console stores is not always the type you meant: a
+       number typed into a `string` field is still the number, and a boolean
+       offered as “true” is still a yes. Read the intent, not the type. */
+    function yes(v) { return v === true || v === 'true' || v === 1 || v === '1'; }
     function ms(v) {
         if (!v) return 0;
         if (typeof v === 'number') return v;
@@ -4854,6 +4978,18 @@ tr.sl-ghost{ display:none !important; }
 
     function wipeLocal(why) {
         try { KEYS.forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+        /* 8.33 -- the bare keys are only the person who is signed in right
+           now. Everyone else's data lives in a vault, and a wipe that leaves
+           the vaults behind has not really wiped the device. */
+        try {
+            var vaulted = [];
+            for (var vi = 0; vi < window.localStorage.length; vi++) {
+                var vk = window.localStorage.key(vi);
+                if (vk && vk.indexOf('slVault:') === 0) vaulted.push(vk);
+            }
+            vaulted.forEach(function (k) { localStorage.removeItem(k); });
+            localStorage.removeItem('slLastUid');
+        } catch (e) {}
         try { sessionStorage.removeItem('pendingInvite'); } catch (e) {}
         try {
             if (window.caches && caches.keys) {
@@ -5003,7 +5139,7 @@ tr.sl-ghost{ display:none !important; }
                 if (code) localStorage.setItem(SEEN_L, String(lAt));
             } catch (e) {}
 
-            if (g.lock || l.lock) engage();
+            if (yes(g.lock) || yes(l.lock)) engage();
 
             /* A league order binds only devices that belong to that league --
                which is exactly the ones still holding its code locally. */
@@ -14554,5 +14690,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 </script>
 
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5ac4b7baa352160',t:'MTc5NDcyNTE0NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5ac4b7baa352160',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
