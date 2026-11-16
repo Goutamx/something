@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.34">
+<html lang="en" data-sl-build="8.35">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4226,8 +4226,19 @@ tr.sl-ghost{ display:none !important; }
        screen. Height is set at runtime by fitHeight(); the clamp below is only
        a fallback for the moment before it runs. */
     @media (min-width:901px){
+        /* 8.35 -- .content-area carries padding-bottom:96px. On this tab that
+           padding sits BELOW the box, so it is dead space: at full scroll the
+           box's bottom edge stops 96px short of the fold and you get a bare
+           strip under the composer. Nothing else lives down there.
+           Desktop only -- on a phone this padding is the clearance above the
+           bottom nav, and the box is sized by the stylesheet, not fitHeight(),
+           so removing it there would jam the composer against the nav. */
+        body.sl-msgs-tab .content-area{ padding-bottom:0 !important; }
         .sl-msgr.sl-fullbleed{ grid-template-columns:266px minmax(0,1fr);
-            height:clamp(480px, calc(100vh - 196px + var(--sl-below, 0px)), 1600px); }
+            /* --sl-msgs-h is the height fitHeight() measured; it is published
+               on the first pass so the skeleton never renders at a height the
+               runtime then changes. The calc() is only the pre-JS fallback. */
+            height:clamp(480px, var(--sl-msgs-h, calc(100vh - 66px + var(--sl-below, 0px))), 1600px); }
         .sl-msgr.sl-fullbleed.has-ctx{ grid-template-columns:266px minmax(0,1fr) 300px; }
     }
     .sl-msgr.sl-fullbleed{ width:100%; }
@@ -14200,12 +14211,22 @@ var LEAGUE_FIREBASE_CONFIG = {
            SL_BELOW = 0    -> fills the screen exactly, no scroll
 
        Phones are unaffected: fitHeight() skips them (width <= 900). */
-    /* 8.34 -- reduced from 100. The user wants the outer page to scroll LESS,
-       not to stop scrolling: 0 would pin the box exactly to the fold and remove
-       the outer scroll altogether, which was explicitly not the request. 40
-       leaves a small, deliberate overshoot so the composer is still just past
-       the fold and a short scroll reveals it. */
-    var SL_BELOW = 40;
+    /* 8.35 -- the box is now sized to the scroller's FULL visible height, so
+       SL_BELOW means "extra beyond a perfect full-screen fit":
+
+           SL_BELOW = 0   -> at full scroll the box fills the visible area
+                             exactly, edge to edge, nothing cut off
+           SL_BELOW = 40  -> 40px taller, so 40px of its top is above the fold
+                             at full scroll
+
+       0 is the default and gives the requested behaviour. It still scrolls:
+       the distance is exactly the header height, which is what scrolling past
+       a header should cost.
+
+       (8.34's comment claimed 0 would remove scrolling entirely. That was
+       wrong -- the 96px of .content-area padding kept the page long. With that
+       padding gone the relationship is now exact.) */
+    var SL_BELOW = 0;
 
     /* One number, one source of truth. The stylesheet used to hard-code the
        300 case (calc(100vh + 104px)), so changing SL_BELOW here left the CSS
@@ -14239,11 +14260,15 @@ var LEAGUE_FIREBASE_CONFIG = {
         var top = m.getBoundingClientRect().top
             + (scroller ? scroller.scrollTop : 0)
             + (window.pageYOffset || 0);
-        /* Deliberately taller than the screen: the bottom edge lands SL_BELOW
-           pixels below the fold, and the user scrolls to see the rest. #main is
-           the scroll container (overflow-y:auto), so this becomes real scroll
-           rather than being clipped — body is overflow:hidden. */
-        var h = window.innerHeight - top + SL_BELOW;
+        /* 8.35 -- fill the WHOLE visible strip, not just the space below the
+           box's own top. The old formula (innerHeight - top) reserved the
+           header's height forever: the header scrolls away as you go down, but
+           the box never grew into the space it freed, so that space reappeared
+           as a dead strip under the box instead. Sizing to the scroller's
+           clientHeight spends it on the box, and the scroll distance becomes
+           exactly the header -- scroll the header away and the chat is left
+           filling the screen. */
+        var h = (scroller ? scroller.clientHeight : window.innerHeight - top) + SL_BELOW;
         if (h < 480) h = 480;      // never so short the box is useless
         if (h > 1600) h = 1600;    // never absurd on a very tall monitor
         h = Math.round(h);
@@ -14254,6 +14279,10 @@ var LEAGUE_FIREBASE_CONFIG = {
         if (h === lastFitH && m.style.height) return;
         lastFitH = h;
         m.style.height = h + 'px';
+        /* Feed it back to the stylesheet so the skeleton paints at the height
+           the runtime has already decided on, instead of the calc() guess. */
+        try { document.documentElement.style.setProperty('--sl-msgs-h', h + 'px'); }
+        catch (e2) {}
     }
 
     /* --------------------------------------- 8.9 Direction B: hero + board tile
@@ -14751,5 +14780,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 </script>
 
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5b3f746af15867b',t:'MTc5NDgwNTU4MQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5b3f746af15867b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5b4b8b1cb9a5a18',t:'MTc5NDgxMzUwNA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5b4b8b1cb9a5a18',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
