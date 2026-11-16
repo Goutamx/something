@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-sl-build="8.33">
+<html lang="en" data-sl-build="8.34">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4718,7 +4718,7 @@ tr.sl-ghost{ display:none !important; }
                     if (!/^https?:/i.test(location.href)) { out.textContent = ''; return; }
                     var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
                     out.textContent = 'Checking for a newer build…';
-                    fetch(base + 'newversion.json?t=' + Date.now(), { cache: 'no-store' })
+                    fetch(base + 'version.json?t=' + Date.now(), { cache: 'no-store' })
                         .then(function (r) { return r.json(); })
                         .then(function (j) {
                             var latest = (j && j.build) ? String(j.build) : '';
@@ -8222,6 +8222,45 @@ var LEAGUE_FIREBASE_CONFIG = {
     try { var _storedCode = (localStorage.getItem(LS_CODE) || '').toUpperCase(); if (_storedCode && _storedCode !== OFFICIAL_LEAGUE_CODE) localStorage.setItem(LS_CODE, OFFICIAL_LEAGUE_CODE); } catch (e) {}
     var auth = null, db = null, currentUser = null;
     var unsubscribe = null, membersCache = [];
+
+    /* 8.34 -- one display name per league. The social module (My Profile) is a
+       separate IIFE and cannot see membersCache, so the check is published on
+       window and it calls back in. Deliberately non-blocking on doubt: if the
+       member list is unavailable or the query fails, this resolves null and the
+       save goes through rather than trapping the user behind a network error. */
+    function slNormName(v) { return String(v || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    window.slNameTaken = function (wanted) {
+        return new Promise(function (resolve) {
+            var w = slNormName(wanted);
+            /* 'Student' is the placeholder everyone starts on. Blocking it
+               would make the profile unsaveable for a brand-new member. */
+            if (!w || w === 'student') return resolve(null);
+            var myUid = (currentUser && currentUser.uid) || '';
+            function scan(list) {
+                for (var i = 0; i < list.length; i++) {
+                    var m = list[i] || {};
+                    /* Same name on your own row is not a clash -- that is just
+                       you saving your profile again. */
+                    if (m.uid && m.uid !== myUid && slNormName(m.displayName) === w) return m.displayName;
+                }
+                return null;
+            }
+            var hit = scan(membersCache);
+            if (hit || membersCache.length) return resolve(hit);
+            var code = myCode();
+            if (!db || !code) return resolve(null);
+            var settled = false;
+            function done(v) { if (!settled) { settled = true; resolve(v); } }
+            setTimeout(function () { done(null); }, 2500);
+            try {
+                db.collection('leagues').doc(code).collection('members').get().then(function (snap) {
+                    var rows = [];
+                    snap.forEach(function (d) { rows.push(d.data()); });
+                    done(scan(rows));
+                }).catch(function () { done(null); });
+            } catch (e) { done(null); }
+        });
+    };
     var sortMetric = 'xp';
     var syncTimer = null, lastSyncHash = '';
 
@@ -8961,9 +9000,25 @@ var LEAGUE_FIREBASE_CONFIG = {
         });
         var removeBtn = document.getElementById('pfRemovePhoto');
         if (removeBtn) removeBtn.addEventListener('click', function () { var p = getProfile(); delete p.photo; setProfile(p); document.getElementById('socialProfileCard').remove(); injectProfileCard(); });
-        document.getElementById('pfSave').addEventListener('click', function () {
+        /* 8.34 -- refuse a name another member already uses. async so the
+           check can await the member list without rewriting the body below
+           into continuation style. */
+        document.getElementById('pfSave').addEventListener('click', async function () {
+            var nameEl = document.getElementById('pfName');
+            var st0 = document.getElementById('pfStatus');
+            var wanted = (nameEl && nameEl.value || '').trim() || 'Student';
+            if (typeof window.slNameTaken === 'function') {
+                var taken = null;
+                if (st0) { st0.className = 'league-status'; st0.textContent = 'Checking name\u2026'; }
+                try { taken = await window.slNameTaken(wanted); } catch (e) { taken = null; }
+                if (taken) {
+                    if (st0) { st0.className = 'league-status'; st0.textContent = '\u201c' + taken + '\u201d is already taken in this league \u2014 choose another name.'; }
+                    try { if (nameEl) nameEl.focus(); } catch (e) {}
+                    return;
+                }
+            }
             var p = getProfile();
-            p.name = (document.getElementById('pfName').value || '').trim() || 'Student';
+            p.name = wanted;
             var ci = document.getElementById('pfColor'); if (ci && ci.value) p.avatarColor = ci.value;
             p.bio = (document.getElementById('pfBio').value || '').trim();
             p.school = (document.getElementById('pfSchool').value || '').trim();
@@ -9908,16 +9963,17 @@ var LEAGUE_FIREBASE_CONFIG = {
             var endAt = Number(timerState.endTime || 0);
             if (!endAt || endAt <= Date.now()) return;
             var p = myProfile();
+            /* 8.34 -- a session is announced when it is COMPLETED, not when it
+               starts. The old code wrote a permanent feed line the instant the
+               timer began, so a session abandoned after twenty seconds still
+               left a "session started" line behind forever. The completion
+               line ("focused for N min -- target") is written elsewhere and is
+               untouched, so a finished session is still logged exactly once.
+               Real-time presence is unaffected: the live row below still shows
+               "Focusing - Nm left" for as long as the timer runs, and it
+               expires on its own. Only the permanent record changes. */
             if (!timerState.slStartAnnounced) {
-                var sessionStart = timerState.startTime;
                 timerState.slStartAnnounced = true; saveTimerState();
-                db.collection('leagues').doc(code).collection('feed').add({
-                    actorUid: me.uid, actorName: p.name || 'Student', actorEmoji: p.emoji || '📚',
-                    type: 'focus', kind: 'focus-start', text: 'started a focus session',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(function () {
-                    if (timerState.running && timerState.startTime === sessionStart) { timerState.slStartAnnounced = false; saveTimerState(); }
-                });
             }
             var t = liveSettings().shareFocusChapter ? (timerState.target || {}) : {};
             var elapsed = Number(timerState.accumulatedMs || 0);
@@ -11019,7 +11075,7 @@ var LEAGUE_FIREBASE_CONFIG = {
     /* PWA: register service worker only on the hosted app (index page) */
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
         if (/(\/|\/index\.html)$/.test(location.pathname)) {
-            navigator.serviceWorker.register('newsw.js').catch(function(){});
+            navigator.serviceWorker.register('sw.js').catch(function(){});
         }
     }
 })();
@@ -14144,7 +14200,12 @@ var LEAGUE_FIREBASE_CONFIG = {
            SL_BELOW = 0    -> fills the screen exactly, no scroll
 
        Phones are unaffected: fitHeight() skips them (width <= 900). */
-    var SL_BELOW = 100;
+    /* 8.34 -- reduced from 100. The user wants the outer page to scroll LESS,
+       not to stop scrolling: 0 would pin the box exactly to the fold and remove
+       the outer scroll altogether, which was explicitly not the request. 40
+       leaves a small, deliberate overshoot so the composer is still just past
+       the fold and a short scroll reveals it. */
+    var SL_BELOW = 40;
 
     /* One number, one source of truth. The stylesheet used to hard-code the
        300 case (calc(100vh + 104px)), so changing SL_BELOW here left the CSS
@@ -14690,5 +14751,5 @@ var LEAGUE_FIREBASE_CONFIG = {
 </script>
 
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5b3f746af15867b',t:'MTc5NDgwNTU4MQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5b3f746af15867b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
